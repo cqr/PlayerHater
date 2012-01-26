@@ -162,6 +162,8 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		nowPlayingType = URL;
 		nowPlayingString = stream;
 		nowPlayingUrl = stream;
+		if (mediaPlayer.getState() != MediaPlayerWrapper.IDLE)
+			mediaPlayer.reset();
 		mediaPlayer.setDataSource(nowPlayingUrl);
 		play();
 		return true;
@@ -173,6 +175,8 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		nowPlayingType = FILE;
 		nowPlayingString = fd.toString();
 		nowPlayingFile = fd;
+		if (mediaPlayer.getState() != MediaPlayerWrapper.IDLE)
+			mediaPlayer.reset();
 		mediaPlayer.setDataSource(nowPlayingFile);
 		return play();
 	}
