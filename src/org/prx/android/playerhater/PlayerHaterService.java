@@ -109,13 +109,14 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	 */
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
+		Log.e(TAG, "Got MediaPlayer error: " + what + " / " + extra);
 		if (updateProgressThread != null && updateProgressThread.isAlive()) {
 			mHandler.removeCallbacks(updateProgressRunner);
-			Log.d(TAG, "INTERRUPTING THE UPDATE PROGRESS THREAD");
 			updateProgressThread.interrupt();
 			updateProgressThread = null;
 		}
 		if (mOnErrorListener != null) {
+			Log.e(TAG, "Passing error along.");
 			return mOnErrorListener.onError(mp, what, extra);
 		}
 		return false;
@@ -127,8 +128,10 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	 */
 	@Override
 	public void onPrepared(MediaPlayer mp) {
+		Log.d(TAG, "MediaPlayer is prepared, beginning playback of " + getNowPlaying());
 		mediaPlayer.start();
 		if (mOnPreparedListener != null) {
+			Log.d(TAG, "Passing prepared along.");
 			mOnPreparedListener.onPrepared(mp);
 		}
 	}
@@ -151,6 +154,9 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	}
 
 	public String getNowPlaying() {
+		if (nowPlayingString == null) {
+			return "<#null>";
+		}
 		return nowPlayingString;
 	}
 
@@ -158,15 +164,15 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		return (mediaPlayer.getState() == MediaPlayerWrapper.STARTED);
 	}
 
-	public boolean play(String stream) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+	public boolean play(String stream) throws IllegalStateException,
+			IllegalArgumentException, SecurityException, IOException {
 		nowPlayingType = URL;
 		nowPlayingString = stream;
 		nowPlayingUrl = stream;
 		if (mediaPlayer.getState() != MediaPlayerWrapper.IDLE)
-			mediaPlayer.reset();
+			reset();
 		mediaPlayer.setDataSource(nowPlayingUrl);
-		play();
-		return true;
+		return play();
 
 	}
 
@@ -176,17 +182,13 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		nowPlayingString = fd.toString();
 		nowPlayingFile = fd;
 		if (mediaPlayer.getState() != MediaPlayerWrapper.IDLE)
-			mediaPlayer.reset();
+			reset();
 		mediaPlayer.setDataSource(nowPlayingFile);
 		return play();
 	}
 
 	public int getDuration() {
-		try {
-			return this.mediaPlayer.getDuration();
-		} catch (IllegalStateException e) {
-			return 0;
-		}
+		return this.mediaPlayer.getDuration();
 	}
 
 	public int getCurrentPosition() {
@@ -194,37 +196,21 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	}
 
 	public void seekTo(int pos) {
-		try {
-			mediaPlayer.seekTo(pos);
-		} catch (Exception e) {
-			Log.d(TAG,
-					"Could not seek -- state is " + this.mediaPlayer.getState());
-			e.printStackTrace();
-		}
-
+		mediaPlayer.seekTo(pos);
 	}
 
 	public void rewind() {
-		try {
-			int pos = mediaPlayer.getCurrentPosition();
-			mediaPlayer.seekTo(pos - 30000);
-		} catch (Exception e) {
-			Log.d(TAG, "Could not skip backwards");
-			e.printStackTrace();
-		}
+		int pos = mediaPlayer.getCurrentPosition();
+		mediaPlayer.seekTo(pos - 30000);
 	}
 
 	public void skipForward() {
-		try {
-			int pos = mediaPlayer.getCurrentPosition();
-			mediaPlayer.seekTo(pos + 30000);
-		} catch (Exception e) {
-			Log.d(TAG, "Could not skip forward.");
-			e.printStackTrace();
-		}
+		int pos = mediaPlayer.getCurrentPosition();
+		mediaPlayer.seekTo(pos + 30000);
 	}
 
 	public boolean play() throws IllegalStateException, IOException {
+		Log.d(TAG, "Starting preparation of: " + getNowPlaying());
 
 		mediaPlayer.prepareAsync();
 
@@ -239,7 +225,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 		return true;
 	}
-	
+
 	public boolean stop() {
 		mediaPlayer.stop();
 		return true;
@@ -303,6 +289,11 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		playerListenerManager = new PlayerListenerManager();
 		playerListenerManager.setOnErrorListener(this);
 		playerListenerManager.setOnPreparedListener(this);
+	}
+	
+	private void reset() {
+		Log.d(TAG, "Resetting media player.");
+		mediaPlayer.reset();
 	}
 
 	/*
