@@ -10,6 +10,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -45,7 +46,10 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	private PlayerListenerManager playerListenerManager;
 	private OnErrorListener mOnErrorListener;
 	private OnPreparedListener mOnPreparedListener;
-
+	private AudioManager mAudioManager;
+	private OnSeekBarChangeListener mOnSeekbarChangeListener;
+	private OnAudioFocusChangeListener mAudioFocusChangeListener;
+	
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message m) {
@@ -61,7 +65,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			}
 		}
 	};
-	private OnSeekBarChangeListener mOnSeekbarChangeListener;
+	
 
 	@Override
 	public void onStart(Intent intent, int startId) {
@@ -75,6 +79,13 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 		if (updateProgressRunner == null)
 			createUpdateProgressRunner();
+	
+		if (mAudioManager == null)
+			mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+		
+		if (mAudioFocusChangeListener == null) {
+			mAudioFocusChangeListener = new OnAudioFocusChangeListener(this);
+		}
 
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	}
@@ -130,6 +141,9 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void onPrepared(MediaPlayer mp) {
 		Log.d(TAG, "MediaPlayer is prepared, beginning playback of " + getNowPlaying());
 		mediaPlayer.start();
+		
+		mAudioManager.requestAudioFocus(mAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+		
 		if (mOnPreparedListener != null) {
 			Log.d(TAG, "Passing prepared along.");
 			mOnPreparedListener.onPrepared(mp);

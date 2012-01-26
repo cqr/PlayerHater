@@ -23,18 +23,18 @@ public interface PlayerHater {
 	
 	boolean play(String fileOrUrl) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	boolean play(String fileOrUrl, boolean isUrl) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
-	boolean play(String fileOrUrl, boolean isUrl, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
-	boolean play(String fileOrUrl, boolean isUrl, Activity activity, int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(String fileOrUrl, boolean isUrl, Activity activityTriggeredOnNotificationTouch) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(String fileOrUrl, boolean isUrl, Activity activityTriggeredOnNotificationTouch, int notificationView) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	
 	boolean play(FileDescriptor fd) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
-	boolean play(FileDescriptor fd, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
-	boolean play(FileDescriptor fd, Activity activity, int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(FileDescriptor fd, Activity activityTriggeredOnNotificationTouch) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(FileDescriptor fd, Activity activityTriggeredOnNotificationTouch, int notificationView) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	
 	boolean play(Uri url) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
-	boolean play(Uri url, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
-	boolean play(Uri url, Activity activity, int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(Uri url, Activity activityTriggeredOnNotificationTouch) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(Uri url, Activity activityTriggeredOnNotificationTouch, int notificationView) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	
-	void setNotificationIntentActivity(Activity activity);
+	void setNotificationIntentActivity(Activity activityTriggeredOnNotificationTouch);
 	void setNotificationView(int notificationView);
 	
 	int getCurrentPosition();
