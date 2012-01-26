@@ -18,7 +18,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class PlayerHaterService extends Service implements OnErrorListener,
@@ -41,13 +40,11 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	protected static final int FILE = 66;
 
 	private MediaPlayerWrapper mediaPlayer;
-	private Runnable playerRunner;
 	private UpdateProgressRunnable updateProgressRunner;
 	private Thread updateProgressThread;
 	private PlayerListenerManager playerListenerManager;
 	private OnErrorListener mOnErrorListener;
 	private OnPreparedListener mOnPreparedListener;
-	private Thread playThread;
 
 	private Handler mHandler = new Handler() {
 		@Override
@@ -56,7 +53,8 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			switch (m.what) {
 			case PROGRESS_UPDATE:
 				if (mOnSeekbarChangeListener != null)
-					mOnSeekbarChangeListener.onProgressChanged(null, m.arg1, false);
+					mOnSeekbarChangeListener.onProgressChanged(null, m.arg1,
+							false);
 				break;
 			default:
 				onHandlerMessage(m);
@@ -81,7 +79,8 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
-	/* We override a couple of methods in PlayerHaterBinder so that we can see
+	/*
+	 * We override a couple of methods in PlayerHaterBinder so that we can see
 	 * MediaPlayer onError and onPrepared events
 	 */
 	@Override
@@ -96,15 +95,17 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			public void setOnPreparedListener(OnPreparedListener listener) {
 				mOnPreparedListener = listener;
 			}
-			
+
 			@Override
-			public void setOnProgressChangeListener(OnSeekBarChangeListener listener) {
+			public void setOnProgressChangeListener(
+					OnSeekBarChangeListener listener) {
 				mOnSeekbarChangeListener = listener;
 			}
 		};
 	}
 
-	/* Oh, snap Ð we're blowing up!
+	/*
+	 * Oh, snap Ð we're blowing up!
 	 */
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
@@ -119,8 +120,9 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		}
 		return false;
 	}
-	
-	/* We register ourselves to listen to the onPrepared event so we can start
+
+	/*
+	 * We register ourselves to listen to the onPrepared event so we can start
 	 * playing immediately.
 	 */
 	@Override
@@ -130,7 +132,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			mOnPreparedListener.onPrepared(mp);
 		}
 	}
-	
+
 	public boolean pause() throws IllegalStateException {
 		mediaPlayer.pause();
 		return true;
@@ -156,22 +158,23 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		return (mediaPlayer.getState() == MediaPlayerWrapper.STARTED);
 	}
 
-	public boolean play(String stream) {
-		if (stream != null) {
-			nowPlayingUrl = stream;
-		}
-		listen();
-		mNotificationManager.notify(NOTIFICATION_NU,
-				buildNotification(PendingIntent.FLAG_UPDATE_CURRENT));
+	public boolean play(String stream) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+		nowPlayingType = URL;
+		nowPlayingString = stream;
+		nowPlayingUrl = stream;
+		mediaPlayer.setDataSource(nowPlayingUrl);
+		play();
 		return true;
 
 	}
 
-	public boolean play(FileDescriptor fd) {
+	public boolean play(FileDescriptor fd) throws IllegalStateException,
+			IllegalArgumentException, SecurityException, IOException {
 		nowPlayingType = FILE;
 		nowPlayingString = fd.toString();
 		nowPlayingFile = fd;
-		return _play((String) null);
+		mediaPlayer.setDataSource(nowPlayingFile);
+		return play();
 	}
 
 	public int getDuration() {
@@ -188,7 +191,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 	public void seekTo(int pos) {
 		try {
-			playerActivity.onLoading();
 			mediaPlayer.seekTo(pos);
 		} catch (Exception e) {
 			Log.d(TAG,
@@ -201,7 +203,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void rewind() {
 		try {
 			int pos = mediaPlayer.getCurrentPosition();
-			playerActivity.onLoading();
 			mediaPlayer.seekTo(pos - 30000);
 		} catch (Exception e) {
 			Log.d(TAG, "Could not skip backwards");
@@ -212,7 +213,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void skipForward() {
 		try {
 			int pos = mediaPlayer.getCurrentPosition();
-			playerActivity.onLoading();
 			mediaPlayer.seekTo(pos + 30000);
 		} catch (Exception e) {
 			Log.d(TAG, "Could not skip forward.");
@@ -220,69 +220,25 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		}
 	}
 
-	private void listen() throws IllegalArgumentException,
-			IllegalStateException, IOException {
+	public boolean play() throws IllegalStateException, IOException {
 
-		// XXX: Using a runnable hangs the GUI and causes ocassional ANRs, which
-		// are recoverable
-		// XXX: Using a new Thread relieves the GUI, but causes bizarre error
-		// codes
-		// XXX: ??????
-		// XXX: Soln:
-		// http://www.xoriant.com/blog/mobile-application-development/android-async-task.html
-		// ?
-		if (playThread != null && playerRunner != null) {
-			mHandler.removeCallbacks(playerRunner);
-			if (playThread != null && playThread.isAlive()) {
-				playThread.interrupt();
-			}
-			playerRunner = null;
-			playThread = null;
-		}
+		mediaPlayer.prepareAsync();
+
 		if (updateProgressThread != null && updateProgressThread.isAlive()) {
 			mHandler.removeCallbacks(updateProgressRunner);
-			Log.d(TAG, "INTERRUPTING THE UPDATE PROGRESS THREAD");
 			updateProgressThread.interrupt();
 			updateProgressThread = null;
 		}
 
-		playerRunner = new Runnable() {
-			@Override
-			public void run() {
-				try {
-					initializeMediaPlayer();
-				} catch (IllegalStateException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IllegalArgumentException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (SecurityException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				try {
-					playerActivity.onLoading();
-					mediaPlayer.prepareAsync();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		};
-		playThread = new Thread(playerRunner);
-		playThread.start();
-		Log.d(TAG, "starting update progress thread");
 		updateProgressThread = new Thread(updateProgressRunner);
 		updateProgressThread.start();
-	}
 
-	private void initializeMediaPlayer() throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
-		mediaPlayer.reset();
-		mediaPlayer.setDataSource(nowPlaying);
+		return true;
+	}
+	
+	public boolean stop() {
+		mediaPlayer.stop();
+		return true;
 	}
 
 	/*
@@ -352,5 +308,4 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	 */
 	protected void onHandlerMessage(Message m) { /* noop */
 	}
-
 }

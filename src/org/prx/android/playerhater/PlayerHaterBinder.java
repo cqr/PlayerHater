@@ -3,6 +3,7 @@ package org.prx.android.playerhater;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.IOException;
 
 import org.prx.android.playerhater.PlayerHater;
 
@@ -15,7 +16,6 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.os.Binder;
-import android.util.Log;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class PlayerHaterBinder extends Binder implements PlayerHater {
@@ -29,39 +29,28 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 		mPlayerListenerManager = playerListenerManager;
 	}
 
-	public PlayerHaterService getService() {
-		Log.w(PlayerHaterService.TAG,
-				"#getService() - THIS METHOD HAS BEEN DEPRECATED.");
-		Log.w(PlayerHaterService.TAG,
-				"You should cast PlayerHaterBinder as PlayerHater and call methods on it directly.");
-		return mService;
-	}
-
 	@Override
-	public boolean play() {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean play() throws IllegalStateException, IOException {
+		return mService.play();
 	}
 
 	@Override
 	public boolean pause() {
-		// TODO Auto-generated method stub
-		return false;
+		return mService.pause();
 	}
 
 	@Override
 	public boolean stop() {
-		// TODO Auto-generated method stub
-		return false;
+		return mService.stop();
 	}
 
 	@Override
-	public boolean play(String fileOrUrl) {
+	public boolean play(String fileOrUrl) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		return play(fileOrUrl, fileOrUrl.charAt(0) != '/');
 	}
 
 	@Override
-	public boolean play(String fileOrUrl, boolean isUrl) {
+	public boolean play(String fileOrUrl, boolean isUrl) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		if (isUrl) {
 			return mService.play(fileOrUrl);
 		} else {
@@ -84,36 +73,36 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	}
 
 	@Override
-	public boolean play(String fileOrUrl, boolean isUrl, Activity activity) {
+	public boolean play(String fileOrUrl, boolean isUrl, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		return play(fileOrUrl, isUrl);
 	}
 
 	@Override
-	public boolean play(FileDescriptor fd) {
+	public boolean play(FileDescriptor fd) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		return mService.play(fd);
 	}
 
 	@Override
-	public boolean play(FileDescriptor fd, Activity activity) {
+	public boolean play(FileDescriptor fd, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		return play(fd);
 	}
 
 	@Override
-	public boolean play(FileDescriptor fd, Activity activity, int view) {
+	public boolean play(FileDescriptor fd, Activity activity, int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		setNotificationView(view);
 		return play(fd);
 	}
 
 	@Override
-	public boolean play(Uri url) {
+	public boolean play(Uri url) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		return play(url.toString(), true);
 	}
 
 	@Override
-	public boolean play(Uri url, Activity activity) {
+	public boolean play(Uri url, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		return play(url);
 	}
@@ -130,14 +119,14 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 
 	@Override
 	public boolean play(String fileOrUrl, boolean isUrl, Activity activity,
-			int view) {
+			int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		setNotificationView(view);
 		return play(fileOrUrl, isUrl);
 	}
 
 	@Override
-	public boolean play(Uri url, Activity activity, int view) {
+	public boolean play(Uri url, Activity activity, int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		setNotificationView(view);
 		return play(url);

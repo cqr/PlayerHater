@@ -1,6 +1,7 @@
 package org.prx.android.playerhater;
 
 import java.io.FileDescriptor;
+import java.io.IOException;
 
 import android.app.Activity;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -18,20 +19,20 @@ public interface PlayerHater {
 	boolean pause();
 	boolean stop();
 	
-	boolean play();
+	boolean play() throws IllegalStateException, IOException;
 	
-	boolean play(String fileOrUrl);
-	boolean play(String fileOrUrl, boolean isUrl);
-	boolean play(String fileOrUrl, boolean isUrl, Activity activity);
-	boolean play(String fileOrUrl, boolean isUrl, Activity activity, int view);
+	boolean play(String fileOrUrl) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(String fileOrUrl, boolean isUrl) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(String fileOrUrl, boolean isUrl, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(String fileOrUrl, boolean isUrl, Activity activity, int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	
-	boolean play(FileDescriptor fd);
-	boolean play(FileDescriptor fd, Activity activity);
-	boolean play(FileDescriptor fd, Activity activity, int view);
+	boolean play(FileDescriptor fd) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(FileDescriptor fd, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(FileDescriptor fd, Activity activity, int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	
-	boolean play(Uri url);
-	boolean play(Uri url, Activity activity);
-	boolean play(Uri url, Activity activity, int view);
+	boolean play(Uri url) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(Uri url, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean play(Uri url, Activity activity, int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	
 	void setNotificationIntentActivity(Activity activity);
 	void setNotificationView(int notificationView);
