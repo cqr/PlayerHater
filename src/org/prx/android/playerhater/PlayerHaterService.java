@@ -27,14 +27,18 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	protected static final String TAG = "PlayerHater/Service";
 	protected static final int PROGRESS_UPDATE = 9747244;
 	protected static final int NOTIFICATION_NU = 9747245;
-	protected NotificationManager mNotificationManager;
-	protected Notification notification;
-	protected PendingIntent contentIntent;
-	protected String nowPlaying;
 
+	protected NotificationManager mNotificationManager;
 	protected Class<?> mNotificationIntentClass;
 	protected RemoteViews mNotificationView;
 	protected int mNotificationIcon;
+
+	protected String nowPlayingString;
+	protected String nowPlayingUrl;
+	protected FileDescriptor nowPlayingFile;
+	protected int nowPlayingType;
+	protected static final int URL = 55;
+	protected static final int FILE = 66;
 
 	private MediaPlayerWrapper mediaPlayer;
 	private Runnable playerRunner;
@@ -59,7 +63,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			}
 		}
 	};
-	private Intent notificationIntent;
 
 	@Override
 	public void onStart(Intent intent, int startId) {
@@ -77,6 +80,9 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
+	/* We override a couple of methods in PlayerHaterBinder so that we can see
+	 * MediaPlayer onError and onPrepared events
+	 */
 	@Override
 	public IBinder onBind(Intent arg0) {
 		return new PlayerHaterBinder(this, playerListenerManager) {
@@ -92,6 +98,8 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		};
 	}
 
+	/* Oh, snap Ð we're blowing up!
+	 */
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		if (updateProgressThread != null && updateProgressThread.isAlive()) {
@@ -105,60 +113,38 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		}
 		return false;
 	}
-
-	/*
-	 * creates a media player (wrapped, of course) and registers the listeners
-	 * for all of the events.
+	
+	/* We register ourselves to listen to the onPrepared event so we can start
+	 * playing immediately.
 	 */
-	private void createMediaPlayer() {
-		mediaPlayer = new MediaPlayerWrapper();
-		playerListenerManager.setMediaPlayer(mediaPlayer);
+	@Override
+	public void onPrepared(MediaPlayer mp) {
+		mediaPlayer.start();
+		if (mOnPreparedListener != null) {
+			mOnPreparedListener.onPrepared(mp);
+		}
 	}
+	
 
-	/*
-	 * creates a new update progress runner, which fires events back to this
-	 * class' handler with the message we request and the duration which has
-	 * passed
-	 */
-	private void createUpdateProgressRunner() {
-		updateProgressRunner = new UpdateProgressRunnable(mediaPlayer,
-				mHandler, PROGRESS_UPDATE);
-	}
-
-	/*
-	 * This class basically just makes sure that we never need to rebind
-	 * ourselves.
-	 */
-	private void createPlayerListenerManager() {
-		playerListenerManager = new PlayerListenerManager();
-		playerListenerManager.setOnErrorListener(this);
-		playerListenerManager.setOnPreparedListener(this);
-	}
-
-	/*
-	 * This should be overridden by subclasses which wish to handle messages
-	 * sent to mHandler without reimplementing the handler. It is a noop by
-	 * default.
-	 */
-	protected void onHandlerMessage(Message m) { /* noop */
-	}
-
-	public boolean _isPlaying() {
+	public boolean isPlaying() {
 		return (mediaPlayer.getState() == MediaPlayerWrapper.STARTED);
 	}
 
-	public boolean _play(String stream) {
-			if (stream != null) {
-				nowPlaying = stream;
-			}
-			listen();
-			mNotificationManager.notify(NOTIFICATION_NU, buildNotification(PendingIntent.FLAG_UPDATE_CURRENT));
+	public boolean play(String stream) {
+		if (stream != null) {
+			nowPlayingUrl = stream;
+		}
+		listen();
+		mNotificationManager.notify(NOTIFICATION_NU,
+				buildNotification(PendingIntent.FLAG_UPDATE_CURRENT));
 		return true;
 
 	}
 
-	public boolean _play(FileDescriptor fd) {
-		nowPlaying = fd.toString();
+	public boolean play(FileDescriptor fd) {
+		nowPlayingType = FILE;
+		nowPlayingString = fd.toString();
+		nowPlayingFile = fd;
 		return _play((String) null);
 	}
 
@@ -205,14 +191,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		} catch (Exception e) {
 			Log.d(TAG, "Could not skip forward.");
 			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void onPrepared(MediaPlayer mp) {
-		mediaPlayer.start();
-		if (mOnPreparedListener != null) {
-			mOnPreparedListener.onPrepared(mp);
 		}
 	}
 
@@ -306,32 +284,75 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	}
 
 	public String getNowPlaying() {
-		return nowPlaying;
+		return nowPlayingString;
 	}
-	
+
+	/*
+	 * These methods concern the creation of notifications. They should be
+	 * ignored.
+	 */
+
 	protected Notification buildNotification() {
 		return buildNotification("Playing...", 0);
 	}
-	
+
 	protected Notification buildNotification(int pendingFlag) {
 		return buildNotification("Playing...", pendingFlag);
 	}
-	
+
 	protected Notification buildNotification(String text) {
 		return buildNotification(text, 0);
 	}
-	
+
 	protected Notification buildNotification(String text, int pendingFlag) {
-		Notification notification = new Notification(mNotificationIcon, text, System.currentTimeMillis());
-		
+		Notification notification = new Notification(mNotificationIcon, text,
+				System.currentTimeMillis());
+
 		if (mNotificationIntentClass != null && mNotificationView != null) {
 			notification.contentView = mNotificationView;
 			notification.contentIntent = PendingIntent.getActivity(this, 0,
 					new Intent(this, mNotificationIntentClass), pendingFlag);
 			notification.flags |= Notification.FLAG_ONGOING_EVENT;
 		}
-		
+
 		return notification;
+	}
+
+	/*
+	 * creates a media player (wrapped, of course) and registers the listeners
+	 * for all of the events.
+	 */
+	private void createMediaPlayer() {
+		mediaPlayer = new MediaPlayerWrapper();
+		playerListenerManager.setMediaPlayer(mediaPlayer);
+	}
+
+	/*
+	 * creates a new update progress runner, which fires events back to this
+	 * class' handler with the message we request and the duration which has
+	 * passed
+	 */
+	private void createUpdateProgressRunner() {
+		updateProgressRunner = new UpdateProgressRunnable(mediaPlayer,
+				mHandler, PROGRESS_UPDATE);
+	}
+
+	/*
+	 * This class basically just makes sure that we never need to re-bind
+	 * ourselves.
+	 */
+	private void createPlayerListenerManager() {
+		playerListenerManager = new PlayerListenerManager();
+		playerListenerManager.setOnErrorListener(this);
+		playerListenerManager.setOnPreparedListener(this);
+	}
+
+	/*
+	 * This should be overridden by subclasses which wish to handle messages
+	 * sent to mHandler without re-implementing the handler. It is a noop by
+	 * default.
+	 */
+	protected void onHandlerMessage(Message m) { /* noop */
 	}
 
 }
