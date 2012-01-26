@@ -9,12 +9,14 @@ Usage
 Basically, you should do the following:
 
 ```java
-	import org.prx.android.playerhater.PlayerHater;
-	import org.prx.android.playerhater.PlayerHaterService;
+import org.prx.android.playerhater.PlayerHater;
+import org.prx.android.playerhater.PlayerHaterService;
+
+class MyApplicationActivity extends Activity {
 
 	private PlayerHater mPlayerHater;
 
-    private ServiceConnection mConnection = new ServiceConnection() {
+	private ServiceConnection mConnection = new ServiceConnection() {
 
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			mPlayerHater = (PlayerHater)service;
@@ -33,5 +35,7 @@ Basically, you should do the following:
 			context.bindService(playerHaterIntent, mConnection, Context.BIND_AUTO_CREATE);
 		}
 	}
+
+}
 ```
 
