@@ -16,6 +16,7 @@ import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.os.Binder;
 import android.util.Log;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class PlayerHaterBinder extends Binder implements PlayerHater {
 
@@ -62,7 +63,7 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	@Override
 	public boolean play(String fileOrUrl, boolean isUrl) {
 		if (isUrl) {
-			return mService._play(fileOrUrl);
+			return mService.play(fileOrUrl);
 		} else {
 			try {
 				return play((new FileInputStream(new File(fileOrUrl))).getFD());
@@ -79,7 +80,7 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 
 	@Override
 	public boolean isPlaying() {
-		return mService._isPlaying();
+		return mService.isPlaying();
 	}
 
 	@Override
@@ -90,7 +91,7 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 
 	@Override
 	public boolean play(FileDescriptor fd) {
-		return mService._play(fd);
+		return mService.play(fd);
 	}
 
 	@Override
@@ -190,7 +191,13 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public void setOnPreparedListener(OnPreparedListener listener) {
 		mPlayerListenerManager.setOnPreparedListener(listener);
 	}
+
 	/*
 	 * End delegated listener methods
 	 */
+
+	@Override
+	public void setOnProgressChangeListener(OnSeekBarChangeListener listener) {
+		// noop
+	}
 }

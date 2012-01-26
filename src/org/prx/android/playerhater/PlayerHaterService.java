@@ -46,7 +46,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	private Thread updateProgressThread;
 	private PlayerListenerManager playerListenerManager;
 	private OnErrorListener mOnErrorListener;
-	private OnSeekBarChangeListener mOnSeekbarChangeListener;
 	private OnPreparedListener mOnPreparedListener;
 	private Thread playThread;
 
@@ -56,13 +55,15 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 			switch (m.what) {
 			case PROGRESS_UPDATE:
-				onProgressChanged(null, m.arg1, false);
+				if (mOnSeekbarChangeListener != null)
+					mOnSeekbarChangeListener.onProgressChanged(null, m.arg1, false);
 				break;
 			default:
 				onHandlerMessage(m);
 			}
 		}
 	};
+	private OnSeekBarChangeListener mOnSeekbarChangeListener;
 
 	@Override
 	public void onStart(Intent intent, int startId) {
@@ -95,6 +96,11 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			public void setOnPreparedListener(OnPreparedListener listener) {
 				mOnPreparedListener = listener;
 			}
+			
+			@Override
+			public void setOnProgressChangeListener(OnSeekBarChangeListener listener) {
+				mOnSeekbarChangeListener = listener;
+			}
 		};
 	}
 
@@ -125,6 +131,26 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		}
 	}
 	
+	public boolean pause() throws IllegalStateException {
+		mediaPlayer.pause();
+		return true;
+	}
+
+	public void setNotificationIntentActivity(Activity activity) {
+		mNotificationIntentClass = activity.getClass();
+	}
+
+	public void setNotificationView(int view) {
+		mNotificationView = new RemoteViews(getPackageName(), view);
+	}
+
+	public int getState() {
+		return mediaPlayer.getState();
+	}
+
+	public String getNowPlaying() {
+		return nowPlayingString;
+	}
 
 	public boolean isPlaying() {
 		return (mediaPlayer.getState() == MediaPlayerWrapper.STARTED);
@@ -253,38 +279,10 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		updateProgressThread.start();
 	}
 
-	private void onProgressChanged(SeekBar seekBar, int progress,
-			boolean fromUser) {
-		if (mOnSeekbarChangeListener != null)
-			mOnSeekbarChangeListener.onProgressChanged(seekBar, progress,
-					fromUser);
-	}
-
-	public void initializeMediaPlayer() throws IllegalStateException,
+	private void initializeMediaPlayer() throws IllegalStateException,
 			IllegalArgumentException, SecurityException, IOException {
 		mediaPlayer.reset();
 		mediaPlayer.setDataSource(nowPlaying);
-	}
-
-	public boolean pause() throws IllegalStateException {
-		mediaPlayer.pause();
-		return true;
-	}
-
-	public void setNotificationIntentActivity(Activity activity) {
-		mNotificationIntentClass = activity.getClass();
-	}
-
-	public void setNotificationView(int view) {
-		mNotificationView = new RemoteViews(getPackageName(), view);
-	}
-
-	public int getState() {
-		return mediaPlayer.getState();
-	}
-
-	public String getNowPlaying() {
-		return nowPlayingString;
 	}
 
 	/*

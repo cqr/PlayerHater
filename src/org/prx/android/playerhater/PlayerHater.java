@@ -10,6 +10,7 @@ import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public interface PlayerHater {
 	void seekTo(int position);
@@ -43,6 +44,7 @@ public interface PlayerHater {
 	void setOnSeekCompleteListener(OnSeekCompleteListener listener);
 	void setOnErrorListener(OnErrorListener listener);
 	void setOnPreparedListener(OnPreparedListener listener);
+	void setOnProgressChangeListener(OnSeekBarChangeListener listener);
 	
 	String getNowPlaying();
 	boolean isPlaying();
