@@ -2,7 +2,6 @@ package org.prx.android.playerhater;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
-import java.util.HashMap;
 
 import android.app.Activity;
 import android.app.Notification;
@@ -12,12 +11,8 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnBufferingUpdateListener;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnPreparedListener;
-import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -31,17 +26,16 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 	protected static final String TAG = "PlayerHater/Service";
 	protected static final int PROGRESS_UPDATE = 9747244;
-	protected OnPlayerLoadingListener playerActivity;
+	protected static final int NOTIFICATION_NU = 9747245;
 	protected NotificationManager mNotificationManager;
 	protected Notification notification;
 	protected PendingIntent contentIntent;
 	protected String nowPlaying;
 
 	protected Class<?> mNotificationIntentClass;
-	protected int mNotificationView;
+	protected RemoteViews mNotificationView;
 	protected int mNotificationIcon;
-	
-	private final HashMap<String, Object> mKeyValuePairs = new HashMap<String, Object>();
+
 	private MediaPlayerWrapper mediaPlayer;
 	private Runnable playerRunner;
 	private UpdateProgressRunnable updateProgressRunner;
@@ -51,7 +45,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	private OnSeekBarChangeListener mOnSeekbarChangeListener;
 	private OnPreparedListener mOnPreparedListener;
 	private Thread playThread;
-	private RemoteViews contentView;
 
 	private Handler mHandler = new Handler() {
 		@Override
@@ -86,49 +79,17 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 	@Override
 	public IBinder onBind(Intent arg0) {
-		return new PlayerHaterBinder(this);
-	}
+		return new PlayerHaterBinder(this, playerListenerManager) {
+			@Override
+			public void setOnErrorListener(OnErrorListener listener) {
+				mOnErrorListener = listener;
+			}
 
-	public void setActivity(OnPlayerLoadingListener activity) {
-		playerActivity = activity;
-	}
-
-	public boolean play(String stream) {
-		Log.w(TAG,
-				"#play(file) on PlayerService is deprecated. Please use the PlayerHater#pause();");
-		return _play(stream);
-	}
-
-	public boolean playStream(String stream) {
-		Log.w(TAG, "#playStream() is deprecated. Please use #play(url, true)");
-		return _play(stream);
-	}
-
-	public boolean pause() {
-		Log.w(TAG,
-				"#pause() on PlayerService is deprecated. Please use PlayerHater#pause();");
-		return _pause();
-	}
-
-	public boolean unpause() {
-		Log.w(TAG, "#unpause() is deprecated. Please use #play()");
-		return _play((String) null);
-	}
-
-	public String getStreamURL() {
-		Log.w(TAG,
-				"#getStreamURL() is deprecated. Please use PlayerHater#getNowPlaying()");
-		return _getNowPlaying();
-	}
-
-	public String getNowPlaying() {
-		Log.w(TAG,
-				"Calling methods directly on PlayerService is deprecated. Please use PlayerHater#getNowPlaying();");
-		return _getNowPlaying();
-	}
-
-	public String _getNowPlaying() {
-		return nowPlaying;
+			@Override
+			public void setOnPreparedListener(OnPreparedListener listener) {
+				mOnPreparedListener = listener;
+			}
+		};
 	}
 
 	@Override
@@ -152,42 +113,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	private void createMediaPlayer() {
 		mediaPlayer = new MediaPlayerWrapper();
 		playerListenerManager.setMediaPlayer(mediaPlayer);
-	}
-
-	/*
-	 * We use the delegation pattern here, rather than doing things
-	 * automatically
-	 */
-	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
-		playerListenerManager.setOnBufferingUpdateListener(listener);
-	}
-
-	public void setOnCompletionListener(OnCompletionListener listener) {
-		playerListenerManager.setOnCompletionListener(listener);
-	}
-
-	public void setOnInfoListener(OnInfoListener listener) {
-		playerListenerManager.setOnInfoListener(listener);
-	}
-
-	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-		playerListenerManager.setOnSeekCompleteListener(listener);
-	}
-
-	/*
-	 * End delegated listener methods
-	 */
-
-	/*
-	 * These are special cases, because we actually need to do something in
-	 * error conditions and when the player is prepared.
-	 */
-	public void setOnErrorListener(OnErrorListener listener) {
-		mOnErrorListener = listener;
-	}
-
-	public void setOnPreparedListener(OnPreparedListener listener) {
-		mOnPreparedListener = listener;
 	}
 
 	/*
@@ -223,24 +148,11 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	}
 
 	public boolean _play(String stream) {
-		try {
 			if (stream != null) {
 				nowPlaying = stream;
 			}
 			listen();
-			notificationIntent = new Intent(this, playerActivity.getClass());
-			contentIntent = PendingIntent.getActivity(this, 0,
-					notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-			updateNotification();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+			mNotificationManager.notify(NOTIFICATION_NU, buildNotification(PendingIntent.FLAG_UPDATE_CURRENT));
 		return true;
 
 	}
@@ -248,34 +160,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public boolean _play(FileDescriptor fd) {
 		nowPlaying = fd.toString();
 		return _play((String) null);
-	}
-
-	public void updateNotification() {
-
-		if (notification == null) {
-			notification = new Notification(mNotificationIcon, "Playing..",
-					System.currentTimeMillis());
-		}
-
-		notification.flags |= Notification.FLAG_ONGOING_EVENT;
-		
-		if (contentView == null && this.mNotificationIntentClass != null && mNotificationView != 0) {
-			contentView = new RemoteViews(getPackageName(), mNotificationView);
-		}
-
-		if (notificationIntent == null && mNotificationIntentClass != null) {
-			notificationIntent = new Intent(this, mNotificationIntentClass);
-			contentIntent = PendingIntent.getActivity(this, 0,
-					notificationIntent, 0);
-		}
-		
-		notification.contentView = contentView;
-		notification.contentIntent = contentIntent;
-		mNotificationManager.notify(60666, notification);
-	}
-
-	public int getPosition() {
-		return mediaPlayer.getCurrentPosition();
 	}
 
 	public int getDuration() {
@@ -324,6 +208,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		}
 	}
 
+	@Override
 	public void onPrepared(MediaPlayer mp) {
 		mediaPlayer.start();
 		if (mOnPreparedListener != null) {
@@ -358,12 +243,23 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		}
 
 		playerRunner = new Runnable() {
+			@Override
 			public void run() {
-
-				System.out.println(nowPlaying);
-				System.out.println("GOING FOR IT");
-
-				initializeMediaPlayer();
+				try {
+					initializeMediaPlayer();
+				} catch (IllegalStateException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IllegalArgumentException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (SecurityException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				try {
 					playerActivity.onLoading();
 					mediaPlayer.prepareAsync();
@@ -386,31 +282,14 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 					fromUser);
 	}
 
-	public void initializeMediaPlayer() {
+	public void initializeMediaPlayer() throws IllegalStateException,
+			IllegalArgumentException, SecurityException, IOException {
 		mediaPlayer.reset();
-		try {
-			mediaPlayer.setDataSource(nowPlaying);
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		mediaPlayer.setDataSource(nowPlaying);
 	}
 
-	public boolean _pause() {
-		try {
-			mediaPlayer.pause();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	public boolean pause() throws IllegalStateException {
+		mediaPlayer.pause();
 		return true;
 	}
 
@@ -419,19 +298,40 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	}
 
 	public void setNotificationView(int view) {
-		mNotificationView = view;
-	}
-
-	public void set(String key, Object value) {
-		mKeyValuePairs.put(key, value);
-	}
-	
-	public Object get(String key) {
-		return mKeyValuePairs.get(key);
+		mNotificationView = new RemoteViews(getPackageName(), view);
 	}
 
 	public int getState() {
 		return mediaPlayer.getState();
 	}
+
+	public String getNowPlaying() {
+		return nowPlaying;
+	}
 	
+	protected Notification buildNotification() {
+		return buildNotification("Playing...", 0);
+	}
+	
+	protected Notification buildNotification(int pendingFlag) {
+		return buildNotification("Playing...", pendingFlag);
+	}
+	
+	protected Notification buildNotification(String text) {
+		return buildNotification(text, 0);
+	}
+	
+	protected Notification buildNotification(String text, int pendingFlag) {
+		Notification notification = new Notification(mNotificationIcon, text, System.currentTimeMillis());
+		
+		if (mNotificationIntentClass != null && mNotificationView != null) {
+			notification.contentView = mNotificationView;
+			notification.contentIntent = PendingIntent.getActivity(this, 0,
+					new Intent(this, mNotificationIntentClass), pendingFlag);
+			notification.flags |= Notification.FLAG_ONGOING_EVENT;
+		}
+		
+		return notification;
+	}
+
 }

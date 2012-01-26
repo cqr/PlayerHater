@@ -4,7 +4,15 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 
+import org.prx.android.playerhater.PlayerHater;
+
 import android.app.Activity;
+import android.media.MediaPlayer.OnBufferingUpdateListener;
+import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnErrorListener;
+import android.media.MediaPlayer.OnInfoListener;
+import android.media.MediaPlayer.OnPreparedListener;
+import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.os.Binder;
 import android.util.Log;
@@ -12,11 +20,14 @@ import android.util.Log;
 public class PlayerHaterBinder extends Binder implements PlayerHater {
 
 	private final PlayerHaterService mService;
+	private PlayerListenerManager mPlayerListenerManager;
 
-	public PlayerHaterBinder(PlayerHaterService service) {
+	public PlayerHaterBinder(PlayerHaterService service,
+			PlayerListenerManager playerListenerManager) {
 		mService = service;
+		mPlayerListenerManager = playerListenerManager;
 	}
-	
+
 	public PlayerHaterService getService() {
 		Log.w(PlayerHaterService.TAG,
 				"#getService() - THIS METHOD HAS BEEN DEPRECATED.");
@@ -54,8 +65,7 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 			return mService._play(fileOrUrl);
 		} else {
 			try {
-				return play((new FileInputStream(new File(fileOrUrl)))
-						.getFD());
+				return play((new FileInputStream(new File(fileOrUrl))).getFD());
 			} catch (Exception e) {
 				return false;
 			}
@@ -64,7 +74,7 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 
 	@Override
 	public String getNowPlaying() {
-		return mService._getNowPlaying();
+		return mService.getNowPlaying();
 	}
 
 	@Override
@@ -138,23 +148,49 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	}
 
 	@Override
-	public int getPosition() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void set(String key, Object value) {
-		mService.set(key, value);
-	}
-
-	@Override
-	public Object get(String key) {
-		return mService.get(key);
+	public int getCurrentPosition() {
+		return mService.getCurrentPosition();
 	}
 
 	@Override
 	public int getState() {
 		return mService.getState();
 	}
+
+	/*
+	 * We use the delegation pattern here, rather than doing things
+	 * automatically
+	 */
+	@Override
+	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
+		mPlayerListenerManager.setOnBufferingUpdateListener(listener);
+	}
+
+	@Override
+	public void setOnCompletionListener(OnCompletionListener listener) {
+		mPlayerListenerManager.setOnCompletionListener(listener);
+	}
+
+	@Override
+	public void setOnInfoListener(OnInfoListener listener) {
+		mPlayerListenerManager.setOnInfoListener(listener);
+	}
+
+	@Override
+	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
+		mPlayerListenerManager.setOnSeekCompleteListener(listener);
+	}
+
+	@Override
+	public void setOnErrorListener(OnErrorListener listener) {
+		mPlayerListenerManager.setOnErrorListener(listener);
+	}
+
+	@Override
+	public void setOnPreparedListener(OnPreparedListener listener) {
+		mPlayerListenerManager.setOnPreparedListener(listener);
+	}
+	/*
+	 * End delegated listener methods
+	 */
 }

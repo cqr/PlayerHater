@@ -3,6 +3,12 @@ package org.prx.android.playerhater;
 import java.io.FileDescriptor;
 
 import android.app.Activity;
+import android.media.MediaPlayer.OnBufferingUpdateListener;
+import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnErrorListener;
+import android.media.MediaPlayer.OnInfoListener;
+import android.media.MediaPlayer.OnPreparedListener;
+import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
 public interface PlayerHater {
@@ -29,12 +35,14 @@ public interface PlayerHater {
 	void setNotificationIntentActivity(Activity activity);
 	void setNotificationView(int notificationView);
 	
-	int getPosition();
+	int getCurrentPosition();
 	
-	void set(String key, Object value);
-	Object get(String key);
-	
-	
+	void setOnBufferingUpdateListener(OnBufferingUpdateListener listener);
+	void setOnCompletionListener(OnCompletionListener listener);
+	void setOnInfoListener(OnInfoListener listener);
+	void setOnSeekCompleteListener(OnSeekCompleteListener listener);
+	void setOnErrorListener(OnErrorListener listener);
+	void setOnPreparedListener(OnPreparedListener listener);
 	
 	String getNowPlaying();
 	boolean isPlaying();
