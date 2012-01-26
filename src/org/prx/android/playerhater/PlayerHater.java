@@ -11,6 +11,7 @@ import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
+import android.os.Bundle;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public interface PlayerHater {
@@ -50,4 +51,7 @@ public interface PlayerHater {
 	String getNowPlaying();
 	boolean isPlaying();
 	int getState();
+	
+	Bundle getBundle();
+	void commitBundle(Bundle icicle);
 }

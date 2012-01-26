@@ -16,6 +16,7 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Bundle;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class PlayerHaterBinder extends Binder implements PlayerHater {
@@ -188,5 +189,15 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	@Override
 	public void setOnProgressChangeListener(OnSeekBarChangeListener listener) {
 		// noop
+	}
+
+	@Override
+	public Bundle getBundle() {
+		return mService.getBundle();
+	}
+
+	@Override
+	public void commitBundle(Bundle icicle) {
+		mService.commitBundle(icicle);
 	}
 }

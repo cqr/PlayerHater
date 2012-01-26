@@ -14,6 +14,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -49,6 +50,8 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	private AudioManager mAudioManager;
 	private OnSeekBarChangeListener mOnSeekbarChangeListener;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
+
+	private Bundle mBundle;
 	
 	private Handler mHandler = new Handler() {
 		@Override
@@ -83,10 +86,12 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		if (mAudioManager == null)
 			mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
 		
-		if (mAudioFocusChangeListener == null) {
+		if (mAudioFocusChangeListener == null)
 			mAudioFocusChangeListener = new OnAudioFocusChangeListener(this);
-		}
 
+		if (mBundle == null)
+			mBundle = new Bundle(10);
+		
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
@@ -316,5 +321,13 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	 * default.
 	 */
 	protected void onHandlerMessage(Message m) { /* noop */
+	}
+
+	public Bundle getBundle() {
+		return mBundle;
+	}
+
+	public void commitBundle(Bundle icicle) {
+		mBundle = icicle;
 	}
 }
