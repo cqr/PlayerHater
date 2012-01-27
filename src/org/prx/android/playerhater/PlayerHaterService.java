@@ -10,6 +10,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnErrorListener;
@@ -44,6 +45,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	private MediaPlayerWrapper mediaPlayer;
 	private UpdateProgressRunnable updateProgressRunner;
 	private Thread updateProgressThread;
+	private BroadcastReceiver mBroadcastReceiver;
 	private PlayerListenerManager playerListenerManager;
 	private OnErrorListener mOnErrorListener;
 	private OnPreparedListener mOnPreparedListener;
@@ -91,6 +93,13 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 		if (mBundle == null)
 			mBundle = new Bundle(10);
+		
+		if (mBroadcastReceiver == null) {
+			mBroadcastReceiver = new BroadcastReceiver(this);
+			IntentFilter filter = new IntentFilter();
+			filter.addAction(Intent.ACTION_HEADSET_PLUG);
+			getBaseContext().registerReceiver(mBroadcastReceiver, filter);
+		}
 		
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	}
