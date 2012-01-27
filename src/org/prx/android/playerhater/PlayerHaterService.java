@@ -229,10 +229,27 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	}
 
 	public boolean play() throws IllegalStateException, IOException {
+		
+		switch(mediaPlayer.getState()) {
+		case MediaPlayerWrapper.INITIALIZED:
+		case MediaPlayerWrapper.STOPPED:
+			performPrepare();
+			break;
+		case MediaPlayerWrapper.PREPARED:
+		case MediaPlayerWrapper.PAUSED:
+			mediaPlayer.start();
+			break;
+		default:
+			throw new IllegalStateException();
+		}
+		return true;
+		
+	}
+
+	private void performPrepare() {
 		Log.d(TAG, "Starting preparation of: " + getNowPlaying());
-
 		mediaPlayer.prepareAsync();
-
+		
 		if (updateProgressThread != null && updateProgressThread.isAlive()) {
 			mHandler.removeCallbacks(updateProgressRunner);
 			updateProgressThread.interrupt();
@@ -241,8 +258,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 		updateProgressThread = new Thread(updateProgressRunner);
 		updateProgressThread.start();
-
-		return true;
 	}
 
 	public boolean stop() {
