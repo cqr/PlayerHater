@@ -8,7 +8,8 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 
 public class PlayerListenerManager {
-
+	
+	
 	private OnErrorListener mOnErrorListener;
 	private OnBufferingUpdateListener mOnBufferingUpdateListener;
 	private OnCompletionListener mOnCompletionListener;
@@ -17,6 +18,7 @@ public class PlayerListenerManager {
 	private OnSeekCompleteListener mOnSeekCompleteListener;
 
 	private MediaPlayerWrapper mMediaPlayer;
+	private OnPlayerStateChangeListener mOnPlayerStateChangeListener;
 
 	public void setMediaPlayer(MediaPlayerWrapper mediaPlayer) {
 		mMediaPlayer = mediaPlayer;
@@ -86,5 +88,26 @@ public class PlayerListenerManager {
 
 	private void setOnErrorListener() {
 		mMediaPlayer.setOnErrorListener(mOnErrorListener);
+	}
+
+	// Meta!
+	public void setOnPlayerStateChangeListener(
+			OnPlayerStateChangeListener listener) {
+		mOnPlayerStateChangeListener = listener;
+	}
+	
+	public void onLoading() {
+		if (mOnPlayerStateChangeListener != null)
+			mOnPlayerStateChangeListener.onLoading();
+	}
+	
+	public void onPause() {
+		if (mOnPlayerStateChangeListener != null)
+			mOnPlayerStateChangeListener.onPaused();
+	}
+	
+	public void onPlaying() {
+		if (mOnPlayerStateChangeListener != null)
+			mOnPlayerStateChangeListener.onPlaying();
 	}
 }

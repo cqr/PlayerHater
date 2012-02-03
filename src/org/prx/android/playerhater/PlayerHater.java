@@ -35,6 +35,11 @@ public interface PlayerHater {
 	boolean play(Uri url, Activity activityTriggeredOnNotificationTouch) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	boolean play(Uri url, Activity activityTriggeredOnNotificationTouch, int notificationView) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	
+	void transientPlay(String fileOrUrl);
+	void transientPlay(String fileOrUrl, boolean isDuckable);
+	void transientPlay(FileDescriptor file);
+	void transientPlay(FileDescriptor file, boolean isDuckable);
+	
 	void setNotificationIntentActivity(Activity activityTriggeredOnNotificationTouch);
 	void setNotificationView(int notificationView);
 	
@@ -54,4 +59,6 @@ public interface PlayerHater {
 	
 	Bundle getBundle();
 	void commitBundle(Bundle icicle);
+
+	void setPlayerHaterListener(PlayerHaterListener listener);
 }

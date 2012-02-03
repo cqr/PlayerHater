@@ -52,6 +52,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	private AudioManager mAudioManager;
 	private OnSeekBarChangeListener mOnSeekbarChangeListener;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
+	private OnPlayerStateChangeListener mOnPlayerStateChangeListener;
 
 	private Bundle mBundle;
 	
@@ -353,5 +354,13 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 	public void commitBundle(Bundle icicle) {
 		mBundle = icicle;
+	}
+
+	public void transientPlay(FileDescriptor file, boolean isDuckable) {
+		TransientPlayer.play(this, file, isDuckable);
+	}
+
+	public void transientPlay(String url, boolean isDuckable) {
+		TransientPlayer.play(this, url, isDuckable);
 	}
 }

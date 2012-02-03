@@ -181,7 +181,14 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public void setOnPreparedListener(OnPreparedListener listener) {
 		mPlayerListenerManager.setOnPreparedListener(listener);
 	}
-
+	
+	@Override
+	public void setPlayerHaterListener(PlayerHaterListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
 	/*
 	 * End delegated listener methods
 	 */
@@ -199,5 +206,29 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	@Override
 	public void commitBundle(Bundle icicle) {
 		mService.commitBundle(icicle);
+	}
+
+	@Override
+	public void transientPlay(String fileOrUrl) {
+		transientPlay(fileOrUrl, false);
+	}
+
+	@Override
+	public void transientPlay(String fileOrUrl, boolean isDuckable) {
+		if (fileOrUrl.charAt(0) == '/') {
+			transientPlay((new FileInputStream(new File(fileOrUrl))).getFD(), isDuckable);
+		} else {
+			mService.transientPlay(fileOrUrl, isDuckable);
+		}
+	}
+
+	@Override
+	public void transientPlay(FileDescriptor file) {
+		transientPlay(file, false);
+	}
+
+	@Override
+	public void transientPlay(FileDescriptor file, boolean isDuckable) {
+		mService.transientPlay(file, isDuckable);
 	}
 }
