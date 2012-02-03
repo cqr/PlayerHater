@@ -3,6 +3,7 @@ package org.prx.android.playerhater;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.prx.android.playerhater.PlayerHater;
@@ -216,7 +217,12 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	@Override
 	public void transientPlay(String fileOrUrl, boolean isDuckable) {
 		if (fileOrUrl.charAt(0) == '/') {
-			transientPlay((new FileInputStream(new File(fileOrUrl))).getFD(), isDuckable);
+			try {
+				transientPlay((new FileInputStream(new File(fileOrUrl))).getFD(), isDuckable);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		} else {
 			mService.transientPlay(fileOrUrl, isDuckable);
 		}

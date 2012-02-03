@@ -52,7 +52,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	private AudioManager mAudioManager;
 	private OnSeekBarChangeListener mOnSeekbarChangeListener;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
-	private OnPlayerStateChangeListener mOnPlayerStateChangeListener;
 
 	private Bundle mBundle;
 	
