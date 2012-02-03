@@ -3,9 +3,16 @@ package org.prx.android.playerhater;
 import android.media.AudioManager;
 
 public class OnAudioFocusChangeListener implements
-		android.media.AudioManager.OnAudioFocusChangeListener {
+		AudioManager.OnAudioFocusChangeListener {
+
+	// 5 seconds
+	public static final int REWIND_ON_RESUME_DURATION = 5000;
+
+	// 5 minutes
+	public static final int SKIP_RESUME_AFTER_DURATION = 300000;
 
 	private PlayerHaterService mService;
+	private long pausedAt;
 	private boolean isBeingDucked;
 
 	public OnAudioFocusChangeListener(PlayerHaterService service) {
@@ -20,10 +27,13 @@ public class OnAudioFocusChangeListener implements
 			// Good, glad to hear it.
 			if (isBeingDucked && !mService.isPlaying()) {
 				isBeingDucked = false;
-				try {
-					mService.play();
-				} catch (Exception e) {
-					// Probably illegal state, don't care.
+				if (pausedAt + (SKIP_RESUME_AFTER_DURATION) > System
+						.currentTimeMillis()) {
+					try {
+						mService.play();
+					} catch (Exception e) {
+						// Probably illegal state, don't care.
+					}
 				}
 			}
 			break;
@@ -37,9 +47,11 @@ public class OnAudioFocusChangeListener implements
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
 			// Let's pause, expecting it to come back.
 			if (mService.isPlaying()) {
+				pausedAt = System.currentTimeMillis();
 				isBeingDucked = true;
 				mService.pause();
-				mService.seekTo(Math.max(0, mService.getCurrentPosition() - 3000));
+				mService.seekTo(Math.max(0, mService.getCurrentPosition()
+						- REWIND_ON_RESUME_DURATION));
 			}
 			break;
 		default:
