@@ -48,12 +48,15 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	private BroadcastReceiver mBroadcastReceiver;
 	private PlayerListenerManager playerListenerManager;
 	private OnErrorListener mOnErrorListener;
+	private OnSeekCompleteListener mOnSeekCompleteListener;
 	private OnPreparedListener mOnPreparedListener;
 	private AudioManager mAudioManager;
 	private PlayerHaterListener mPlayerHaterListener;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
 
 	private Bundle mBundle;
+	
+	private boolean playAfterSeek;
 
 	private Handler mHandler = new Handler() {
 		@Override
@@ -68,7 +71,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			}
 		}
 	};
-	private boolean playAfterSeek;
 
 	@Override
 	public void onStart(Intent intent, int startId) {
@@ -110,61 +112,9 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
-	/*
-	 * We override a couple of methods in PlayerHaterBinder so that we can see
-	 * MediaPlayer onError and onPrepared events
-	 */
 	@Override
 	public IBinder onBind(Intent arg0) {
-		return new PlayerHaterBinder(this, playerListenerManager) {
-			@Override
-			public void setOnErrorListener(OnErrorListener listener) {
-				mOnErrorListener = listener;
-			}
-
-			@Override
-			public void setOnPreparedListener(OnPreparedListener listener) {
-				mOnPreparedListener = listener;
-			}
-		};
-	}
-
-	/*
-	 * Oh, snap Ð we're blowing up!
-	 */
-	@Override
-	public boolean onError(MediaPlayer mp, int what, int extra) {
-		Log.e(TAG, "Got MediaPlayer error: " + what + " / " + extra);
-		if (updateProgressThread != null && updateProgressThread.isAlive()) {
-			mHandler.removeCallbacks(updateProgressRunner);
-			updateProgressThread.interrupt();
-			updateProgressThread = null;
-		}
-		if (mOnErrorListener != null) {
-			Log.e(TAG, "Passing error along.");
-			return mOnErrorListener.onError(mp, what, extra);
-		}
-		return false;
-	}
-
-	/*
-	 * We register ourselves to listen to the onPrepared event so we can start
-	 * playing immediately.
-	 */
-	@Override
-	public void onPrepared(MediaPlayer mp) {
-		Log.d(TAG, "MediaPlayer is prepared, beginning playback of "
-				+ getNowPlaying());
-		mediaPlayer.start();
-		sendIsPlaying();
-
-		mAudioManager.requestAudioFocus(mAudioFocusChangeListener,
-				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-
-		if (mOnPreparedListener != null) {
-			Log.d(TAG, "Passing prepared along.");
-			mOnPreparedListener.onPrepared(mp);
-		}
+		return new PlayerHaterBinder(this, playerListenerManager);
 	}
 
 	public boolean pause() throws IllegalStateException {
@@ -290,6 +240,77 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		sendIsStopped();
 		return true;
 	}
+	
+	/*
+	 * THE BUNDLE
+	 */
+	
+	public Bundle getBundle() {
+		return mBundle;
+	}
+
+	public void commitBundle(Bundle icicle) {
+		mBundle = icicle;
+	}
+	
+	/*
+	 * We proxy these events.
+	 */
+	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
+		mOnSeekCompleteListener = listener;
+	}
+	
+	@Override
+	public void onSeekComplete(MediaPlayer mp) {
+		if (playAfterSeek) {
+			try {
+				play();
+			} catch (Exception e) {
+				//oof.
+			}
+		}
+		if (mOnSeekCompleteListener != null)
+			mOnSeekCompleteListener.onSeekComplete(mp);
+	}
+
+	public void setOnPreparedListener(OnPreparedListener listener) {
+		mOnPreparedListener = listener;
+	}
+	
+	@Override
+	public void onPrepared(MediaPlayer mp) {
+		Log.d(TAG, "MediaPlayer is prepared, beginning playback of "
+				+ getNowPlaying());
+		mediaPlayer.start();
+		sendIsPlaying();
+
+		mAudioManager.requestAudioFocus(mAudioFocusChangeListener,
+				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+
+		if (mOnPreparedListener != null) {
+			Log.d(TAG, "Passing prepared along.");
+			mOnPreparedListener.onPrepared(mp);
+		}
+	}
+
+	public void setOnErrorListener(OnErrorListener listener) {
+		mOnErrorListener = listener;
+	}
+	
+	@Override
+	public boolean onError(MediaPlayer mp, int what, int extra) {
+		Log.e(TAG, "Got MediaPlayer error: " + what + " / " + extra);
+		if (updateProgressThread != null && updateProgressThread.isAlive()) {
+			mHandler.removeCallbacks(updateProgressRunner);
+			updateProgressThread.interrupt();
+			updateProgressThread = null;
+		}
+		if (mOnErrorListener != null) {
+			Log.e(TAG, "Passing error along.");
+			return mOnErrorListener.onError(mp, what, extra);
+		}
+		return false;
+	}
 
 	/*
 	 * These methods concern the creation of notifications. They should be
@@ -360,15 +381,10 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	 */
 	protected void onHandlerMessage(Message m) { /* noop */
 	}
-
-	public Bundle getBundle() {
-		return mBundle;
-	}
-
-	public void commitBundle(Bundle icicle) {
-		mBundle = icicle;
-	}
-
+	
+	/*
+	 * These are the events we send back to PlayerHaterListener;
+	 */
 	private void sendIsPlaying() {
 		sendIsPlaying(getCurrentPosition());
 	}
@@ -402,15 +418,4 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		mPlayerHaterListener = listener;
 	}
 
-	@Override
-	public void onSeekComplete(MediaPlayer mp) {
-		if (playAfterSeek) {
-			try {
-				play();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
 }

@@ -168,17 +168,17 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 
 	@Override
 	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-		mPlayerListenerManager.setOnSeekCompleteListener(listener);
+		mService.setOnSeekCompleteListener(listener);
 	}
 
 	@Override
 	public void setOnErrorListener(OnErrorListener listener) {
-		mPlayerListenerManager.setOnErrorListener(listener);
+		mService.setOnErrorListener(listener);
 	}
 
 	@Override
 	public void setOnPreparedListener(OnPreparedListener listener) {
-		mPlayerListenerManager.setOnPreparedListener(listener);
+		mService.setOnPreparedListener(listener);
 	}
 	
 	@Override
