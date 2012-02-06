@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.prx.android.playerhater;
 
 import java.io.FileDescriptor;
@@ -19,8 +16,6 @@ import android.net.Uri;
 public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		OnCompletionListener, OnErrorListener, OnInfoListener,
 		OnPreparedListener, OnSeekCompleteListener {
-
-	private static final String TAG = "PlayerHater/Wrapper";
 
 	private MediaPlayer mMediaPlayer;
 
@@ -156,10 +151,8 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	public void setDataSource(FileDescriptor fd) throws IllegalStateException,
 			IOException, IllegalArgumentException, SecurityException {
 		try {
-			logState("setDataSource:" + fd.toString());
 			this.mMediaPlayer.setDataSource(fd);
 			this.mState = INITIALIZED;
-			logDone("setDataSource");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -211,32 +204,26 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	@Override
 	public void onBufferingUpdate(MediaPlayer mp, int percent) {
-		logState("onBufferingUpdate");
 		if (this.mBufferingUpdateListener != null) {
 			this.mBufferingUpdateListener.onBufferingUpdate(mp, percent);
 		}
-		logDone("onBufferingUpdate");
 	}
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		logState("onCompletion");
 		this.mState = PLAYBACK_COMPLETED;
 		if (this.mCompletionListener != null) {
 			this.mCompletionListener.onCompletion(mp);
 		}
-		logDone("onCompletion");
 	}
 
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		logState("onError");
 		this.mState = ERROR;
 		Boolean response = false;
 		if (this.mErrorListener != null) {
 			response = this.mErrorListener.onError(mp, what, extra);
 		}
-		logDone("onError");
 		return response;
 	}
 
@@ -250,27 +237,17 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	@Override
 	public void onPrepared(MediaPlayer mp) {
-		logState("onPrepared");
 		this.mState = PREPARED;
 		if (this.mPreparedListener != null) {
 			this.mPreparedListener.onPrepared(mp);
 		}
-		logDone("onPrepared");
 	}
 
 	@Override
 	public void onSeekComplete(MediaPlayer mp) {
-		logState("onSeekComplete");
 		this.mState = this.mPrevState;
 		if (this.mSeekCompleteListener != null) {
 			this.mSeekCompleteListener.onSeekComplete(mp);
 		}
-		logDone("onSeekComplete");
-	}
-
-	private void logState(String caller) {
-	}
-
-	private void logDone(String caller) {
 	}
 }
