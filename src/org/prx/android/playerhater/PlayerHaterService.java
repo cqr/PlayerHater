@@ -265,7 +265,8 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		if (getState() == MediaPlayerWrapper.STARTED)
 			playAfterSeek = true;
 
-		pause();
+		mediaPlayer.pause();
+		sendIsLoading();
 		mediaPlayer.seekTo(pos);
 	}
 
