@@ -16,10 +16,6 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
-/**
- * @author chris
- * 
- */
 public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		OnCompletionListener, OnErrorListener, OnInfoListener,
 		OnPreparedListener, OnSeekCompleteListener {

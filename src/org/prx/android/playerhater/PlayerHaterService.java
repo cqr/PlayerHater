@@ -15,6 +15,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -23,7 +24,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 public class PlayerHaterService extends Service implements OnErrorListener,
-		OnPreparedListener {
+		OnPreparedListener, OnSeekCompleteListener {
 
 	protected static final String TAG = "PlayerHater/Service";
 	protected static final int PROGRESS_UPDATE = 9747244;
@@ -67,6 +68,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			}
 		}
 	};
+	private boolean playAfterSeek;
 
 	@Override
 	public void onStart(Intent intent, int startId) {
@@ -258,6 +260,12 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	}
 
 	public void seekTo(int pos) {
+		playAfterSeek = false;
+
+		if (getState() == MediaPlayerWrapper.STARTED)
+			playAfterSeek = true;
+
+		pause();
 		mediaPlayer.seekTo(pos);
 	}
 
@@ -339,6 +347,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			PlayerHaterService svc) {
 		PlayerListenerManager mgr = new PlayerListenerManager();
 		mgr.setOnErrorListener(svc);
+		mgr.setOnSeekCompleteListener(svc);
 		mgr.setOnPreparedListener(svc);
 		return mgr;
 	}
@@ -358,13 +367,14 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void commitBundle(Bundle icicle) {
 		mBundle = icicle;
 	}
-	
+
 	private void sendIsPlaying() {
 		sendIsPlaying(getCurrentPosition());
 	}
-	
+
 	private void sendIsPlaying(int progress) {
-		if (progress > 0 && getState() == MediaPlayerWrapper.STARTED && mPlayerHaterListener != null) {
+		if (progress > 0 && getState() == MediaPlayerWrapper.STARTED
+				&& mPlayerHaterListener != null) {
 			mPlayerHaterListener.onPlaying(progress);
 		}
 	}
@@ -389,5 +399,17 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 	public void setListener(PlayerHaterListener listener) {
 		mPlayerHaterListener = listener;
+	}
+
+	@Override
+	public void onSeekComplete(MediaPlayer mp) {
+		if (playAfterSeek) {
+			try {
+				play();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }
