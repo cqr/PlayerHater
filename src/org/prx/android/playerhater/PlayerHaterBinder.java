@@ -17,7 +17,6 @@ import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class PlayerHaterBinder extends Binder implements PlayerHater {
 
@@ -183,20 +182,14 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	}
 	
 	@Override
-	public void setPlayerHaterListener(PlayerHaterListener listener) {
-		// TODO Auto-generated method stub
-		
+	public void setListener(PlayerHaterListener listener) {
+		//XXX
 	}
 	
 	
 	/*
 	 * End delegated listener methods
 	 */
-
-	@Override
-	public void setOnProgressChangeListener(OnSeekBarChangeListener listener) {
-		// noop
-	}
 
 	@Override
 	public Bundle getBundle() {
@@ -219,7 +212,6 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 			try {
 				transientPlay((new FileInputStream(new File(fileOrUrl))).getFD(), isDuckable);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else {

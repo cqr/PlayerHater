@@ -21,7 +21,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class PlayerHaterService extends Service implements OnErrorListener,
 		OnPreparedListener {
@@ -50,7 +49,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	private OnErrorListener mOnErrorListener;
 	private OnPreparedListener mOnPreparedListener;
 	private AudioManager mAudioManager;
-	private OnSeekBarChangeListener mOnSeekbarChangeListener;
+	private PlayerHaterListener mPlayerHaterListener;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
 
 	private Bundle mBundle;
@@ -61,9 +60,8 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 			switch (m.what) {
 			case PROGRESS_UPDATE:
-				if (mOnSeekbarChangeListener != null)
-					mOnSeekbarChangeListener.onProgressChanged(null, m.arg1,
-							false);
+				if (mPlayerHaterListener != null)
+					mPlayerHaterListener.onPlaying(m.arg1);
 				break;
 			default:
 				onHandlerMessage(m);
@@ -76,23 +74,31 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void onStart(Intent intent, int startId) {
 		super.onStart(intent, startId);
 
-		if (playerListenerManager == null)
-			createPlayerListenerManager();
+		if (playerListenerManager == null) {
+			playerListenerManager = createPlayerListenerManager(this);
+		}
 
-		if (mediaPlayer == null)
-			createMediaPlayer();
+		if (mediaPlayer == null) {
+			mediaPlayer = createMediaPlayer();
+			playerListenerManager.setMediaPlayer(mediaPlayer);
+		}
 
-		if (updateProgressRunner == null)
-			createUpdateProgressRunner();
+		if (updateProgressRunner == null) {
+			updateProgressRunner = createUpdateProgressRunner(mediaPlayer, mHandler);
+		}
+			
 	
-		if (mAudioManager == null)
+		if (mAudioManager == null) {
 			mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+		}
 		
-		if (mAudioFocusChangeListener == null)
+		if (mAudioFocusChangeListener == null) {
 			mAudioFocusChangeListener = new OnAudioFocusChangeListener(this);
+		}
 
-		if (mBundle == null)
+		if (mBundle == null) {
 			mBundle = new Bundle(10);
+		}
 		
 		if (mBroadcastReceiver == null) {
 			mBroadcastReceiver = new BroadcastReceiver(this);
@@ -119,12 +125,6 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			@Override
 			public void setOnPreparedListener(OnPreparedListener listener) {
 				mOnPreparedListener = listener;
-			}
-
-			@Override
-			public void setOnProgressChangeListener(
-					OnSeekBarChangeListener listener) {
-				mOnSeekbarChangeListener = listener;
 			}
 		};
 	}
@@ -155,6 +155,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void onPrepared(MediaPlayer mp) {
 		Log.d(TAG, "MediaPlayer is prepared, beginning playback of " + getNowPlaying());
 		mediaPlayer.start();
+		sendIsPlaying();
 		
 		mAudioManager.requestAudioFocus(mAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 		
@@ -214,6 +215,38 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		mediaPlayer.setDataSource(nowPlayingFile);
 		return play();
 	}
+	
+	public boolean play() throws IllegalStateException, IOException {
+		
+		switch(mediaPlayer.getState()) {
+		case MediaPlayerWrapper.INITIALIZED:
+		case MediaPlayerWrapper.STOPPED:
+			performPrepare();
+			break;
+		case MediaPlayerWrapper.PREPARED:
+		case MediaPlayerWrapper.PAUSED:
+			mediaPlayer.start();
+			sendIsPlaying();
+			break;
+		default:
+			throw new IllegalStateException();
+		}
+		return true;
+		
+	}
+	
+	public void transientPlay(FileDescriptor file, boolean isDuckable) {
+		TransientPlayer.play(this, file, isDuckable);
+	}
+
+	public void transientPlay(String url, boolean isDuckable) {
+		TransientPlayer.play(this, url, isDuckable);
+	}
+	
+	private void reset() {
+		Log.d(TAG, "Resetting media player.");
+		mediaPlayer.reset();
+	}
 
 	public int getDuration() {
 		return this.mediaPlayer.getDuration();
@@ -227,36 +260,10 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		mediaPlayer.seekTo(pos);
 	}
 
-	public void rewind() {
-		int pos = mediaPlayer.getCurrentPosition();
-		mediaPlayer.seekTo(pos - 30000);
-	}
-
-	public void skipForward() {
-		int pos = mediaPlayer.getCurrentPosition();
-		mediaPlayer.seekTo(pos + 30000);
-	}
-
-	public boolean play() throws IllegalStateException, IOException {
-		
-		switch(mediaPlayer.getState()) {
-		case MediaPlayerWrapper.INITIALIZED:
-		case MediaPlayerWrapper.STOPPED:
-			performPrepare();
-			break;
-		case MediaPlayerWrapper.PREPARED:
-		case MediaPlayerWrapper.PAUSED:
-			mediaPlayer.start();
-			break;
-		default:
-			throw new IllegalStateException();
-		}
-		return true;
-		
-	}
 
 	private void performPrepare() {
 		Log.d(TAG, "Starting preparation of: " + getNowPlaying());
+		sendIsLoading();
 		mediaPlayer.prepareAsync();
 		
 		if (updateProgressThread != null && updateProgressThread.isAlive()) {
@@ -271,6 +278,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 	public boolean stop() {
 		mediaPlayer.stop();
+		sendIsStopped();
 		return true;
 	}
 
@@ -309,9 +317,8 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	 * creates a media player (wrapped, of course) and registers the listeners
 	 * for all of the events.
 	 */
-	private void createMediaPlayer() {
-		mediaPlayer = new MediaPlayerWrapper();
-		playerListenerManager.setMediaPlayer(mediaPlayer);
+	private static MediaPlayerWrapper createMediaPlayer() {
+		return new MediaPlayerWrapper();		
 	}
 
 	/*
@@ -319,24 +326,20 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	 * class' handler with the message we request and the duration which has
 	 * passed
 	 */
-	private void createUpdateProgressRunner() {
-		updateProgressRunner = new UpdateProgressRunnable(mediaPlayer,
-				mHandler, PROGRESS_UPDATE);
+	private static UpdateProgressRunnable createUpdateProgressRunner(MediaPlayerWrapper mediaPlayer, Handler handler) {
+		return  new UpdateProgressRunnable(mediaPlayer,
+				handler, PROGRESS_UPDATE);
 	}
 
 	/*
 	 * This class basically just makes sure that we never need to re-bind
 	 * ourselves.
 	 */
-	private void createPlayerListenerManager() {
-		playerListenerManager = new PlayerListenerManager();
-		playerListenerManager.setOnErrorListener(this);
-		playerListenerManager.setOnPreparedListener(this);
-	}
-	
-	private void reset() {
-		Log.d(TAG, "Resetting media player.");
-		mediaPlayer.reset();
+	private static PlayerListenerManager createPlayerListenerManager(PlayerHaterService svc) {
+		PlayerListenerManager mgr = new PlayerListenerManager();
+		mgr.setOnErrorListener(svc);
+		mgr.setOnPreparedListener(svc);
+		return mgr;
 	}
 
 	/*
@@ -354,12 +357,32 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void commitBundle(Bundle icicle) {
 		mBundle = icicle;
 	}
-
-	public void transientPlay(FileDescriptor file, boolean isDuckable) {
-		TransientPlayer.play(this, file, isDuckable);
+	
+	private void sendIsPlaying() {
+		sendIsPlaying(0);
+	}
+	
+	private void sendIsPlaying(int progress) {
+		if (mPlayerHaterListener != null) {
+			mPlayerHaterListener.onPlaying(progress);
+		}
 	}
 
-	public void transientPlay(String url, boolean isDuckable) {
-		TransientPlayer.play(this, url, isDuckable);
+	private void sendIsLoading() {
+		if (mPlayerHaterListener != null) {
+			mPlayerHaterListener.onLoading();
+		}
+	}
+	
+	private void sendIsPaused() {
+		if (mPlayerHaterListener != null) {
+			mPlayerHaterListener.onPaused();
+		}
+	}
+	
+	private void sendIsStopped() {
+		if (mPlayerHaterListener != null) {
+			mPlayerHaterListener.onStopped();
+		}
 	}
 }

@@ -28,7 +28,6 @@ public class UpdateProgressRunnable implements Runnable {
 				try {
 					Message m = Message.obtain(mHandler, mMessage,
 							mMediaPlayer.getCurrentPosition(), 0);
-					// Log.d(TAG, "got message");
 					m.sendToTarget();
 				} catch (IllegalStateException ise) {
 					Log.d(TAG,
