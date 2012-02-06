@@ -60,8 +60,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 			switch (m.what) {
 			case PROGRESS_UPDATE:
-				if (mPlayerHaterListener != null)
-					mPlayerHaterListener.onPlaying(m.arg1);
+				sendIsPlaying(m.arg1);
 				break;
 			default:
 				onHandlerMessage(m);
