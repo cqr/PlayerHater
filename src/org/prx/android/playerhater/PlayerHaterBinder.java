@@ -183,7 +183,7 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	
 	@Override
 	public void setListener(PlayerHaterListener listener) {
-		//XXX
+		mService.setListener(listener);
 	}
 	
 	

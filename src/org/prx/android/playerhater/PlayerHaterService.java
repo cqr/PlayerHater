@@ -385,4 +385,8 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			mPlayerHaterListener.onStopped();
 		}
 	}
+
+	public void setListener(PlayerHaterListener listener) {
+		mPlayerHaterListener = listener;
+	}
 }
