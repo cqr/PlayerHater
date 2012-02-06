@@ -43,6 +43,7 @@ public interface PlayerHater {
 	void setNotificationView(int notificationView);
 	
 	int getCurrentPosition();
+	int getDuration();
 	
 	void setOnBufferingUpdateListener(OnBufferingUpdateListener listener);
 	void setOnCompletionListener(OnCompletionListener listener);

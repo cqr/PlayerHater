@@ -166,6 +166,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 	public boolean pause() throws IllegalStateException {
 		mediaPlayer.pause();
+		sendIsPaused();
 		return true;
 	}
 

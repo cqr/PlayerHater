@@ -228,4 +228,9 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public void transientPlay(FileDescriptor file, boolean isDuckable) {
 		mService.transientPlay(file, isDuckable);
 	}
+
+	@Override
+	public int getDuration() {
+		return mService.getDuration();
+	}
 }
