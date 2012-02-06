@@ -15,7 +15,6 @@ import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
-import android.util.Log;
 
 /**
  * @author chris
@@ -99,7 +98,6 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 			this.mMediaPlayer.start();
 			this.mState = STARTED;
 		} else {
-			Log.d(TAG, "IN START, state is " + this.mState);
 			throw (new IllegalStateException());
 		}
 	}
@@ -109,7 +107,6 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 			this.mMediaPlayer.pause();
 			this.mState = PAUSED;
 		} else {
-			Log.d(TAG, "IN PAUSE, state is " + this.mState);
 			throw (new IllegalStateException());
 		}
 	}
@@ -168,7 +165,6 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 			this.mState = INITIALIZED;
 			logDone("setDataSource");
 		} catch (Exception e) {
-			Log.d(TAG, "Set data source exception");
 			e.printStackTrace();
 		}
 	}
@@ -277,12 +273,8 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	}
 
 	private void logState(String caller) {
-		Log.d(TAG, "Entering " + caller);
-		Log.d(TAG, "State is " + mState + " and prev state is " + mPrevState);
 	}
 
 	private void logDone(String caller) {
-		Log.d(TAG, "State is " + mState + " and prev state is " + mPrevState);
-		Log.d(TAG, "Exiting " + caller);
 	}
 }
