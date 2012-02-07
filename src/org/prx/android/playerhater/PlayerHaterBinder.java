@@ -45,12 +45,15 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	}
 
 	@Override
-	public boolean play(String fileOrUrl) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+	public boolean play(String fileOrUrl) throws IllegalStateException,
+			IllegalArgumentException, SecurityException, IOException {
 		return play(fileOrUrl, fileOrUrl.charAt(0) != '/');
 	}
 
 	@Override
-	public boolean play(String fileOrUrl, boolean isUrl) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+	public boolean play(String fileOrUrl, boolean isUrl)
+			throws IllegalStateException, IllegalArgumentException,
+			SecurityException, IOException {
 		if (isUrl) {
 			return mService.play(fileOrUrl);
 		} else {
@@ -73,36 +76,46 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	}
 
 	@Override
-	public boolean play(String fileOrUrl, boolean isUrl, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+	public boolean play(String fileOrUrl, boolean isUrl, Activity activity)
+			throws IllegalStateException, IllegalArgumentException,
+			SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		return play(fileOrUrl, isUrl);
 	}
 
 	@Override
-	public boolean play(FileDescriptor fd) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+	public boolean play(FileDescriptor fd) throws IllegalStateException,
+			IllegalArgumentException, SecurityException, IOException {
 		return mService.play(fd);
 	}
 
 	@Override
-	public boolean play(FileDescriptor fd, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+	public boolean play(FileDescriptor fd, Activity activity)
+			throws IllegalStateException, IllegalArgumentException,
+			SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		return play(fd);
 	}
 
 	@Override
-	public boolean play(FileDescriptor fd, Activity activity, int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+	public boolean play(FileDescriptor fd, Activity activity, int view)
+			throws IllegalStateException, IllegalArgumentException,
+			SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		setNotificationView(view);
 		return play(fd);
 	}
 
 	@Override
-	public boolean play(Uri url) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+	public boolean play(Uri url) throws IllegalStateException,
+			IllegalArgumentException, SecurityException, IOException {
 		return play(url.toString(), true);
 	}
 
 	@Override
-	public boolean play(Uri url, Activity activity) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+	public boolean play(Uri url, Activity activity)
+			throws IllegalStateException, IllegalArgumentException,
+			SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		return play(url);
 	}
@@ -119,14 +132,17 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 
 	@Override
 	public boolean play(String fileOrUrl, boolean isUrl, Activity activity,
-			int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+			int view) throws IllegalStateException, IllegalArgumentException,
+			SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		setNotificationView(view);
 		return play(fileOrUrl, isUrl);
 	}
 
 	@Override
-	public boolean play(Uri url, Activity activity, int view) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+	public boolean play(Uri url, Activity activity, int view)
+			throws IllegalStateException, IllegalArgumentException,
+			SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		setNotificationView(view);
 		return play(url);
@@ -180,13 +196,12 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public void setOnPreparedListener(OnPreparedListener listener) {
 		mService.setOnPreparedListener(listener);
 	}
-	
+
 	@Override
 	public void setListener(PlayerHaterListener listener) {
 		mService.setListener(listener);
 	}
-	
-	
+
 	/*
 	 * End delegated listener methods
 	 */
@@ -210,7 +225,9 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public void transientPlay(String fileOrUrl, boolean isDuckable) {
 		if (fileOrUrl.charAt(0) == '/') {
 			try {
-				transientPlay((new FileInputStream(new File(fileOrUrl))).getFD(), isDuckable);
+				transientPlay(
+						(new FileInputStream(new File(fileOrUrl))).getFD(),
+						isDuckable);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

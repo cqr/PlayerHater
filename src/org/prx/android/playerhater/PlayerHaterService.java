@@ -338,6 +338,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 			notification.contentIntent = PendingIntent.getActivity(this, 0,
 					new Intent(this, mNotificationIntentClass), pendingFlag);
 			notification.flags |= Notification.FLAG_ONGOING_EVENT;
+			notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;
 		}
 
 		return notification;
@@ -416,6 +417,14 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 	public void setListener(PlayerHaterListener listener) {
 		mPlayerHaterListener = listener;
+	}
+	
+	public void duck() {
+		mediaPlayer.setVolume(0.5f, 0.5f);
+	}
+
+	public void unduck() {
+		mediaPlayer.setVolume(1.0f, 1.0f);
 	}
 
 }

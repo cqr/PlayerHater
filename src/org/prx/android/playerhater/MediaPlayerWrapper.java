@@ -250,4 +250,8 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 			this.mSeekCompleteListener.onSeekComplete(mp);
 		}
 	}
+
+	public void setVolume(float leftVolume, float rightVolume) {
+		mMediaPlayer.setVolume(leftVolume, rightVolume);
+	}
 }
