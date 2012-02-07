@@ -9,8 +9,6 @@ import android.media.MediaPlayer.OnCompletionListener;
 
 public class TransientPlayer {
 
-	private static final String TAG = "TransientPlayer";
-
 	public static void play(Context c, String url, boolean isDuckable) {
 		new TransientPlayer(c, url, isDuckable).play();
 	}
@@ -65,7 +63,7 @@ public class TransientPlayer {
 		@Override
 		public void run() {
 
-			wrapper.setAudioStreamType(AudioManager.STREAM_NOTIFICATION);
+			wrapper.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
 			try {
 				switch (playType) {
@@ -104,7 +102,7 @@ public class TransientPlayer {
 
 			});
 
-			int status = audioManager.requestAudioFocus(audioFocusListener, AudioManager.STREAM_NOTIFICATION, getDurationHint());
+			int status = audioManager.requestAudioFocus(audioFocusListener, AudioManager.STREAM_MUSIC, getDurationHint());
 
 			if (status == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
 				wrapper.start();

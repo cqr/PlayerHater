@@ -1,6 +1,7 @@
 package org.prx.android.playerhater;
 
 import android.media.AudioManager;
+import android.util.Log;
 
 public class OnAudioFocusChangeListener implements
 		AudioManager.OnAudioFocusChangeListener {
@@ -10,6 +11,8 @@ public class OnAudioFocusChangeListener implements
 
 	// 5 minutes
 	public static final int SKIP_RESUME_AFTER_DURATION = 300000;
+
+	private static final String TAG = "PlayerHater/FocusChange";
 
 	private PlayerHaterService mService;
 	private long pausedAt;
@@ -24,6 +27,8 @@ public class OnAudioFocusChangeListener implements
 
 	@Override
 	public void onAudioFocusChange(int focusChange) {
+		Log.d(TAG, ""+focusChange);
+		
 		switch (focusChange) {
 		case AudioManager.AUDIOFOCUS_GAIN:
 			// Good, glad to hear it.
@@ -40,6 +45,7 @@ public class OnAudioFocusChangeListener implements
 			}
 			
 			if (isBeingDucked) {
+				isBeingDucked = false;
 				mService.unduck();
 			}
 			break;

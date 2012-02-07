@@ -420,10 +420,12 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	}
 	
 	public void duck() {
-		mediaPlayer.setVolume(0.5f, 0.5f);
+		Log.d(TAG, "Ducking...");
+		mediaPlayer.setVolume(0.1f, 0.1f);
 	}
 
 	public void unduck() {
+		Log.d(TAG, "Unducking...");
 		mediaPlayer.setVolume(1.0f, 1.0f);
 	}
 
