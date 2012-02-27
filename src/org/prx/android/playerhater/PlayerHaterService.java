@@ -391,7 +391,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	}
 
 	private void sendIsPlaying(int progress) {
-		if (progress > 0 && getState() == MediaPlayerWrapper.STARTED
+		if (getState() == MediaPlayerWrapper.STARTED
 				&& mPlayerHaterListener != null) {
 			mPlayerHaterListener.onPlaying(progress);
 		}
