@@ -4,7 +4,6 @@ import java.io.FileDescriptor;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.util.Log;
 import android.media.MediaPlayer.OnCompletionListener;
 
 public class TransientPlayer {

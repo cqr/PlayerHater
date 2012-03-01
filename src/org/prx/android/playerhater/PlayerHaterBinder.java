@@ -250,4 +250,34 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public int getDuration() {
 		return mService.getDuration();
 	}
+
+	@Override
+	public void setNotificationIcon(int notificationIcon) {
+		mService.setNotificationIcon(notificationIcon);
+	}
+	
+	@Override
+	public void setAutoNotify(boolean autoNotify) {
+		mService.setAutoNotify(autoNotify);
+	}
+	
+	@Override
+	public void startForeground() {
+		mService.doStartForeground();
+	}
+	
+	@Override
+	public void stopForeground() {
+		mService.doStopForeground();
+	}
+
+	@Override
+	public void setNotificationTitle(String notificationTitle) {
+		mService.setNotificationTitle(notificationTitle);
+	}
+
+	@Override
+	public void setNotificationText(String notificationText) {
+		mService.setNotificationText(notificationText);
+	}
 }

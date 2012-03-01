@@ -40,7 +40,14 @@ public interface PlayerHater {
 	void transientPlay(FileDescriptor file, boolean isDuckable);
 	
 	void setNotificationIntentActivity(Activity activityTriggeredOnNotificationTouch);
+	void setNotificationIcon(int notificationIcon);
 	void setNotificationView(int notificationView);
+	void setNotificationTitle(String notificationTitle);
+	void setNotificationText(String notificationText);
+	
+	void setAutoNotify(boolean autoNotify);
+	void startForeground();
+	void stopForeground();
 	
 	int getCurrentPosition();
 	int getDuration();

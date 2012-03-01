@@ -3,7 +3,7 @@
     package="org.prx.android.playerhater"
     android:versionCode="1"
     android:versionName="0.0.1" > 
-    <uses-sdk android:minSdkVersion="8" />
+    <uses-sdk android:minSdkVersion="8"/>
     <application>
         <service android:name=".PlayerHaterService"></service>
     </application>

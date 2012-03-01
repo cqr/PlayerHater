@@ -53,9 +53,15 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	private AudioManager mAudioManager;
 	private PlayerHaterListener mPlayerHaterListener;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
+	
+
+	private String mNotificationTitle = "PlayerHater";
+	private String mNotificationText = "Version 0.0.1";
+
+	private boolean mAutoNotify = true;
 
 	private Bundle mBundle;
-	
+
 	private boolean playAfterSeek;
 
 	private Handler mHandler = new Handler() {
@@ -119,6 +125,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 	public boolean pause() throws IllegalStateException {
 		mediaPlayer.pause();
+		stopForeground(true);
 		sendIsPaused();
 		return true;
 	}
@@ -180,6 +187,8 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 		case MediaPlayerWrapper.PAUSED:
 			mediaPlayer.start();
 			sendIsPlaying();
+			if (mAutoNotify)
+				startForeground(12314, buildNotification("Playing..."));
 			break;
 		default:
 			throw new IllegalStateException();
@@ -237,14 +246,15 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 	public boolean stop() {
 		mediaPlayer.stop();
+		stopForeground(true);
 		sendIsStopped();
 		return true;
 	}
-	
+
 	/*
 	 * THE BUNDLE
 	 */
-	
+
 	public Bundle getBundle() {
 		return mBundle;
 	}
@@ -252,21 +262,21 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void commitBundle(Bundle icicle) {
 		mBundle = icicle;
 	}
-	
+
 	/*
 	 * We proxy these events.
 	 */
 	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
 		mOnSeekCompleteListener = listener;
 	}
-	
+
 	@Override
 	public void onSeekComplete(MediaPlayer mp) {
 		if (playAfterSeek) {
 			try {
 				play();
 			} catch (Exception e) {
-				//oof.
+				// oof.
 			}
 		}
 		if (mOnSeekCompleteListener != null)
@@ -276,12 +286,14 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void setOnPreparedListener(OnPreparedListener listener) {
 		mOnPreparedListener = listener;
 	}
-	
+
 	@Override
 	public void onPrepared(MediaPlayer mp) {
 		Log.d(TAG, "MediaPlayer is prepared, beginning playback of "
 				+ getNowPlaying());
 		mediaPlayer.start();
+		if (mAutoNotify)
+			startForeground(12314, buildNotification("Playing..."));
 		sendIsPlaying();
 
 		mAudioManager.requestAudioFocus(mAudioFocusChangeListener,
@@ -296,7 +308,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void setOnErrorListener(OnErrorListener listener) {
 		mOnErrorListener = listener;
 	}
-	
+
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		Log.e(TAG, "Got MediaPlayer error: " + what + " / " + extra);
@@ -330,17 +342,19 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	}
 
 	protected Notification buildNotification(String text, int pendingFlag) {
-		Notification notification = new Notification(mNotificationIcon, text,
-				System.currentTimeMillis());
-
-		if (mNotificationIntentClass != null && mNotificationView != null) {
+		Notification notification = new Notification(mNotificationIcon,
+				"PlayerHater", 0);
+		notification.setLatestEventInfo(getApplicationContext(), mNotificationTitle,
+				mNotificationText, null);
+		if (mNotificationView != null) {
 			notification.contentView = mNotificationView;
-			notification.contentIntent = PendingIntent.getActivity(this, 0,
-					new Intent(this, mNotificationIntentClass), pendingFlag);
-			notification.flags |= Notification.FLAG_ONGOING_EVENT;
-			notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;
 		}
-
+		if (mNotificationIntentClass != null) {
+			notification.contentIntent = PendingIntent.getActivity(
+					getApplicationContext(), 777, new Intent(
+							getApplicationContext(), mNotificationIntentClass),
+					PendingIntent.FLAG_UPDATE_CURRENT);
+		}
 		return notification;
 	}
 
@@ -382,7 +396,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	 */
 	protected void onHandlerMessage(Message m) { /* noop */
 	}
-	
+
 	/*
 	 * These are the events we send back to PlayerHaterListener;
 	 */
@@ -418,7 +432,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void setListener(PlayerHaterListener listener) {
 		mPlayerHaterListener = listener;
 	}
-	
+
 	public void duck() {
 		Log.d(TAG, "Ducking...");
 		mediaPlayer.setVolume(0.1f, 0.1f);
@@ -427,6 +441,35 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	public void unduck() {
 		Log.d(TAG, "Unducking...");
 		mediaPlayer.setVolume(1.0f, 1.0f);
+	}
+
+	public void setNotificationIcon(int notificationIcon) {
+		mNotificationIcon = notificationIcon;
+	}
+
+	public void setAutoNotify(boolean autoNotify) {
+		mAutoNotify = autoNotify;
+	}
+
+	public void doStartForeground() {
+		if (!mAutoNotify) {
+			startForeground(2394827, buildNotification());
+		} else {
+			Log.e(TAG,
+					"startForeground() was called, but set to do this automatically. Ignoring request.");
+		}
+	}
+
+	public void doStopForeground() {
+		stopForeground(true);
+	}
+	
+	public void setNotificationTitle(String notificationTitle) {
+		mNotificationTitle = notificationTitle;
+	}
+	
+	public void setNotificationText(String notificationText) {
+		mNotificationText = notificationText;
 	}
 
 }
