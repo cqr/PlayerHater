@@ -330,11 +330,11 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	 */
 
 	protected Notification buildNotification() {
-		return buildNotification("Playing...", 0);
+		return buildNotification(mNotificationTitle, 0);
 	}
 
 	protected Notification buildNotification(int pendingFlag) {
-		return buildNotification("Playing...", pendingFlag);
+		return buildNotification(mNotificationTitle, pendingFlag);
 	}
 
 	protected Notification buildNotification(String text) {
@@ -343,7 +343,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 
 	protected Notification buildNotification(String text, int pendingFlag) {
 		Notification notification = new Notification(mNotificationIcon,
-				"PlayerHater", 0);
+				mNotificationTitle, 0);
 		notification.setLatestEventInfo(getApplicationContext(), mNotificationTitle,
 				mNotificationText, null);
 		if (mNotificationView != null) {
