@@ -5,9 +5,9 @@ import android.content.Intent;
 
 public class BroadcastReceiver extends android.content.BroadcastReceiver {
 
-	private PlayerHaterService mService;
+	private PlaybackService mService;
 
-	public BroadcastReceiver(PlayerHaterService service) {
+	public BroadcastReceiver(PlaybackService service) {
 		super();
 		mService = service;
 	}

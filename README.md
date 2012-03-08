@@ -10,7 +10,7 @@ Basically, you should do the following:
 
 ```java
 import org.prx.android.playerhater.PlayerHater;
-import org.prx.android.playerhater.PlayerHaterService;
+import org.prx.android.playerhater.PlaybackService;
 
 class MyApplicationActivity extends Activity {
 
@@ -29,7 +29,7 @@ class MyApplicationActivity extends Activity {
 
 	public void onStart() {
 		if (mPlayerHater == null) {
-			Intent playerHaterIntent = new Intent(this, PlayerHaterService.class);
+			Intent playerHaterIntent = new Intent(this, PlaybackService.class);
 			Context context = getApplicationContext();
 
 			context.bindService(playerHaterIntent, mConnection, Context.BIND_AUTO_CREATE);
@@ -50,7 +50,7 @@ PlayerHater
 ├── OnPlayerLoadingListener.java   // An interface you should implement
 ├── PlayerHater.java               // An interface that PlayerHaterBinder implements
 ├── PlayerHaterBinder.java         // Your main interaction point with PlayerHater
-├── PlayerHaterService.java        // The workhorse
+├── PlaybackService.java        // The workhorse
 ├── PlayerListenerManager.java     // Handles maintaining MediaPlayer event listeners between sessions
 └── UpdateProgressRunnable.java    // Handles updating the scrubber/duration indicator.
 ```
@@ -59,7 +59,7 @@ If you want to build your own extensions to the library, here's how you do it fo
 
  * Build a new interface which extends PlayerHater and adds any methods you want.
  * Extend PlayerHaterBinder and implement the interface you just created.
- * Extend PlayerHaterService to add the actual functionality/persistence (Binders are disposable)
+ * Extend PlaybackService to add the actual functionality/persistence (Binders are disposable)
  * Cast the binder you got back with the interface you created.
  * ???
  * Profit!

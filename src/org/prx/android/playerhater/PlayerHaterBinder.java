@@ -20,10 +20,10 @@ import android.os.Bundle;
 
 public class PlayerHaterBinder extends Binder implements PlayerHater {
 
-	private final PlayerHaterService mService;
+	private final PlaybackService mService;
 	private PlayerListenerManager mPlayerListenerManager;
 
-	public PlayerHaterBinder(PlayerHaterService service,
+	public PlayerHaterBinder(PlaybackService service,
 			PlayerListenerManager playerListenerManager) {
 		mService = service;
 		mPlayerListenerManager = playerListenerManager;

@@ -14,13 +14,13 @@ public class OnAudioFocusChangeListener implements
 
 	private static final String TAG = "PlayerHater/FocusChange";
 
-	private PlayerHaterService mService;
+	private PlaybackService mService;
 	private long pausedAt;
 	private boolean isBeingDucked;
 
 	private boolean isBeingPaused;
 
-	public OnAudioFocusChangeListener(PlayerHaterService service) {
+	public OnAudioFocusChangeListener(PlaybackService service) {
 		mService = service;
 		isBeingDucked = false;
 	}

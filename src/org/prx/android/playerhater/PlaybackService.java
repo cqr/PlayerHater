@@ -23,7 +23,7 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-public class PlayerHaterService extends Service implements OnErrorListener,
+public class PlaybackService extends Service implements OnErrorListener,
 		OnPreparedListener, OnSeekCompleteListener {
 
 	protected static final String TAG = "PlayerHater/Service";
@@ -381,7 +381,7 @@ public class PlayerHaterService extends Service implements OnErrorListener,
 	 * ourselves.
 	 */
 	private static PlayerListenerManager createPlayerListenerManager(
-			PlayerHaterService svc) {
+			PlaybackService svc) {
 		PlayerListenerManager mgr = new PlayerListenerManager();
 		mgr.setOnErrorListener(svc);
 		mgr.setOnSeekCompleteListener(svc);
