@@ -4,9 +4,6 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -28,12 +25,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	protected static final String TAG = "PlayerHater/Service";
 	protected static final int PROGRESS_UPDATE = 9747244;
-	protected static final int NOTIFICATION_NU = 9747245;
-
-	protected NotificationManager mNotificationManager;
-	protected Class<?> mNotificationIntentClass;
-	protected RemoteViews mNotificationView;
-	protected int mNotificationIcon;
+	
 
 	protected String nowPlayingString;
 	protected String nowPlayingUrl;
@@ -54,9 +46,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	private PlayerHaterListener mPlayerHaterListener;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
 	
-
-	private String mNotificationTitle = "PlayerHater";
-	private String mNotificationText = "Version 0.0.1";
+	private NotificationHandler mNotificationHandler;
 
 	private boolean mAutoNotify = true;
 
@@ -87,7 +77,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 		}
 
 		if (mediaPlayer == null) {
-			mediaPlayer = createMediaPlayer();
+			mediaPlayer = createMediaPlayer(this);
 			playerListenerManager.setMediaPlayer(mediaPlayer);
 		}
 
@@ -101,9 +91,13 @@ public class PlaybackService extends Service implements OnErrorListener,
 		}
 
 		if (mAudioFocusChangeListener == null) {
-			mAudioFocusChangeListener = new OnAudioFocusChangeListener(this);
+			mAudioFocusChangeListener = createAudioFocusChangeListener(this);
 		}
 
+		if (mNotificationHandler == null) {
+			mNotificationHandler = createNotificationHandler(this);
+		}
+		
 		if (mBundle == null) {
 			mBundle = new Bundle(10);
 		}
@@ -115,7 +109,6 @@ public class PlaybackService extends Service implements OnErrorListener,
 			getBaseContext().registerReceiver(mBroadcastReceiver, filter);
 		}
 
-		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
 	@Override
@@ -125,17 +118,17 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	public boolean pause() throws IllegalStateException {
 		mediaPlayer.pause();
-		stopForeground(true);
+		mNotificationHandler.stopNotification();
 		sendIsPaused();
 		return true;
 	}
 
 	public void setNotificationIntentActivity(Activity activity) {
-		mNotificationIntentClass = activity.getClass();
+		mNotificationHandler.setIntentClass(activity.getClass());
 	}
 
 	public void setNotificationView(int view) {
-		mNotificationView = new RemoteViews(getPackageName(), view);
+		mNotificationHandler.setView(new RemoteViews(getPackageName(), view));
 	}
 
 	public int getState() {
@@ -188,7 +181,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 			mediaPlayer.start();
 			sendIsPlaying();
 			if (mAutoNotify)
-				startForeground(12314, buildNotification("Playing..."));
+				mNotificationHandler.startNotification();
 			break;
 		default:
 			throw new IllegalStateException();
@@ -246,7 +239,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	public boolean stop() {
 		mediaPlayer.stop();
-		stopForeground(true);
+		mNotificationHandler.stopNotification();
 		sendIsStopped();
 		return true;
 	}
@@ -293,7 +286,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 				+ getNowPlaying());
 		mediaPlayer.start();
 		if (mAutoNotify)
-			startForeground(12314, buildNotification("Playing..."));
+			mNotificationHandler.startNotification();
 		sendIsPlaying();
 
 		mAudioManager.requestAudioFocus(mAudioFocusChangeListener,
@@ -324,70 +317,6 @@ public class PlaybackService extends Service implements OnErrorListener,
 		return false;
 	}
 
-	/*
-	 * These methods concern the creation of notifications. They should be
-	 * ignored.
-	 */
-
-	protected Notification buildNotification() {
-		return buildNotification(mNotificationTitle, 0);
-	}
-
-	protected Notification buildNotification(int pendingFlag) {
-		return buildNotification(mNotificationTitle, pendingFlag);
-	}
-
-	protected Notification buildNotification(String text) {
-		return buildNotification(text, 0);
-	}
-
-	protected Notification buildNotification(String text, int pendingFlag) {
-		Notification notification = new Notification(mNotificationIcon,
-				mNotificationTitle, 0);
-		notification.setLatestEventInfo(getApplicationContext(), mNotificationTitle,
-				mNotificationText, null);
-		if (mNotificationView != null) {
-			notification.contentView = mNotificationView;
-		}
-		if (mNotificationIntentClass != null) {
-			notification.contentIntent = PendingIntent.getActivity(
-					getApplicationContext(), 777, new Intent(
-							getApplicationContext(), mNotificationIntentClass),
-					PendingIntent.FLAG_UPDATE_CURRENT);
-		}
-		return notification;
-	}
-
-	/*
-	 * creates a media player (wrapped, of course) and registers the listeners
-	 * for all of the events.
-	 */
-	private static MediaPlayerWrapper createMediaPlayer() {
-		return new MediaPlayerWrapper();
-	}
-
-	/*
-	 * creates a new update progress runner, which fires events back to this
-	 * class' handler with the message we request and the duration which has
-	 * passed
-	 */
-	private static UpdateProgressRunnable createUpdateProgressRunner(
-			MediaPlayerWrapper mediaPlayer, Handler handler) {
-		return new UpdateProgressRunnable(mediaPlayer, handler, PROGRESS_UPDATE);
-	}
-
-	/*
-	 * This class basically just makes sure that we never need to re-bind
-	 * ourselves.
-	 */
-	private static PlayerListenerManager createPlayerListenerManager(
-			PlaybackService svc) {
-		PlayerListenerManager mgr = new PlayerListenerManager();
-		mgr.setOnErrorListener(svc);
-		mgr.setOnSeekCompleteListener(svc);
-		mgr.setOnPreparedListener(svc);
-		return mgr;
-	}
 
 	/*
 	 * This should be overridden by subclasses which wish to handle messages
@@ -444,7 +373,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	}
 
 	public void setNotificationIcon(int notificationIcon) {
-		mNotificationIcon = notificationIcon;
+		mNotificationHandler.setNotificationIcon(notificationIcon);
 	}
 
 	public void setAutoNotify(boolean autoNotify) {
@@ -453,7 +382,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	public void doStartForeground() {
 		if (!mAutoNotify) {
-			startForeground(2394827, buildNotification());
+			mNotificationHandler.startNotification();
 		} else {
 			Log.e(TAG,
 					"startForeground() was called, but set to do this automatically. Ignoring request.");
@@ -461,15 +390,60 @@ public class PlaybackService extends Service implements OnErrorListener,
 	}
 
 	public void doStopForeground() {
-		stopForeground(true);
+		mNotificationHandler.stopNotification();
 	}
 	
 	public void setNotificationTitle(String notificationTitle) {
-		mNotificationTitle = notificationTitle;
+		mNotificationHandler.setTitle(notificationTitle);
 	}
 	
 	public void setNotificationText(String notificationText) {
-		mNotificationText = notificationText;
+		mNotificationHandler.setText(notificationText);
+	}
+	
+	/*
+	 * creates a media player (wrapped, of course) and registers the listeners
+	 * for all of the events.
+	 */
+	protected static MediaPlayerWrapper createMediaPlayer(PlaybackService service) {
+		return new MediaPlayerWrapper();
+	}
+
+	/*
+	 * creates a new update progress runner, which fires events back to this
+	 * class' handler with the message we request and the duration which has
+	 * passed
+	 */
+	protected static UpdateProgressRunnable createUpdateProgressRunner(
+			MediaPlayerWrapper mediaPlayer, Handler handler) {
+		return new UpdateProgressRunnable(mediaPlayer, handler, PROGRESS_UPDATE);
+	}
+
+	/*
+	 * This class basically just makes sure that we never need to re-bind
+	 * ourselves.
+	 */
+	protected static PlayerListenerManager createPlayerListenerManager(
+			PlaybackService service) {
+		PlayerListenerManager mgr = new PlayerListenerManager();
+		mgr.setOnErrorListener(service);
+		mgr.setOnSeekCompleteListener(service);
+		mgr.setOnPreparedListener(service);
+		return mgr;
+	}
+	
+	/* 
+	 * These methods just exist so that they can be overridden.
+	 */
+	protected static OnAudioFocusChangeListener createAudioFocusChangeListener(PlaybackService service) {
+		return new OnAudioFocusChangeListener(service);
+	}
+	
+	/* 
+	 * One more...
+	 */
+	protected static NotificationHandler createNotificationHandler(PlaybackService service) {
+		return new NotificationHandler(service);
 	}
 
 }
