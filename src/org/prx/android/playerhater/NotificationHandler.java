@@ -8,8 +8,6 @@ import android.widget.RemoteViews;
 
 public class NotificationHandler {
 	
-	
-	
 	protected static final int NOTIFICATION_NU = 9747245;
 	
 	private boolean notificationIsVisible = false;
@@ -39,16 +37,12 @@ public class NotificationHandler {
 
 	public void setTitle(String notificationTitle) {
 		mNotificationTitle = notificationTitle;
-		if (notificationIsVisible) {
-			startNotification();
-		}
+		updateCurrentNotification();
 	}
 	
 	public void setText(String notificationText) {
 		mNotificationText = notificationText;
-		if (notificationIsVisible) {
-			startNotification();
-		}
+		updateCurrentNotification();
 	}
 
 
@@ -57,25 +51,19 @@ public class NotificationHandler {
 				mService.getApplicationContext(), 777, new Intent(
 						mService.getApplicationContext(), intentClass),
 				PendingIntent.FLAG_UPDATE_CURRENT);
-		if (notificationIsVisible) {
-			startNotification();
-		}
+		updateCurrentNotification();
 	}
 
 
 	public void setView(RemoteViews remoteViews) {
 		mNotificationView = remoteViews;
-		if (notificationIsVisible) {
-			startNotification();
-		}
+		updateCurrentNotification();
 	}
 
 
 	public void setNotificationIcon(int notificationIcon) {
 		mNotificationIcon = notificationIcon;
-		if (notificationIsVisible) {
-			startNotification();
-		}
+		updateCurrentNotification();
 	}
 	
 	private Notification getNotification() {
@@ -87,5 +75,10 @@ public class NotificationHandler {
 		return mNotification;
 	}
 
+	private void updateCurrentNotification() {
+		if (notificationIsVisible) {
+			startNotification();
+		}
+	}
 	
 }
