@@ -70,8 +70,11 @@ public class NotificationHandler {
 		if (mNotification == null) {
 			mNotification = new Notification(mNotificationIcon, mNotificationTitle, 0);
 		}
-		mNotification.setLatestEventInfo(mService, mNotificationTitle, mNotificationText, mContentIntent);
-		mNotification.contentView = mNotificationView;
+		if (mNotificationView != null) {
+			mNotification.contentView = mNotificationView;
+		} else {
+			mNotification.setLatestEventInfo(mService.getApplicationContext(), mNotificationTitle, mNotificationText, mContentIntent);
+		}
 		return mNotification;
 	}
 
