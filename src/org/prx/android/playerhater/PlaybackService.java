@@ -106,6 +106,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 			mBroadcastReceiver = new BroadcastReceiver(this);
 			IntentFilter filter = new IntentFilter();
 			filter.addAction(Intent.ACTION_HEADSET_PLUG);
+			filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY); 
 			getBaseContext().registerReceiver(mBroadcastReceiver, filter);
 		}
 
