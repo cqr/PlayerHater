@@ -217,33 +217,32 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	}
 
 	@Override
-	public void transientPlay(String fileOrUrl) {
-		transientPlay(fileOrUrl, false);
+	public TransientPlayer transientPlay(String fileOrUrl) {
+		return transientPlay(fileOrUrl, false);
 	}
 
 	@Override
-	public void transientPlay(String fileOrUrl, boolean isDuckable) {
+	public TransientPlayer transientPlay(String fileOrUrl, boolean isDuckable) {
 		if (fileOrUrl.charAt(0) == '/') {
 			try {
-				transientPlay(
+				return transientPlay(
 						(new FileInputStream(new File(fileOrUrl))).getFD(),
 						isDuckable);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		} else {
-			mService.transientPlay(fileOrUrl, isDuckable);
-		}
+		} 
+		return mService.transientPlay(fileOrUrl, isDuckable);
 	}
 
 	@Override
-	public void transientPlay(FileDescriptor file) {
-		transientPlay(file, false);
+	public TransientPlayer transientPlay(FileDescriptor file) {
+		return transientPlay(file, false);
 	}
 
 	@Override
-	public void transientPlay(FileDescriptor file, boolean isDuckable) {
-		mService.transientPlay(file, isDuckable);
+	public TransientPlayer transientPlay(FileDescriptor file, boolean isDuckable) {
+		return mService.transientPlay(file, isDuckable);
 	}
 
 	@Override

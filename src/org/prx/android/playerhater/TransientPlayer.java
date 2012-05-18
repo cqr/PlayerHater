@@ -5,15 +5,16 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.util.Log;
 
 public class TransientPlayer {
 
-	public static void play(Context c, String url, boolean isDuckable) {
-		new TransientPlayer(c, url, isDuckable).play();
+	public static TransientPlayer play(Context c, String url, boolean isDuckable) {
+		return new TransientPlayer(c, url, isDuckable).play();
 	}
 
-	public static void play(Context c, FileDescriptor file, boolean isDuckable) {
-		new TransientPlayer(c, file, isDuckable).play();
+	public static TransientPlayer play(Context c, FileDescriptor file, boolean isDuckable) {
+		return new TransientPlayer(c, file, isDuckable).play();
 	}
 
 	private final Context c;
@@ -24,6 +25,19 @@ public class TransientPlayer {
 	private final int playType;
 	private static final int FILE = 1;
 	private static final int URL = 2;
+	private static final String TAG = "TransientPlayer";
+	
+	final AudioManager audioManager; 
+
+	final AudioManager.OnAudioFocusChangeListener audioFocusListener = new AudioManager.OnAudioFocusChangeListener() {
+		@Override
+		public void onAudioFocusChange(int focusChange) {
+			// I don't think we need to do anything here.
+			// generally, we might want to stop the audio in
+			// the event that we have lost focus in a non-
+			// transient way, I think.
+		}
+	};
 
 	protected TransientPlayer(Context c, String url, boolean isDuckable) {
 		this.c = c;
@@ -32,6 +46,7 @@ public class TransientPlayer {
 		this.url = url;
 		this.isDuckable = isDuckable;
 		this.playType = URL;
+		this.audioManager = (AudioManager)c.getSystemService(Context.AUDIO_SERVICE);
 	}
 
 	protected TransientPlayer(Context c, FileDescriptor file, boolean isDuckable) {
@@ -41,12 +56,31 @@ public class TransientPlayer {
 		this.file = file;
 		this.isDuckable = isDuckable;
 		this.playType = FILE;
+		this.audioManager = (AudioManager)c.getSystemService(Context.AUDIO_SERVICE);
 	}
 
-	private void play() {
+	private TransientPlayer play() {
 		TransientPlayerTask task = new TransientPlayerTask();
 		Thread thread = new Thread(task);
 		thread.run();
+		return this; 
+	}
+	
+	public void stop() { 
+		try { 
+			wrapper.stop(); 
+			audioManager.abandonAudioFocus(audioFocusListener);
+			wrapper.release();
+		} catch (Exception e) { 
+			
+		}
+	}
+	
+	public boolean isPlaying() { 
+		return (wrapper.getState() == MediaPlayerWrapper.STARTED ||
+				wrapper.getState() == MediaPlayerWrapper.INITIALIZED ||
+				wrapper.getState() == MediaPlayerWrapper.PREPARED ||
+				wrapper.getState() == MediaPlayerWrapper.PREPARING); 
 	}
 
 	private int getDurationHint() {
@@ -78,18 +112,6 @@ public class TransientPlayer {
 				e.printStackTrace();
 				return;
 			}
-
-			final AudioManager audioManager = (AudioManager)c.getSystemService(Context.AUDIO_SERVICE);
-
-			final AudioManager.OnAudioFocusChangeListener audioFocusListener = new AudioManager.OnAudioFocusChangeListener() {
-				@Override
-				public void onAudioFocusChange(int focusChange) {
-					// I don't think we need to do anything here.
-					// generally, we might want to stop the audio in
-					// the event that we have lost focus in a non-
-					// transient way, I think.
-				}
-			};
 
 			wrapper.setOnCompletionListener(new OnCompletionListener() {
 

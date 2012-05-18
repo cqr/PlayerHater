@@ -1,3 +1,5 @@
 bin
 gen
 gen
+.settings/org.eclipse.jdt.core.prefs
+.settings/*

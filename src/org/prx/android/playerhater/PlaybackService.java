@@ -191,12 +191,12 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	}
 
-	public void transientPlay(FileDescriptor file, boolean isDuckable) {
-		TransientPlayer.play(this, file, isDuckable);
+	public TransientPlayer transientPlay(FileDescriptor file, boolean isDuckable) {
+		return TransientPlayer.play(this, file, isDuckable);
 	}
 
-	public void transientPlay(String url, boolean isDuckable) {
-		TransientPlayer.play(this, url, isDuckable);
+	public TransientPlayer transientPlay(String url, boolean isDuckable) {
+		return TransientPlayer.play(this, url, isDuckable);
 	}
 
 	private void reset() {
