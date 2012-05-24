@@ -74,6 +74,11 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public boolean isPlaying() {
 		return mService.isPlaying();
 	}
+	
+	@Override 
+	public boolean isLoading() { 
+		return mService.isLoading(); 
+	}
 
 	@Override
 	public boolean play(String fileOrUrl, boolean isUrl, Activity activity)

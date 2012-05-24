@@ -146,6 +146,12 @@ public class PlaybackService extends Service implements OnErrorListener,
 	public boolean isPlaying() {
 		return (mediaPlayer.getState() == MediaPlayerWrapper.STARTED);
 	}
+	
+	public boolean isLoading() { 
+		return (mediaPlayer.getState() == MediaPlayerWrapper.INITIALIZED ||
+				mediaPlayer.getState() == MediaPlayerWrapper.PREPARING ||
+				mediaPlayer.getState() == MediaPlayerWrapper.PREPARED); 
+	}
 
 	public boolean play(String stream) throws IllegalStateException,
 			IllegalArgumentException, SecurityException, IOException {
@@ -185,6 +191,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 				mNotificationHandler.startNotification();
 			break;
 		default:
+			System.out.println("State is " + mediaPlayer.getState()); 
 			throw new IllegalStateException();
 		}
 		return true;
