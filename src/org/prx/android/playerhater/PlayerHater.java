@@ -63,7 +63,7 @@ public interface PlayerHater {
 	
 	String getNowPlaying();
 	boolean isPlaying();
-	public boolean isLoading()
+	public boolean isLoading();
 	int getState();
 	
 	Bundle getBundle();
