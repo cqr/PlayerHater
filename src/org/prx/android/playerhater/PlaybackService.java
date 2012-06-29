@@ -126,6 +126,11 @@ public class PlaybackService extends Service implements OnErrorListener,
 			updateProgressThread = null;
 		}
 		sendIsPaused();
+		if (updateProgressThread != null && updateProgressThread.isAlive()) {
+			mHandler.removeCallbacks(updateProgressRunner);
+			updateProgressThread.interrupt();
+			updateProgressThread = null;
+		}
 		return true;
 	}
 
@@ -253,13 +258,20 @@ public class PlaybackService extends Service implements OnErrorListener,
 	public boolean stop() {
 		mediaPlayer.stop();
 		mNotificationHandler.stopNotification();
+<<<<<<< HEAD
 		sendIsStopped();		
+=======
+		sendIsStopped();
+>>>>>>> bug fixes
 		if (updateProgressThread != null && updateProgressThread.isAlive()) {
 			mHandler.removeCallbacks(updateProgressRunner);
 			updateProgressThread.interrupt();
 			updateProgressThread = null;
 		}
+<<<<<<< HEAD
 
+=======
+>>>>>>> bug fixes
 		return true;
 	}
 

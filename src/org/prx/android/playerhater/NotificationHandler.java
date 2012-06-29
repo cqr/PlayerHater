@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.widget.RemoteViews;
 
 public class NotificationHandler {
@@ -47,10 +49,11 @@ public class NotificationHandler {
 
 
 	public void setIntentClass(Class<? extends Activity> intentClass) {
+		Intent i = new Intent(mService.getApplicationContext(), intentClass);
+		i.putExtra("fromPlayerHaterNotification", true); 
 		mContentIntent = PendingIntent.getActivity(
-				mService.getApplicationContext(), 777, new Intent(
-						mService.getApplicationContext(), intentClass),
-				PendingIntent.FLAG_UPDATE_CURRENT);
+				mService.getApplicationContext(), 777, i,
+				PendingIntent.FLAG_UPDATE_CURRENT); 
 		updateCurrentNotification();
 	}
 

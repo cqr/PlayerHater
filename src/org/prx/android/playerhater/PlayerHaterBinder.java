@@ -134,6 +134,7 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public void setNotificationView(int view) {
 		mService.setNotificationView(view);
 	}
+	
 
 	@Override
 	public boolean play(String fileOrUrl, boolean isUrl, Activity activity,
