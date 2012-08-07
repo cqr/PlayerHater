@@ -12,6 +12,7 @@ import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
+import android.util.Log;
 
 public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		OnCompletionListener, OnErrorListener, OnInfoListener,
@@ -29,6 +30,8 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	public static final int STOPPED = 6;
 	public static final int PAUSED = 7;
 	public static final int PLAYBACK_COMPLETED = 8;
+
+	private static final String TAG = "MediaPlayerWrapper";
 
 	private OnErrorListener mErrorListener;
 	private OnPreparedListener mPreparedListener;
@@ -204,6 +207,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	@Override
 	public void onBufferingUpdate(MediaPlayer mp, int percent) {
+		Log.d(TAG, "Buffering Update"); 
 		if (this.mBufferingUpdateListener != null) {
 			this.mBufferingUpdateListener.onBufferingUpdate(mp, percent);
 		}
@@ -211,14 +215,19 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
+		Log.d(TAG, "Completion"); 
 		this.mState = PLAYBACK_COMPLETED;
 		if (this.mCompletionListener != null) {
 			this.mCompletionListener.onCompletion(mp);
 		}
+		stop(); 
+		reset(); 
+		 
 	}
 
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
+		Log.d(TAG, "Error"); 
 		this.mState = ERROR;
 		Boolean response = false;
 		if (this.mErrorListener != null) {
@@ -229,6 +238,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	@Override
 	public boolean onInfo(MediaPlayer mp, int what, int extra) {
+		Log.d(TAG, "info"); 
 		if (this.mInfoListener != null) {
 			return this.mInfoListener.onInfo(mp, what, extra);
 		}

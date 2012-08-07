@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
@@ -21,7 +22,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 public class PlaybackService extends Service implements OnErrorListener,
-		OnPreparedListener, OnSeekCompleteListener {
+		OnPreparedListener, OnSeekCompleteListener, OnCompletionListener {
 
 	protected static final String TAG = "PlayerHater/Service";
 	protected static final int PROGRESS_UPDATE = 9747244;
@@ -45,6 +46,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	private AudioManager mAudioManager;
 	private PlayerHaterListener mPlayerHaterListener;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
+	private OnCompletionListener mOnCompletionListener; 
 	
 	private NotificationHandler mNotificationHandler;
 
@@ -118,6 +120,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	}
 
 	public boolean pause() throws IllegalStateException {
+		Log.d(TAG, "PAUSE"); 
 		mediaPlayer.pause();
 		mNotificationHandler.stopNotification();		
 		if (updateProgressThread != null && updateProgressThread.isAlive()) {
@@ -200,6 +203,13 @@ public class PlaybackService extends Service implements OnErrorListener,
 			if (mAutoNotify)
 				mNotificationHandler.startNotification();
 			break;
+		case MediaPlayerWrapper.IDLE: 
+			if (nowPlayingType == URL) { 
+				play(nowPlayingUrl); 
+			} else { 
+				play(nowPlayingFile); 
+			}
+			break; 
 		default:
 			System.out.println("State is " + mediaPlayer.getState()); 
 			throw new IllegalStateException();
@@ -256,6 +266,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	}
 
 	public boolean stop() {
+		Log.d(TAG, "STOP"); 
 		mediaPlayer.stop();
 		mNotificationHandler.stopNotification();
 		sendIsStopped();
@@ -323,6 +334,10 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	public void setOnErrorListener(OnErrorListener listener) {
 		mOnErrorListener = listener;
+	}
+	
+	public void setOnCompletionListener(OnCompletionListener listener) { 
+		mOnCompletionListener = listener; 
 	}
 
 	@Override
@@ -452,6 +467,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 		mgr.setOnErrorListener(service);
 		mgr.setOnSeekCompleteListener(service);
 		mgr.setOnPreparedListener(service);
+		mgr.setOnCompletionListener(service); 
 		return mgr;
 	}
 	
@@ -467,6 +483,21 @@ public class PlaybackService extends Service implements OnErrorListener,
 	 */
 	protected static NotificationHandler createNotificationHandler(PlaybackService service) {
 		return new NotificationHandler(service);
+	}
+
+	@Override
+	public void onCompletion(MediaPlayer mp) {
+		Log.e(TAG, "Got MediaPlayer completion");
+		if (updateProgressThread != null && updateProgressThread.isAlive()) {
+			mHandler.removeCallbacks(updateProgressRunner);
+			updateProgressThread.interrupt();
+			updateProgressThread = null;
+		}
+		if (mOnCompletionListener != null) {
+			Log.e(TAG, "Passing completion along.");
+			mOnCompletionListener.onCompletion(mp); 
+		}
+		stop(); 
 	}
 
 }
