@@ -269,7 +269,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 		Log.d(TAG, "STOP"); 
 		mediaPlayer.stop();
 		mNotificationHandler.stopNotification();
-		sendIsStopped();
+		sendIsStopped();		
 		if (updateProgressThread != null && updateProgressThread.isAlive()) {
 			mHandler.removeCallbacks(updateProgressRunner);
 			updateProgressThread.interrupt();
