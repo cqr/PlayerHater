@@ -207,7 +207,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	@Override
 	public void onBufferingUpdate(MediaPlayer mp, int percent) {
-		Log.d(TAG, "Buffering Update"); 
+		//Log.d(TAG, "Buffering Update"); 
 		if (this.mBufferingUpdateListener != null) {
 			this.mBufferingUpdateListener.onBufferingUpdate(mp, percent);
 		}
