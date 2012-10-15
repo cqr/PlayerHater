@@ -112,9 +112,11 @@ public class PlaybackService extends Service implements OnErrorListener,
 			filter.addAction(Intent.ACTION_HEADSET_PLUG);
 			filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY); 
 			filter.addAction(Intent.ACTION_MEDIA_BUTTON); 
+			filter.setPriority(10000); 
 			getBaseContext().registerReceiver(mBroadcastReceiver, filter);
 		}
         mRemoteControlResponder = new ComponentName(getPackageName(),BroadcastReceiver.class.getName());
+        mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
 
 	}
 
