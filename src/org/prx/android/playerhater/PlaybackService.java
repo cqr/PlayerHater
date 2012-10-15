@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -44,6 +45,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	private OnSeekCompleteListener mOnSeekCompleteListener;
 	private OnPreparedListener mOnPreparedListener;
 	private AudioManager mAudioManager;
+    private ComponentName mRemoteControlResponder;
 	private PlayerHaterListener mPlayerHaterListener;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
 	private OnCompletionListener mOnCompletionListener; 
@@ -109,8 +111,10 @@ public class PlaybackService extends Service implements OnErrorListener,
 			IntentFilter filter = new IntentFilter();
 			filter.addAction(Intent.ACTION_HEADSET_PLUG);
 			filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY); 
+			filter.addAction(Intent.ACTION_MEDIA_BUTTON); 
 			getBaseContext().registerReceiver(mBroadcastReceiver, filter);
 		}
+        mRemoteControlResponder = new ComponentName(getPackageName(),BroadcastReceiver.class.getName());
 
 	}
 
@@ -214,6 +218,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 			System.out.println("State is " + mediaPlayer.getState()); 
 			throw new IllegalStateException();
 		}
+		mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
 		return true;
 
 	}
@@ -275,6 +280,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 			updateProgressThread.interrupt();
 			updateProgressThread = null;
 		}
+		 mAudioManager.unregisterMediaButtonEventReceiver(mRemoteControlResponder);
 		return true;
 	}
 
