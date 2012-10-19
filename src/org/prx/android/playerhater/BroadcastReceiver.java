@@ -5,6 +5,7 @@ import java.io.IOException;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.media.RemoteControlClient;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -36,7 +37,7 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 			mService.pause();
 		}
 		if (intent.getAction().equals(Intent.ACTION_MEDIA_BUTTON)) { 
-            KeyEvent event = (KeyEvent)intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+            KeyEvent event = (KeyEvent) intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
             Log.d(TAG, "Key event is " + event); 
             if (event.getAction() == KeyEvent.ACTION_DOWN) { return; }
             if (KeyEvent.KEYCODE_MEDIA_PLAY == event.getKeyCode() ||
@@ -45,9 +46,11 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
                 KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE == event.getKeyCode()) {
             	if (mService.isPlaying()) { 
             		mService.pause(); 
+            		mService.getRemoteControlClient().setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
             	} else { 
             		try { 
             			mService.play(); 
+            			mService.getRemoteControlClient().setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
             		} catch (IOException e) { 
             			e.printStackTrace(); 
             		}

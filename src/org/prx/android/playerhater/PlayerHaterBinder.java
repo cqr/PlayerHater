@@ -285,4 +285,14 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public void setNotificationText(String notificationText) {
 		mService.setNotificationText(notificationText);
 	}
+
+	@Override
+	public void setLockScreenImage(FileDescriptor file) {
+		mService.setLockScreenImage(file); 
+	}
+
+	@Override
+	public void setLockScreenTitle(String title) {
+		mService.setLockScreenTitle(title); 
+	}
 }

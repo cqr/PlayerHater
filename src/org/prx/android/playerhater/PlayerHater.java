@@ -45,6 +45,9 @@ public interface PlayerHater {
 	void setNotificationTitle(String notificationTitle);
 	void setNotificationText(String notificationText);
 	
+	void setLockScreenImage(FileDescriptor file); 
+	void setLockScreenTitle(String title); 
+	
 	void setAutoNotify(boolean autoNotify);
 	void startForeground();
 	void stopForeground();
