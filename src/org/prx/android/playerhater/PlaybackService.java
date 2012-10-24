@@ -131,8 +131,12 @@ public class PlaybackService extends Service implements OnErrorListener,
         mediaButtonIntent.setComponent(mRemoteControlResponder);
         PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, mediaButtonIntent, 0);
         // create and register the remote control client
-        mRemoteControlClient = new RemoteControlClient(mediaPendingIntent);
-        mAudioManager.registerRemoteControlClient(mRemoteControlClient);
+        try { 
+        	mRemoteControlClient = new RemoteControlClient(mediaPendingIntent);
+        	mAudioManager.registerRemoteControlClient(mRemoteControlClient);
+        } catch (NoClassDefFoundError e) { 
+        	
+        }
 
 	}
 
@@ -250,19 +254,23 @@ public class PlaybackService extends Service implements OnErrorListener,
 			System.out.println("State is " + mediaPlayer.getState()); 
 			throw new IllegalStateException();
 		}
-		mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
-		if (this.lockScreenTitle != null && this.lockScreenImage != null) { 
-			mRemoteControlClient.editMetadata(true)
-				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, this.lockScreenTitle)
-				.putBitmap(100, this.lockScreenImage).apply(); 
-		} else if (this.lockScreenTitle != null) { 
-	        mRemoteControlClient.editMetadata(true).putString(MediaMetadataRetriever.METADATA_KEY_TITLE,this.lockScreenTitle).apply();
-	    } else if (this.lockScreenImage != null) { 
-	    	mRemoteControlClient.editMetadata(true).putBitmap(100, this.lockScreenImage).apply(); 
-	    }
-	    mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
-	    mRemoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE|RemoteControlClient.FLAG_KEY_MEDIA_STOP);
-		mAudioManager.registerRemoteControlClient(mRemoteControlClient);
+		try {
+			mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
+			if (this.lockScreenTitle != null && this.lockScreenImage != null) { 
+				mRemoteControlClient.editMetadata(true)
+					.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, this.lockScreenTitle)
+					.putBitmap(100, this.lockScreenImage).apply(); 
+			} else if (this.lockScreenTitle != null) { 
+		        mRemoteControlClient.editMetadata(true).putString(MediaMetadataRetriever.METADATA_KEY_TITLE,this.lockScreenTitle).apply();
+		    } else if (this.lockScreenImage != null) { 
+		    	mRemoteControlClient.editMetadata(true).putBitmap(100, this.lockScreenImage).apply(); 
+		    }
+		    mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
+		    mRemoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE|RemoteControlClient.FLAG_KEY_MEDIA_STOP);
+			mAudioManager.registerRemoteControlClient(mRemoteControlClient);
+		} catch (NoClassDefFoundError e) { 
+			
+		}
 		return true;
 
 	}
@@ -325,7 +333,11 @@ public class PlaybackService extends Service implements OnErrorListener,
 			updateProgressThread = null;
 		}
 		 mAudioManager.unregisterMediaButtonEventReceiver(mRemoteControlResponder);
-		 mAudioManager.unregisterRemoteControlClient(mRemoteControlClient); 
+		 try {
+			 mAudioManager.unregisterRemoteControlClient(mRemoteControlClient); 
+		 } catch (NoClassDefFoundError e) { 
+			 
+		 }
 		return true;
 	}
 
