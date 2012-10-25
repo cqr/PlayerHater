@@ -136,7 +136,9 @@ public class PlaybackService extends Service implements OnErrorListener,
         	mAudioManager.registerRemoteControlClient(mRemoteControlClient);
         } catch (NoClassDefFoundError e) { 
         	
-        }
+        } catch (java.lang.NoSuchMethodError e) { 
+			 
+		}
 
 	}
 
@@ -270,6 +272,8 @@ public class PlaybackService extends Service implements OnErrorListener,
 			mAudioManager.registerRemoteControlClient(mRemoteControlClient);
 		} catch (NoClassDefFoundError e) { 
 			
+		} catch (java.lang.NoSuchMethodError e) { 
+			 
 		}
 		return true;
 
@@ -336,6 +340,8 @@ public class PlaybackService extends Service implements OnErrorListener,
 		 try {
 			 mAudioManager.unregisterRemoteControlClient(mRemoteControlClient); 
 		 } catch (NoClassDefFoundError e) { 
+			 
+		 } catch (java.lang.NoSuchMethodError e) { 
 			 
 		 }
 		return true;
