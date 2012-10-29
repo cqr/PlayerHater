@@ -8,6 +8,7 @@ import java.io.IOException;
 import org.prx.android.playerhater.PlayerHater;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
@@ -289,6 +290,11 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	@Override
 	public void setLockScreenImage(FileDescriptor file) {
 		mService.setLockScreenImage(file); 
+	}
+	
+	@Override 
+	public void setLockScreenImage(Resources res, int id) { 
+		mService.setLockScreenImage(res, id); 
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
@@ -168,6 +169,12 @@ public class PlaybackService extends Service implements OnErrorListener,
 	public void setLockScreenImage(FileDescriptor fd) { 
 		if (fd != null) { 
 			this.lockScreenImage = BitmapFactory.decodeFileDescriptor(fd); 
+		}
+	}
+	
+	public void setLockScreenImage(Resources res, int id) { 
+		if (res != null) { 
+			this.lockScreenImage = BitmapFactory.decodeResource(res, id); 
 		}
 	}
 	

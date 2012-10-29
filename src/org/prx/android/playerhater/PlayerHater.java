@@ -4,6 +4,7 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
@@ -46,6 +47,7 @@ public interface PlayerHater {
 	void setNotificationText(String notificationText);
 	
 	void setLockScreenImage(FileDescriptor file); 
+	void setLockScreenImage(Resources res, int id); 
 	void setLockScreenTitle(String title); 
 	
 	void setAutoNotify(boolean autoNotify);
