@@ -1,9 +1,12 @@
 package org.prx.android.playerhater;
 
+import com.jakewharton.notificationcompat2.NotificationCompat2;
+
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.widget.RemoteViews;
@@ -11,6 +14,10 @@ import android.widget.RemoteViews;
 public class NotificationHandler {
 	
 	protected static final int NOTIFICATION_NU = 9747245;
+	
+	public static final int PLAY_PAUSE_CLICK_ID = 845832; 
+	public static final String PLAY_PAUSE_ACTION = "org.prx.playerhater.PlayPause"; 
+	
 	
 	private boolean notificationIsVisible = false;
 	
@@ -63,21 +70,37 @@ public class NotificationHandler {
 		updateCurrentNotification();
 	}
 
-
 	public void setNotificationIcon(int notificationIcon) {
 		mNotificationIcon = notificationIcon;
 		updateCurrentNotification();
 	}
 	
 	private Notification getNotification() {
-		if (mNotification == null) {
-			mNotification = new Notification(mNotificationIcon, mNotificationTitle, 0);
+		//Notification and intent of the notification 
+		Notification mNotification = new NotificationCompat2.Builder(mService.getApplicationContext())
+        			.setContentTitle(mNotificationTitle)
+        			.setContentText(mNotificationText)
+        			.setContentIntent(mContentIntent)
+        			.setSmallIcon(mNotificationIcon)
+        			.setLargeIcon(BitmapFactory.decodeResource(mService.getResources(),mNotificationIcon))
+        			.build();
+
+		Intent intent = new Intent(mService.getApplicationContext(), BroadcastReceiver.class);
+		intent.setAction(NotificationHandler.PLAY_PAUSE_ACTION); 
+		PendingIntent playPausePendingIntent = PendingIntent.getBroadcast(mService.getApplicationContext(), 
+				NotificationHandler.PLAY_PAUSE_CLICK_ID, intent, 0);
+		
+		//Remoteview and intent for my button
+		RemoteViews notificationView = new RemoteViews(mService.getBaseContext().getPackageName(), R.layout.notification);
+		
+		if (notificationView != null) { 
+			notificationView.setOnClickPendingIntent(R.id.notPlayPause, playPausePendingIntent);
+			notificationView.setTextViewText(R.id.notContentTitle, mNotificationTitle); 
+			notificationView.setTextViewText(R.id.notContentText, mNotificationText); 
+			notificationView.setImageViewResource(R.id.notImage, mNotificationIcon); 
+			mNotification.contentView = notificationView;
 		}
-		if (mNotificationView != null) {
-			mNotification.contentView = mNotificationView;
-		} else {
-			mNotification.setLatestEventInfo(mService.getApplicationContext(), mNotificationTitle, mNotificationText, mContentIntent);
-		}
+
 		return mNotification;
 	}
 

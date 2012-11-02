@@ -2,6 +2,7 @@ package org.prx.android.playerhater;
 
 import java.io.IOException;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -28,15 +29,16 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 		BroadcastReceiver.doReceive(context, intent); 
 	}
 	
+	@SuppressLint("NewApi")
 	public static void doReceive(Context context, Intent intent) {
 		Log.d(TAG, "Received"); 
-		if (mService.isPlaying() && 
+		if (mService.isPlaying() && intent.getAction() != null && 
 				(intent.getAction().equals(Intent.ACTION_HEADSET_PLUG) ||
 			     intent.getAction().equals(AudioManager.ACTION_AUDIO_BECOMING_NOISY))
 				&& intent.getIntExtra("state", 0) == 0) {
 			mService.pause();
 		}
-		if (intent.getAction().equals(Intent.ACTION_MEDIA_BUTTON)) { 
+		if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_MEDIA_BUTTON)) { 
             KeyEvent event = (KeyEvent) intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
             Log.d(TAG, "Key event is " + event); 
             if (event.getAction() == KeyEvent.ACTION_DOWN) { return; }
@@ -56,6 +58,17 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
             		}
             	}
             }
+		}
+		if (intent.getAction() != null && intent.getAction().equals(NotificationHandler.PLAY_PAUSE_ACTION)) { 
+			try { 
+				if (mService.isPlaying()) { 
+					mService.pause(); 
+				} else { 
+					mService.play();
+				}
+			} catch (IOException e) { 
+				e.printStackTrace(); 
+			}
 		}
 	}
 

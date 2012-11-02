@@ -301,4 +301,5 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public void setLockScreenTitle(String title) {
 		mService.setLockScreenTitle(title); 
 	}
+
 }

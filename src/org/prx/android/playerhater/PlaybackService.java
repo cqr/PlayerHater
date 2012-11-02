@@ -3,6 +3,8 @@ package org.prx.android.playerhater;
 import java.io.FileDescriptor;
 import java.io.IOException;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -28,6 +30,7 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+@SuppressLint("NewApi")
 public class PlaybackService extends Service implements OnErrorListener,
 		OnPreparedListener, OnSeekCompleteListener, OnCompletionListener {
 
@@ -82,6 +85,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 		}
 	};
 
+	@SuppressLint("NewApi")
 	@Override
 	public void onStart(Intent intent, int startId) {
 		super.onStart(intent, startId);
@@ -193,6 +197,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	public void setNotificationView(int view) {
 		mNotificationHandler.setView(new RemoteViews(getPackageName(), view));
 	}
+	
 
 	public int getState() {
 		return mediaPlayer.getState();
