@@ -155,7 +155,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	public boolean pause() throws IllegalStateException {
 		Log.d(TAG, "PAUSE"); 
 		mediaPlayer.pause();
-		mNotificationHandler.stopNotification();		
+		//mNotificationHandler.stopNotification();		
 		if (updateProgressThread != null && updateProgressThread.isAlive()) {
 			mHandler.removeCallbacks(updateProgressRunner);
 			updateProgressThread.interrupt();
@@ -167,6 +167,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 			updateProgressThread.interrupt();
 			updateProgressThread = null;
 		}
+		this.mNotificationHandler.setToPlay(); 
 		return true;
 	}
 	
@@ -287,6 +288,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 		} catch (java.lang.NoSuchMethodError e) { 
 			 
 		}
+		this.mNotificationHandler.setToPause(); 
 		return true;
 
 	}

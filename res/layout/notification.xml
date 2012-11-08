@@ -13,22 +13,25 @@
         android:id="@+id/notPlayPause"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
-        android:src="@drawable/av_pause"
+        android:src="@drawable/playerhater_av_pause"
         android:layout_alignParentRight="true"
-        android:padding="3dp" />
+        android:padding="5dp"
+        android:paddingRight="10dp"
+        android:layout_gravity="center_vertical" />
 
     <TextView
         android:id="@+id/notContentTitle"
-        style="@android:style/TextAppearance.Medium"
+        style="@android:style/TextAppearance.StatusBar.EventContent.Title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingTop="5dp"
+        android:paddingBottom="2dp"
         android:layout_toRightOf="@id/notImage"
-        android:layout_toLeftOf="@id/notPlayPause"
-        android:textStyle="bold" />
+        android:layout_toLeftOf="@id/notPlayPause" />
 
     <TextView
         android:id="@+id/notContentText"
-        style="@android:style/TextAppearance.Small"
+        style="@android:style/TextAppearance.StatusBar.EventContent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/notImage"

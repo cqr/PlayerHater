@@ -76,8 +76,9 @@ public class NotificationHandler {
 	}
 	
 	private Notification getNotification() {
+		if (this.mNotification != null) { return this.mNotification; }
 		//Notification and intent of the notification 
-		Notification mNotification = new NotificationCompat2.Builder(mService.getApplicationContext())
+		this.mNotification = new NotificationCompat2.Builder(mService.getApplicationContext())
         			.setContentTitle(mNotificationTitle)
         			.setContentText(mNotificationText)
         			.setContentIntent(mContentIntent)
@@ -102,6 +103,16 @@ public class NotificationHandler {
 		}
 
 		return mNotification;
+	}
+	
+	public void setToPause() { 
+		getNotification().contentView.setImageViewResource(R.id.notPlayPause, R.drawable.playerhater_av_pause); 
+		startNotification(); 
+	}
+	
+	public void setToPlay() { 
+		getNotification().contentView.setImageViewResource(R.id.notPlayPause, R.drawable.playerhater_av_play); 
+		startNotification(); 
 	}
 
 	private void updateCurrentNotification() {
