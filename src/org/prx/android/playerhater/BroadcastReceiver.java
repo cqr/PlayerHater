@@ -6,7 +6,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.media.RemoteControlClient;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -48,11 +47,9 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
                 KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE == event.getKeyCode()) {
             	if (mService.isPlaying()) { 
             		mService.pause(); 
-            		mService.getRemoteControlClient().setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
             	} else { 
             		try { 
             			mService.play(); 
-            			mService.getRemoteControlClient().setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
             		} catch (IOException e) { 
             			e.printStackTrace(); 
             		}
@@ -67,6 +64,13 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 					mService.play();
 				}
 			} catch (IOException e) { 
+				e.printStackTrace(); 
+			}
+		}
+		if (intent.getAction() != null && intent.getAction().equals(NotificationHandler.STOP_ACTION)) { 
+			try { 
+				mService.stop(); 
+			} catch (Exception e) { 
 				e.printStackTrace(); 
 			}
 		}

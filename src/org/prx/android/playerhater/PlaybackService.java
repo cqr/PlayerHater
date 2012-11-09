@@ -168,6 +168,13 @@ public class PlaybackService extends Service implements OnErrorListener,
 			updateProgressThread = null;
 		}
 		this.mNotificationHandler.setToPlay(); 
+		try {
+		    mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
+		} catch (NoClassDefFoundError e) { 
+			
+		} catch (java.lang.NoSuchMethodError e) { 
+			 
+		}
 		return true;
 	}
 	
@@ -291,6 +298,32 @@ public class PlaybackService extends Service implements OnErrorListener,
 		this.mNotificationHandler.setToPause(); 
 		return true;
 
+	}
+	
+	public void resetLockScreenControls() { 
+		try {
+			mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
+			if (this.lockScreenTitle != null && this.lockScreenImage != null) { 
+				mRemoteControlClient.editMetadata(true)
+					.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, this.lockScreenTitle)
+					.putBitmap(100, this.lockScreenImage).apply(); 
+			} else if (this.lockScreenTitle != null) { 
+		        mRemoteControlClient.editMetadata(true).putString(MediaMetadataRetriever.METADATA_KEY_TITLE,this.lockScreenTitle).apply();
+		    } else if (this.lockScreenImage != null) { 
+		    	mRemoteControlClient.editMetadata(true).putBitmap(100, this.lockScreenImage).apply(); 
+		    }
+		    mRemoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE|RemoteControlClient.FLAG_KEY_MEDIA_STOP);
+			mAudioManager.registerRemoteControlClient(mRemoteControlClient);
+			if (this.isPlaying() || this.isLoading()) { 
+				mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
+			} else { 
+				mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
+			}
+		} catch (NoClassDefFoundError e) { 
+			
+		} catch (java.lang.NoSuchMethodError e) { 
+			 
+		}
 	}
 
 	public TransientPlayer transientPlay(FileDescriptor file, boolean isDuckable) {

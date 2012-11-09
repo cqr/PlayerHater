@@ -302,4 +302,8 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 		mService.setLockScreenTitle(title); 
 	}
 
+	@Override
+	public void resetLockScreenControls() { 
+		mService.resetLockScreenControls(); 
+	}
 }

@@ -16,7 +16,9 @@ public class NotificationHandler {
 	protected static final int NOTIFICATION_NU = 9747245;
 	
 	public static final int PLAY_PAUSE_CLICK_ID = 845832; 
+	public static final int STOP_CLICK_ID = 845833; 
 	public static final String PLAY_PAUSE_ACTION = "org.prx.playerhater.PlayPause"; 
+	public static final String STOP_ACTION = "org.prx.playerhater.Stop"; 
 	
 	
 	private boolean notificationIsVisible = false;
@@ -91,11 +93,17 @@ public class NotificationHandler {
 		PendingIntent playPausePendingIntent = PendingIntent.getBroadcast(mService.getApplicationContext(), 
 				NotificationHandler.PLAY_PAUSE_CLICK_ID, intent, 0);
 		
+		Intent stopIntent = new Intent(mService.getApplicationContext(), BroadcastReceiver.class); 
+		stopIntent.setAction(NotificationHandler.STOP_ACTION); 
+		PendingIntent stopPendingIntent = PendingIntent.getBroadcast(mService.getApplicationContext(),
+				NotificationHandler.STOP_CLICK_ID, stopIntent, 0); 
+		
 		//Remoteview and intent for my button
 		RemoteViews notificationView = new RemoteViews(mService.getBaseContext().getPackageName(), R.layout.notification);
 		
 		if (notificationView != null) { 
 			notificationView.setOnClickPendingIntent(R.id.notPlayPause, playPausePendingIntent);
+			notificationView.setOnClickPendingIntent(R.id.notClose, stopPendingIntent); 
 			notificationView.setTextViewText(R.id.notContentTitle, mNotificationTitle); 
 			notificationView.setTextViewText(R.id.notContentText, mNotificationText); 
 			notificationView.setImageViewResource(R.id.notImage, mNotificationIcon); 

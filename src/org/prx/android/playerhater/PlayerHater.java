@@ -46,6 +46,7 @@ public interface PlayerHater {
 	void setNotificationTitle(String notificationTitle);
 	void setNotificationText(String notificationText);
 	
+	void resetLockScreenControls(); 
 	void setLockScreenImage(FileDescriptor file); 
 	void setLockScreenImage(Resources res, int id); 
 	void setLockScreenTitle(String title); 
