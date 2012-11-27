@@ -34,6 +34,11 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public boolean play() throws IllegalStateException, IOException {
 		return mService.play();
 	}
+	
+	@Override
+	public boolean playAt(int startTime) throws IllegalStateException, IOException {
+		return mService.playAt(startTime); 
+	}
 
 	@Override
 	public boolean pause() {
@@ -50,6 +55,11 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 			IllegalArgumentException, SecurityException, IOException {
 		return play(fileOrUrl, fileOrUrl.charAt(0) != '/');
 	}
+	
+	@Override
+	public boolean playAt(String fileOrUrl, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+		return playAt(fileOrUrl, fileOrUrl.charAt(0) != '/', startTime); 
+	}
 
 	@Override
 	public boolean play(String fileOrUrl, boolean isUrl)
@@ -60,6 +70,20 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 		} else {
 			try {
 				return play((new FileInputStream(new File(fileOrUrl))).getFD());
+			} catch (Exception e) {
+				return false;
+			}
+		}
+	}
+	
+	@Override
+	public boolean playAt(String fileOrUrl, boolean isUrl, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException,
+			IOException {
+		if (isUrl) {
+			return mService.playAt(fileOrUrl, startTime);
+		} else {
+			try {
+				return playAt((new FileInputStream(new File(fileOrUrl))).getFD(), startTime);
 			} catch (Exception e) {
 				return false;
 			}
@@ -88,11 +112,40 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 		setNotificationIntentActivity(activity);
 		return play(fileOrUrl, isUrl);
 	}
+	
+	@Override
+	public boolean playAt(String fileOrUrl, boolean isUrl, Activity activity, int startTime) throws IllegalStateException,
+			IllegalArgumentException, SecurityException, IOException {
+		setNotificationIntentActivity(activity);
+		return playAt(fileOrUrl, isUrl, startTime);
+	}
+	
+	@Override
+	public boolean play(String fileOrUrl, boolean isUrl, Activity activity,
+			int view) throws IllegalStateException, IllegalArgumentException,
+			SecurityException, IOException {
+		setNotificationIntentActivity(activity);
+		setNotificationView(view);
+		return play(fileOrUrl, isUrl);
+	}
+	
+	@Override
+	public boolean playAt(String fileOrUrl, boolean isUrl, Activity activity, int view, int startTime)
+			throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+		setNotificationIntentActivity(activity);
+		setNotificationView(view);
+		return playAt(fileOrUrl, isUrl, startTime);
+	}
 
 	@Override
 	public boolean play(FileDescriptor fd) throws IllegalStateException,
 			IllegalArgumentException, SecurityException, IOException {
 		return mService.play(fd);
+	}
+	
+	@Override
+	public boolean playAt(FileDescriptor fd, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+		return mService.playAt(fd, startTime); 
 	}
 
 	@Override
@@ -101,6 +154,13 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 			SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		return play(fd);
+	}
+	
+	@Override
+	public boolean playAt(FileDescriptor fd, Activity activity, int startTime) throws IllegalStateException,
+			IllegalArgumentException, SecurityException, IOException {
+		setNotificationIntentActivity(activity);
+		return playAt(fd, startTime);
 	}
 
 	@Override
@@ -111,11 +171,24 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 		setNotificationView(view);
 		return play(fd);
 	}
+	
+	@Override
+	public boolean playAt(FileDescriptor fd, Activity activity, int view, int startTime) throws IllegalStateException,
+			IllegalArgumentException, SecurityException, IOException {
+		setNotificationIntentActivity(activity);
+		setNotificationView(view);
+		return playAt(fd, startTime);
+	}
 
 	@Override
 	public boolean play(Uri url) throws IllegalStateException,
 			IllegalArgumentException, SecurityException, IOException {
 		return play(url.toString(), true);
+	}
+	
+	@Override
+	public boolean playAt(Uri url, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+		return playAt(url.toString(), true, startTime); 
 	}
 
 	@Override
@@ -124,6 +197,30 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 			SecurityException, IOException {
 		setNotificationIntentActivity(activity);
 		return play(url);
+	}
+	
+	@Override
+	public boolean playAt(Uri url, Activity activity, int startTime) throws IllegalStateException, IllegalArgumentException,
+			SecurityException, IOException {
+		setNotificationIntentActivity(activity);
+		return playAt(url, startTime);
+	}
+	
+	@Override
+	public boolean play(Uri url, Activity activity, int view)
+			throws IllegalStateException, IllegalArgumentException,
+			SecurityException, IOException {
+		setNotificationIntentActivity(activity);
+		setNotificationView(view);
+		return play(url);
+	}
+
+	@Override
+	public boolean playAt(Uri url, Activity activity, int view, int startTime) throws IllegalStateException,
+			IllegalArgumentException, SecurityException, IOException {
+		setNotificationIntentActivity(activity);
+		setNotificationView(view);
+		return playAt(url, startTime);
 	}
 
 	@Override
@@ -136,25 +233,6 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 		mService.setNotificationView(view);
 	}
 	
-
-	@Override
-	public boolean play(String fileOrUrl, boolean isUrl, Activity activity,
-			int view) throws IllegalStateException, IllegalArgumentException,
-			SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		setNotificationView(view);
-		return play(fileOrUrl, isUrl);
-	}
-
-	@Override
-	public boolean play(Uri url, Activity activity, int view)
-			throws IllegalStateException, IllegalArgumentException,
-			SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		setNotificationView(view);
-		return play(url);
-	}
-
 	@Override
 	public void seekTo(int position) {
 		mService.seekTo(position);
@@ -306,4 +384,5 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 	public void resetLockScreenControls() { 
 		mService.resetLockScreenControls(); 
 	}
+
 }

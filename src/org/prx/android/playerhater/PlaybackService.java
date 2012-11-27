@@ -31,12 +31,10 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 @SuppressLint("NewApi")
-public class PlaybackService extends Service implements OnErrorListener,
-		OnPreparedListener, OnSeekCompleteListener, OnCompletionListener {
+public class PlaybackService extends Service implements OnErrorListener, OnPreparedListener, OnSeekCompleteListener, OnCompletionListener {
 
 	protected static final String TAG = "PlayerHater/Service";
 	protected static final int PROGRESS_UPDATE = 9747244;
-	
 
 	protected String nowPlayingString;
 	protected String nowPlayingUrl;
@@ -54,15 +52,15 @@ public class PlaybackService extends Service implements OnErrorListener,
 	private OnSeekCompleteListener mOnSeekCompleteListener;
 	private OnPreparedListener mOnPreparedListener;
 	private AudioManager mAudioManager;
-    private ComponentName mRemoteControlResponder;
+	private ComponentName mRemoteControlResponder;
 	private PlayerHaterListener mPlayerHaterListener;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
-	private OnCompletionListener mOnCompletionListener; 
-	private RemoteControlClient mRemoteControlClient; 
-	
-	private String lockScreenTitle; 
-	private Bitmap lockScreenImage; 
-	
+	private OnCompletionListener mOnCompletionListener;
+	private RemoteControlClient mRemoteControlClient;
+
+	private String lockScreenTitle;
+	private Bitmap lockScreenImage;
+
 	private NotificationHandler mNotificationHandler;
 
 	private boolean mAutoNotify = true;
@@ -70,6 +68,9 @@ public class PlaybackService extends Service implements OnErrorListener,
 	private Bundle mBundle;
 
 	private boolean playAfterSeek;
+	
+	private boolean seekOnStart = false; 
+	private int startTime = 0; 
 
 	private Handler mHandler = new Handler() {
 		@Override
@@ -100,8 +101,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 		}
 
 		if (updateProgressRunner == null) {
-			updateProgressRunner = createUpdateProgressRunner(mediaPlayer,
-					mHandler);
+			updateProgressRunner = createUpdateProgressRunner(mediaPlayer, mHandler);
 		}
 
 		if (mAudioManager == null) {
@@ -115,7 +115,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 		if (mNotificationHandler == null) {
 			mNotificationHandler = createNotificationHandler(this);
 		}
-		
+
 		if (mBundle == null) {
 			mBundle = new Bundle(10);
 		}
@@ -124,25 +124,25 @@ public class PlaybackService extends Service implements OnErrorListener,
 			mBroadcastReceiver = new BroadcastReceiver(this);
 			IntentFilter filter = new IntentFilter();
 			filter.addAction(Intent.ACTION_HEADSET_PLUG);
-			filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY); 
-			filter.addAction(Intent.ACTION_MEDIA_BUTTON); 
-			filter.setPriority(10000); 
+			filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+			filter.addAction(Intent.ACTION_MEDIA_BUTTON);
+			filter.setPriority(10000);
 			getBaseContext().registerReceiver(mBroadcastReceiver, filter);
 		}
-        mRemoteControlResponder = new ComponentName(getPackageName(),BroadcastReceiver.class.getName());
-        mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
-        // build the PendingIntent for the remote control client
-        Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        mediaButtonIntent.setComponent(mRemoteControlResponder);
-        PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, mediaButtonIntent, 0);
-        // create and register the remote control client
-        try { 
-        	mRemoteControlClient = new RemoteControlClient(mediaPendingIntent);
-        	mAudioManager.registerRemoteControlClient(mRemoteControlClient);
-        } catch (NoClassDefFoundError e) { 
-        	
-        } catch (java.lang.NoSuchMethodError e) { 
-			 
+		mRemoteControlResponder = new ComponentName(getPackageName(), BroadcastReceiver.class.getName());
+		mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
+		// build the PendingIntent for the remote control client
+		Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+		mediaButtonIntent.setComponent(mRemoteControlResponder);
+		PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, mediaButtonIntent, 0);
+		// create and register the remote control client
+		try {
+			mRemoteControlClient = new RemoteControlClient(mediaPendingIntent);
+			mAudioManager.registerRemoteControlClient(mRemoteControlClient);
+		} catch (NoClassDefFoundError e) {
+
+		} catch (java.lang.NoSuchMethodError e) {
+
 		}
 
 	}
@@ -153,9 +153,9 @@ public class PlaybackService extends Service implements OnErrorListener,
 	}
 
 	public boolean pause() throws IllegalStateException {
-		Log.d(TAG, "PAUSE"); 
+		Log.d(TAG, "PAUSE");
 		mediaPlayer.pause();
-		//mNotificationHandler.stopNotification();		
+		// mNotificationHandler.stopNotification();
 		if (updateProgressThread != null && updateProgressThread.isAlive()) {
 			mHandler.removeCallbacks(updateProgressRunner);
 			updateProgressThread.interrupt();
@@ -167,35 +167,35 @@ public class PlaybackService extends Service implements OnErrorListener,
 			updateProgressThread.interrupt();
 			updateProgressThread = null;
 		}
-		this.mNotificationHandler.setToPlay(); 
+		this.mNotificationHandler.setToPlay();
 		try {
-		    mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
-		} catch (NoClassDefFoundError e) { 
-			
-		} catch (java.lang.NoSuchMethodError e) { 
-			 
+			mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
+		} catch (NoClassDefFoundError e) {
+
+		} catch (java.lang.NoSuchMethodError e) {
+
 		}
 		return true;
 	}
-	
-	public void setLockScreenImage(FileDescriptor fd) { 
-		if (fd != null) { 
-			this.lockScreenImage = BitmapFactory.decodeFileDescriptor(fd); 
+
+	public void setLockScreenImage(FileDescriptor fd) {
+		if (fd != null) {
+			this.lockScreenImage = BitmapFactory.decodeFileDescriptor(fd);
 		}
 	}
-	
-	public void setLockScreenImage(Resources res, int id) { 
-		if (res != null) { 
-			this.lockScreenImage = BitmapFactory.decodeResource(res, id); 
+
+	public void setLockScreenImage(Resources res, int id) {
+		if (res != null) {
+			this.lockScreenImage = BitmapFactory.decodeResource(res, id);
 		}
 	}
-	
-	public void setLockScreenTitle(String title) { 
-		this.lockScreenTitle = title; 
+
+	public void setLockScreenTitle(String title) {
+		this.lockScreenTitle = title;
 	}
-	
-	public RemoteControlClient getRemoteControlClient() { 
-		return this.mRemoteControlClient; 
+
+	public RemoteControlClient getRemoteControlClient() {
+		return this.mRemoteControlClient;
 	}
 
 	public void setNotificationIntentActivity(Activity activity) {
@@ -205,7 +205,6 @@ public class PlaybackService extends Service implements OnErrorListener,
 	public void setNotificationView(int view) {
 		mNotificationHandler.setView(new RemoteViews(getPackageName(), view));
 	}
-	
 
 	public int getState() {
 		return mediaPlayer.getState();
@@ -221,15 +220,12 @@ public class PlaybackService extends Service implements OnErrorListener,
 	public boolean isPlaying() {
 		return (mediaPlayer.getState() == MediaPlayerWrapper.STARTED);
 	}
-	
-	public boolean isLoading() { 
-		return (mediaPlayer.getState() == MediaPlayerWrapper.INITIALIZED ||
-				mediaPlayer.getState() == MediaPlayerWrapper.PREPARING ||
-				mediaPlayer.getState() == MediaPlayerWrapper.PREPARED); 
+
+	public boolean isLoading() {
+		return (mediaPlayer.getState() == MediaPlayerWrapper.INITIALIZED || mediaPlayer.getState() == MediaPlayerWrapper.PREPARING || mediaPlayer.getState() == MediaPlayerWrapper.PREPARED);
 	}
 
-	public boolean play(String stream) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
+	public boolean play(String stream) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		nowPlayingType = URL;
 		nowPlayingString = stream;
 		nowPlayingUrl = stream;
@@ -240,8 +236,18 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	}
 
-	public boolean play(FileDescriptor fd) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
+	public boolean playAt(String stream, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+		nowPlayingType = URL;
+		nowPlayingString = stream;
+		nowPlayingUrl = stream;
+		if (mediaPlayer.getState() != MediaPlayerWrapper.IDLE)
+			reset();
+		mediaPlayer.setDataSource(nowPlayingUrl);
+		return playAt(startTime);
+
+	}
+
+	public boolean play(FileDescriptor fd) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		nowPlayingType = FILE;
 		nowPlayingString = fd.toString();
 		nowPlayingFile = fd;
@@ -249,6 +255,22 @@ public class PlaybackService extends Service implements OnErrorListener,
 			reset();
 		mediaPlayer.setDataSource(nowPlayingFile);
 		return play();
+	}
+	
+	public boolean playAt(FileDescriptor fd, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
+		nowPlayingType = FILE;
+		nowPlayingString = fd.toString();
+		nowPlayingFile = fd;
+		if (mediaPlayer.getState() != MediaPlayerWrapper.IDLE)
+			reset();
+		mediaPlayer.setDataSource(nowPlayingFile);
+		return playAt(startTime);
+	}
+	
+	public boolean playAt(int startTime) throws IllegalStateException, IOException { 
+		seekOnStart = true; 
+		this.startTime = startTime * 1000; 
+		return play(); 
 	}
 
 	public boolean play() throws IllegalStateException, IOException {
@@ -265,64 +287,62 @@ public class PlaybackService extends Service implements OnErrorListener,
 			if (mAutoNotify)
 				mNotificationHandler.startNotification();
 			break;
-		case MediaPlayerWrapper.IDLE: 
-			if (nowPlayingType == URL) { 
-				play(nowPlayingUrl); 
-			} else { 
-				play(nowPlayingFile); 
+		case MediaPlayerWrapper.IDLE:
+			if (nowPlayingType == URL) {
+				play(nowPlayingUrl);
+			} else {
+				play(nowPlayingFile);
 			}
-			break; 
+			break;
 		default:
-			System.out.println("State is " + mediaPlayer.getState()); 
+			System.out.println("State is " + mediaPlayer.getState());
 			throw new IllegalStateException();
 		}
 		try {
 			mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
-			if (this.lockScreenTitle != null && this.lockScreenImage != null) { 
-				mRemoteControlClient.editMetadata(true)
-					.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, this.lockScreenTitle)
-					.putBitmap(100, this.lockScreenImage).apply(); 
-			} else if (this.lockScreenTitle != null) { 
-		        mRemoteControlClient.editMetadata(true).putString(MediaMetadataRetriever.METADATA_KEY_TITLE,this.lockScreenTitle).apply();
-		    } else if (this.lockScreenImage != null) { 
-		    	mRemoteControlClient.editMetadata(true).putBitmap(100, this.lockScreenImage).apply(); 
-		    }
-		    mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
-		    mRemoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE|RemoteControlClient.FLAG_KEY_MEDIA_STOP);
+			if (this.lockScreenTitle != null && this.lockScreenImage != null) {
+				mRemoteControlClient.editMetadata(true).putString(MediaMetadataRetriever.METADATA_KEY_TITLE, this.lockScreenTitle)
+						.putBitmap(100, this.lockScreenImage).apply();
+			} else if (this.lockScreenTitle != null) {
+				mRemoteControlClient.editMetadata(true).putString(MediaMetadataRetriever.METADATA_KEY_TITLE, this.lockScreenTitle).apply();
+			} else if (this.lockScreenImage != null) {
+				mRemoteControlClient.editMetadata(true).putBitmap(100, this.lockScreenImage).apply();
+			}
+			mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
+			mRemoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE | RemoteControlClient.FLAG_KEY_MEDIA_STOP);
 			mAudioManager.registerRemoteControlClient(mRemoteControlClient);
-		} catch (NoClassDefFoundError e) { 
-			
-		} catch (java.lang.NoSuchMethodError e) { 
-			 
+		} catch (NoClassDefFoundError e) {
+
+		} catch (java.lang.NoSuchMethodError e) {
+
 		}
-		this.mNotificationHandler.setToPause(); 
+		this.mNotificationHandler.setToPause();
 		return true;
 
 	}
-	
-	public void resetLockScreenControls() { 
+
+	public void resetLockScreenControls() {
 		try {
 			mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
-			if (this.lockScreenTitle != null && this.lockScreenImage != null) { 
-				mRemoteControlClient.editMetadata(true)
-					.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, this.lockScreenTitle)
-					.putBitmap(100, this.lockScreenImage).apply(); 
-			} else if (this.lockScreenTitle != null) { 
-		        mRemoteControlClient.editMetadata(true).putString(MediaMetadataRetriever.METADATA_KEY_TITLE,this.lockScreenTitle).apply();
-		    } else if (this.lockScreenImage != null) { 
-		    	mRemoteControlClient.editMetadata(true).putBitmap(100, this.lockScreenImage).apply(); 
-		    }
-		    mRemoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE|RemoteControlClient.FLAG_KEY_MEDIA_STOP);
+			if (this.lockScreenTitle != null && this.lockScreenImage != null) {
+				mRemoteControlClient.editMetadata(true).putString(MediaMetadataRetriever.METADATA_KEY_TITLE, this.lockScreenTitle)
+						.putBitmap(100, this.lockScreenImage).apply();
+			} else if (this.lockScreenTitle != null) {
+				mRemoteControlClient.editMetadata(true).putString(MediaMetadataRetriever.METADATA_KEY_TITLE, this.lockScreenTitle).apply();
+			} else if (this.lockScreenImage != null) {
+				mRemoteControlClient.editMetadata(true).putBitmap(100, this.lockScreenImage).apply();
+			}
+			mRemoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE | RemoteControlClient.FLAG_KEY_MEDIA_STOP);
 			mAudioManager.registerRemoteControlClient(mRemoteControlClient);
-			if (this.isPlaying() || this.isLoading()) { 
+			if (this.isPlaying() || this.isLoading()) {
 				mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
-			} else { 
+			} else {
 				mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
 			}
-		} catch (NoClassDefFoundError e) { 
-			
-		} catch (java.lang.NoSuchMethodError e) { 
-			 
+		} catch (NoClassDefFoundError e) {
+
+		} catch (java.lang.NoSuchMethodError e) {
+
 		}
 	}
 
@@ -374,23 +394,23 @@ public class PlaybackService extends Service implements OnErrorListener,
 	}
 
 	public boolean stop() {
-		Log.d(TAG, "STOP"); 
+		Log.d(TAG, "STOP");
 		mediaPlayer.stop();
 		mNotificationHandler.stopNotification();
-		sendIsStopped();		
+		sendIsStopped();
 		if (updateProgressThread != null && updateProgressThread.isAlive()) {
 			mHandler.removeCallbacks(updateProgressRunner);
 			updateProgressThread.interrupt();
 			updateProgressThread = null;
 		}
-		 mAudioManager.unregisterMediaButtonEventReceiver(mRemoteControlResponder);
-		 try {
-			 mAudioManager.unregisterRemoteControlClient(mRemoteControlClient); 
-		 } catch (NoClassDefFoundError e) { 
-			 
-		 } catch (java.lang.NoSuchMethodError e) { 
-			 
-		 }
+		mAudioManager.unregisterMediaButtonEventReceiver(mRemoteControlResponder);
+		try {
+			mAudioManager.unregisterRemoteControlClient(mRemoteControlClient);
+		} catch (NoClassDefFoundError e) {
+
+		} catch (java.lang.NoSuchMethodError e) {
+
+		}
 		return true;
 	}
 
@@ -432,28 +452,31 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	@Override
 	public void onPrepared(MediaPlayer mp) {
-		Log.d(TAG, "MediaPlayer is prepared, beginning playback of "
-				+ getNowPlaying());
+		Log.d(TAG, "MediaPlayer is prepared, beginning playback of " + getNowPlaying());
 		mediaPlayer.start();
 		if (mAutoNotify)
 			mNotificationHandler.startNotification();
 		sendIsPlaying();
 
-		mAudioManager.requestAudioFocus(mAudioFocusChangeListener,
-				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+		mAudioManager.requestAudioFocus(mAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
 		if (mOnPreparedListener != null) {
 			Log.d(TAG, "Passing prepared along.");
 			mOnPreparedListener.onPrepared(mp);
+		}
+		
+		if (this.seekOnStart && this.startTime > 0) {
+			this.seekOnStart = false;
+			this.seekTo(startTime); 
 		}
 	}
 
 	public void setOnErrorListener(OnErrorListener listener) {
 		mOnErrorListener = listener;
 	}
-	
-	public void setOnCompletionListener(OnCompletionListener listener) { 
-		mOnCompletionListener = listener; 
+
+	public void setOnCompletionListener(OnCompletionListener listener) {
+		mOnCompletionListener = listener;
 	}
 
 	@Override
@@ -471,7 +494,6 @@ public class PlaybackService extends Service implements OnErrorListener,
 		return false;
 	}
 
-
 	/*
 	 * This should be overridden by subclasses which wish to handle messages
 	 * sent to mHandler without re-implementing the handler. It is a noop by
@@ -488,8 +510,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	}
 
 	private void sendIsPlaying(int progress) {
-		if (getState() == MediaPlayerWrapper.STARTED
-				&& mPlayerHaterListener != null) {
+		if (getState() == MediaPlayerWrapper.STARTED && mPlayerHaterListener != null) {
 			mPlayerHaterListener.onPlaying(progress);
 		}
 	}
@@ -538,23 +559,22 @@ public class PlaybackService extends Service implements OnErrorListener,
 		if (!mAutoNotify) {
 			mNotificationHandler.startNotification();
 		} else {
-			Log.e(TAG,
-					"startForeground() was called, but set to do this automatically. Ignoring request.");
+			Log.e(TAG, "startForeground() was called, but set to do this automatically. Ignoring request.");
 		}
 	}
 
 	public void doStopForeground() {
 		mNotificationHandler.stopNotification();
 	}
-	
+
 	public void setNotificationTitle(String notificationTitle) {
 		mNotificationHandler.setTitle(notificationTitle);
 	}
-	
+
 	public void setNotificationText(String notificationText) {
 		mNotificationHandler.setText(notificationText);
 	}
-	
+
 	/*
 	 * creates a media player (wrapped, of course) and registers the listeners
 	 * for all of the events.
@@ -568,8 +588,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	 * class' handler with the message we request and the duration which has
 	 * passed
 	 */
-	protected static UpdateProgressRunnable createUpdateProgressRunner(
-			MediaPlayerWrapper mediaPlayer, Handler handler) {
+	protected static UpdateProgressRunnable createUpdateProgressRunner(MediaPlayerWrapper mediaPlayer, Handler handler) {
 		return new UpdateProgressRunnable(mediaPlayer, handler, PROGRESS_UPDATE);
 	}
 
@@ -577,24 +596,23 @@ public class PlaybackService extends Service implements OnErrorListener,
 	 * This class basically just makes sure that we never need to re-bind
 	 * ourselves.
 	 */
-	protected static PlayerListenerManager createPlayerListenerManager(
-			PlaybackService service) {
+	protected static PlayerListenerManager createPlayerListenerManager(PlaybackService service) {
 		PlayerListenerManager mgr = new PlayerListenerManager();
 		mgr.setOnErrorListener(service);
 		mgr.setOnSeekCompleteListener(service);
 		mgr.setOnPreparedListener(service);
-		mgr.setOnCompletionListener(service); 
+		mgr.setOnCompletionListener(service);
 		return mgr;
 	}
-	
-	/* 
+
+	/*
 	 * These methods just exist so that they can be overridden.
 	 */
 	protected static OnAudioFocusChangeListener createAudioFocusChangeListener(PlaybackService service) {
 		return new OnAudioFocusChangeListener(service);
 	}
-	
-	/* 
+
+	/*
 	 * One more...
 	 */
 	protected static NotificationHandler createNotificationHandler(PlaybackService service) {
@@ -611,9 +629,9 @@ public class PlaybackService extends Service implements OnErrorListener,
 		}
 		if (mOnCompletionListener != null) {
 			Log.e(TAG, "Passing completion along.");
-			mOnCompletionListener.onCompletion(mp); 
+			mOnCompletionListener.onCompletion(mp);
 		}
-		stop(); 
+		stop();
 	}
 
 }

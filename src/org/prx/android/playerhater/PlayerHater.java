@@ -21,20 +21,34 @@ public interface PlayerHater {
 	boolean stop();
 	
 	boolean play() throws IllegalStateException, IOException;
+	boolean playAt(int startTime) throws IllegalStateException, IOException; 
 	
 	boolean play(String fileOrUrl) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	boolean play(String fileOrUrl, boolean isUrl) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	boolean play(String fileOrUrl, boolean isUrl, Activity activityTriggeredOnNotificationTouch) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	boolean play(String fileOrUrl, boolean isUrl, Activity activityTriggeredOnNotificationTouch, int notificationView) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+
+	boolean playAt(String fileOrUrl, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean playAt(String fileOrUrl, boolean isUrl, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean playAt(String fileOrUrl, boolean isUrl, Activity activityTriggeredOnNotificationTouch, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean playAt(String fileOrUrl, boolean isUrl, Activity activityTriggeredOnNotificationTouch, int notificationView, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	
 	boolean play(FileDescriptor fd) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	boolean play(FileDescriptor fd, Activity activityTriggeredOnNotificationTouch) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	boolean play(FileDescriptor fd, Activity activityTriggeredOnNotificationTouch, int notificationView) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
-	
+
+	boolean playAt(FileDescriptor fd, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean playAt(FileDescriptor fd, Activity activityTriggeredOnNotificationTouch, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean playAt(FileDescriptor fd, Activity activityTriggeredOnNotificationTouch, int notificationView, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+
 	boolean play(Uri url) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	boolean play(Uri url, Activity activityTriggeredOnNotificationTouch) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
 	boolean play(Uri url, Activity activityTriggeredOnNotificationTouch, int notificationView) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
-	
+
+	boolean playAt(Uri url, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean playAt(Uri url, Activity activityTriggeredOnNotificationTouch, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+	boolean playAt(Uri url, Activity activityTriggeredOnNotificationTouch, int notificationView, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException;
+
 	TransientPlayer transientPlay(String fileOrUrl);
 	TransientPlayer transientPlay(String fileOrUrl, boolean isDuckable);
 	TransientPlayer transientPlay(FileDescriptor file);
