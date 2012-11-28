@@ -156,17 +156,8 @@ public class PlaybackService extends Service implements OnErrorListener, OnPrepa
 		Log.d(TAG, "PAUSE");
 		mediaPlayer.pause();
 		// mNotificationHandler.stopNotification();
-		if (updateProgressThread != null && updateProgressThread.isAlive()) {
-			mHandler.removeCallbacks(updateProgressRunner);
-			updateProgressThread.interrupt();
-			updateProgressThread = null;
-		}
+		stopProgressThread(); 
 		sendIsPaused();
-		if (updateProgressThread != null && updateProgressThread.isAlive()) {
-			mHandler.removeCallbacks(updateProgressRunner);
-			updateProgressThread.interrupt();
-			updateProgressThread = null;
-		}
 		this.mNotificationHandler.setToPlay();
 		try {
 			mRemoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
@@ -272,20 +263,39 @@ public class PlaybackService extends Service implements OnErrorListener, OnPrepa
 		this.startTime = startTime * 1000; 
 		return play(); 
 	}
+	
+	private void stopProgressThread() { 
+		if (updateProgressThread != null && updateProgressThread.isAlive()) {
+			mHandler.removeCallbacks(updateProgressRunner);
+			updateProgressThread.interrupt();
+			updateProgressThread = null;
+		}
+	}
+	
+	private void startProgressThread() { 
+		stopProgressThread(); 
+		updateProgressThread = new Thread(updateProgressRunner);
+		updateProgressThread.start();
+	}
 
 	public boolean play() throws IllegalStateException, IOException {
-
 		switch (mediaPlayer.getState()) {
 		case MediaPlayerWrapper.INITIALIZED:
 		case MediaPlayerWrapper.STOPPED:
-			performPrepare();
+			if (this.nowPlayingType == FILE) { 
+				performPrepareSynchronous();  
+			} else { 
+				performPrepare();
+			}
 			break;
 		case MediaPlayerWrapper.PREPARED:
 		case MediaPlayerWrapper.PAUSED:
 			mediaPlayer.start();
 			sendIsPlaying();
-			if (mAutoNotify)
+			if (mAutoNotify) { 
 				mNotificationHandler.startNotification();
+			}
+			startProgressThread(); 
 			break;
 		case MediaPlayerWrapper.IDLE:
 			if (nowPlayingType == URL) {
@@ -383,14 +393,33 @@ public class PlaybackService extends Service implements OnErrorListener, OnPrepa
 		sendIsLoading();
 		mediaPlayer.prepareAsync();
 
-		if (updateProgressThread != null && updateProgressThread.isAlive()) {
-			mHandler.removeCallbacks(updateProgressRunner);
-			updateProgressThread.interrupt();
-			updateProgressThread = null;
+		startProgressThread(); 
+	}
+	
+	private void performPrepareSynchronous() { 
+		Log.d(TAG, "Starting synchronous preparation of: " + getNowPlaying());
+		sendIsLoading();
+		int retryCount = 0; 
+		while (retryCount < 5) { 
+			try { 
+				Log.d(TAG, "trying " + retryCount); 
+				if (mediaPlayer.getState() == mediaPlayer.PREPARED) { 
+					break; 
+				}
+				mediaPlayer.prepare();
+			} catch (IOException e) { 
+				retryCount++; 
+				e.printStackTrace(); 
+			}
 		}
+		if (retryCount == 5) { 
+			reset(); 
+			onError(null, 0, 0); 
+			return; 
+		}
+ 		mediaPlayer.start(); 
 
-		updateProgressThread = new Thread(updateProgressRunner);
-		updateProgressThread.start();
+		startProgressThread(); 
 	}
 
 	public boolean stop() {
@@ -398,11 +427,7 @@ public class PlaybackService extends Service implements OnErrorListener, OnPrepa
 		mediaPlayer.stop();
 		mNotificationHandler.stopNotification();
 		sendIsStopped();
-		if (updateProgressThread != null && updateProgressThread.isAlive()) {
-			mHandler.removeCallbacks(updateProgressRunner);
-			updateProgressThread.interrupt();
-			updateProgressThread = null;
-		}
+		stopProgressThread(); 
 		mAudioManager.unregisterMediaButtonEventReceiver(mRemoteControlResponder);
 		try {
 			mAudioManager.unregisterRemoteControlClient(mRemoteControlClient);
@@ -482,11 +507,8 @@ public class PlaybackService extends Service implements OnErrorListener, OnPrepa
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		Log.e(TAG, "Got MediaPlayer error: " + what + " / " + extra);
-		if (updateProgressThread != null && updateProgressThread.isAlive()) {
-			mHandler.removeCallbacks(updateProgressRunner);
-			updateProgressThread.interrupt();
-			updateProgressThread = null;
-		}
+		stopProgressThread(); 
+		reset(); 
 		if (mOnErrorListener != null) {
 			Log.e(TAG, "Passing error along.");
 			return mOnErrorListener.onError(mp, what, extra);
@@ -622,11 +644,7 @@ public class PlaybackService extends Service implements OnErrorListener, OnPrepa
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.e(TAG, "Got MediaPlayer completion");
-		if (updateProgressThread != null && updateProgressThread.isAlive()) {
-			mHandler.removeCallbacks(updateProgressRunner);
-			updateProgressThread.interrupt();
-			updateProgressThread = null;
-		}
+		stopProgressThread(); 
 		if (mOnCompletionListener != null) {
 			Log.e(TAG, "Passing completion along.");
 			mOnCompletionListener.onCompletion(mp);

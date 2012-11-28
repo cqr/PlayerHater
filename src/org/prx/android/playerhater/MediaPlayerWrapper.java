@@ -73,6 +73,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 			this.mMediaPlayer.prepare();
 			this.mState = PREPARED;
 		} else {
+			Log.d(TAG, "state is " + this.mState); 
 			throw (new IllegalStateException());
 		}
 	}
