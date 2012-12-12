@@ -211,6 +211,10 @@ public class PlaybackService extends Service implements OnErrorListener, OnPrepa
 	public boolean isPlaying() {
 		return (mediaPlayer.getState() == MediaPlayerWrapper.STARTED);
 	}
+	
+	public boolean isPaused() { 
+		return (mediaPlayer.getState() == MediaPlayerWrapper.PAUSED); 
+	}
 
 	public boolean isLoading() {
 		return (mediaPlayer.getState() == MediaPlayerWrapper.INITIALIZED || mediaPlayer.getState() == MediaPlayerWrapper.PREPARING || mediaPlayer.getState() == MediaPlayerWrapper.PREPARED);
@@ -240,10 +244,16 @@ public class PlaybackService extends Service implements OnErrorListener, OnPrepa
 
 	public boolean play(FileDescriptor fd) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		nowPlayingType = FILE;
+		if (fd == null) { 
+			return false; 
+		}
 		nowPlayingString = fd.toString();
 		nowPlayingFile = fd;
 		if (mediaPlayer.getState() != MediaPlayerWrapper.IDLE)
 			reset();
+		if (nowPlayingString.equalsIgnoreCase("FileDescriptor[-1]")) { 
+			return false; 
+		}
 		mediaPlayer.setDataSource(nowPlayingFile);
 		return play();
 	}

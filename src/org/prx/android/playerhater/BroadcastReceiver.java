@@ -47,13 +47,17 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
                 KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE == event.getKeyCode()) {
             	if (mService.isPlaying()) { 
             		mService.pause(); 
-            	} else { 
+            	} else if (mService.isPaused()) { 
             		try { 
-            			mService.play(); 
+            			mService.play();
             		} catch (IOException e) { 
             			e.printStackTrace(); 
+            		} catch (java.lang.NullPointerException e) { 
+            			e.printStackTrace(); 
+            		} catch (Exception e) { 
+            			e.printStackTrace(); 
             		}
-            	}
+            	} 
             }
 		}
 		if (intent.getAction() != null && intent.getAction().equals(NotificationHandler.PLAY_PAUSE_ACTION)) { 
