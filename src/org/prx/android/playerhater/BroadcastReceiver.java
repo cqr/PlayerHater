@@ -50,6 +50,8 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
             	} else if (mService.isPaused()) { 
             		try { 
             			mService.play();
+            		} catch (java.lang.IllegalStateException e) { 
+            			e.printStackTrace(); 
             		} catch (IOException e) { 
             			e.printStackTrace(); 
             		} catch (java.lang.NullPointerException e) { 
@@ -68,6 +70,8 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 					mService.play();
 				}
 			} catch (IOException e) { 
+				e.printStackTrace(); 
+			} catch (java.lang.IllegalStateException e) { 
 				e.printStackTrace(); 
 			}
 		}

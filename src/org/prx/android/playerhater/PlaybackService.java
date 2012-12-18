@@ -244,7 +244,7 @@ public class PlaybackService extends Service implements OnErrorListener, OnPrepa
 
 	public boolean play(FileDescriptor fd) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
 		nowPlayingType = FILE;
-		if (fd == null) { 
+		if (fd == null || !fd.valid()) { 
 			return false; 
 		}
 		nowPlayingString = fd.toString();
@@ -310,7 +310,7 @@ public class PlaybackService extends Service implements OnErrorListener, OnPrepa
 		case MediaPlayerWrapper.IDLE:
 			if (nowPlayingType == URL) {
 				play(nowPlayingUrl);
-			} else {
+			} else if (nowPlayingFile != null && nowPlayingFile.valid()) {
 				play(nowPlayingFile);
 			}
 			break;
@@ -393,9 +393,13 @@ public class PlaybackService extends Service implements OnErrorListener, OnPrepa
 		if (getState() == MediaPlayerWrapper.STARTED)
 			playAfterSeek = true;
 
-		mediaPlayer.pause();
-		sendIsLoading();
-		mediaPlayer.seekTo(pos);
+		try { 
+			mediaPlayer.pause();
+			sendIsLoading();
+			mediaPlayer.seekTo(pos);
+		} catch (java.lang.IllegalStateException e) { 
+			// do nothing
+		}
 	}
 
 	private void performPrepare() {
