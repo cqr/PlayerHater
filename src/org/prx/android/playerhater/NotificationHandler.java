@@ -106,7 +106,7 @@ public class NotificationHandler {
 			notificationView.setOnClickPendingIntent(R.id.notClose, stopPendingIntent); 
 			notificationView.setTextViewText(R.id.notContentTitle, mNotificationTitle); 
 			notificationView.setTextViewText(R.id.notContentText, mNotificationText); 
-			notificationView.setImageViewResource(R.id.notImage, mNotificationIcon); 
+			//notificationView.setImageViewResource(R.id.notImage, mNotificationIcon); 
 			mNotification.contentView = notificationView;
 		}
 
