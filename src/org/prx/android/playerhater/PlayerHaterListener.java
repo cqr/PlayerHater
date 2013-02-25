@@ -4,5 +4,5 @@ public interface PlayerHaterListener {
 	void onPaused();
 	void onLoading();
 	void onStopped();
-	void onPlaying(int progress);
+	void onPlaying(Song song, int progress);
 }

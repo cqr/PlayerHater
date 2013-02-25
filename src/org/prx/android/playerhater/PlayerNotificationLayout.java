@@ -22,7 +22,7 @@ public class PlayerNotificationLayout extends RelativeLayout {
 		params.rightMargin = 10;
 		icon.setBackgroundColor(Color.BLUE);
 		icon.setLayoutParams(params);
-		return icon;	
+		return icon;
 	}
 
 }

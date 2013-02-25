@@ -5,9 +5,14 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
-import android.util.Log;
+import android.net.Uri;
 
 public class TransientPlayer {
+	
+	public static TransientPlayer play(Context c, Uri url,
+			boolean isDuckable) {
+		return new TransientPlayer(c, url, isDuckable).play();
+	}
 
 	public static TransientPlayer play(Context c, String url, boolean isDuckable) {
 		return new TransientPlayer(c, url, isDuckable).play();
@@ -21,11 +26,12 @@ public class TransientPlayer {
 	private final MediaPlayerWrapper wrapper;
 	private final boolean isDuckable;
 	private final String url;
+	private final Uri uri;
 	private final FileDescriptor file;
 	private final int playType;
 	private static final int FILE = 1;
 	private static final int URL = 2;
-	private static final String TAG = "TransientPlayer";
+	private static final int URI = 3;
 	
 	final AudioManager audioManager; 
 
@@ -43,6 +49,7 @@ public class TransientPlayer {
 		this.c = c;
 		this.wrapper = new MediaPlayerWrapper();
 		this.file = null;
+		this.uri = null;
 		this.url = url;
 		this.isDuckable = isDuckable;
 		this.playType = URL;
@@ -53,9 +60,21 @@ public class TransientPlayer {
 		this.c = c;
 		this.wrapper = new MediaPlayerWrapper();
 		this.url = null;
+		this.uri = null;
 		this.file = file;
 		this.isDuckable = isDuckable;
 		this.playType = FILE;
+		this.audioManager = (AudioManager)c.getSystemService(Context.AUDIO_SERVICE);
+	}
+
+	public TransientPlayer(Context c, Uri url, boolean isDuckable) {
+		this.c = c;
+		this.wrapper = new MediaPlayerWrapper();
+		this.url = null;
+		this.file = null;
+		this.uri = url;
+		this.isDuckable = isDuckable;
+		this.playType = URI;
 		this.audioManager = (AudioManager)c.getSystemService(Context.AUDIO_SERVICE);
 	}
 
@@ -105,6 +124,9 @@ public class TransientPlayer {
 					break;
 				case URL:
 					wrapper.setDataSource(url);
+					break;
+				case URI:
+					wrapper.setDataSource(c, uri);
 					break;
 				}
 				wrapper.prepare();

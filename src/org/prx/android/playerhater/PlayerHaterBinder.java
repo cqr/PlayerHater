@@ -1,14 +1,8 @@
 package org.prx.android.playerhater;
 
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.io.IOException;
 
-import org.prx.android.playerhater.PlayerHater;
-
 import android.app.Activity;
-import android.content.res.Resources;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
@@ -17,9 +11,8 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Bundle;
 
-public class PlayerHaterBinder extends Binder implements PlayerHater {
+public class PlayerHaterBinder extends Binder {
 
 	private final PlaybackService mService;
 	private PlayerListenerManager mPlayerListenerManager;
@@ -30,359 +23,98 @@ public class PlayerHaterBinder extends Binder implements PlayerHater {
 		mPlayerListenerManager = playerListenerManager;
 	}
 
-	@Override
-	public boolean play() throws IllegalStateException, IOException {
-		return mService.play();
-	}
-	
-	@Override
-	public boolean playAt(int startTime) throws IllegalStateException, IOException {
-		return mService.playAt(startTime); 
+	public boolean play(Song song, int position) throws IllegalStateException,
+			IllegalArgumentException, SecurityException, IOException {
+		return mService.play(song, position);
 	}
 
-	@Override
 	public boolean pause() {
 		return mService.pause();
 	}
 
-	@Override
 	public boolean stop() {
 		return mService.stop();
 	}
 
-	@Override
-	public boolean play(String fileOrUrl) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
-		return play(fileOrUrl, fileOrUrl.charAt(0) != '/');
-	}
-	
-	@Override
-	public boolean playAt(String fileOrUrl, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
-		return playAt(fileOrUrl, fileOrUrl.charAt(0) != '/', startTime); 
+	public boolean play() throws IllegalStateException, IOException {
+		return mService.play();
 	}
 
-	@Override
-	public boolean play(String fileOrUrl, boolean isUrl)
-			throws IllegalStateException, IllegalArgumentException,
-			SecurityException, IOException {
-		if (isUrl) {
-			return mService.play(fileOrUrl);
-		} else {
-			try {
-				return play((new FileInputStream(new File(fileOrUrl))).getFD());
-			} catch (Exception e) {
-				return false;
-			}
-		}
-	}
-	
-	@Override
-	public boolean playAt(String fileOrUrl, boolean isUrl, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException,
+	public boolean play(int startTime) throws IllegalStateException,
 			IOException {
-		if (isUrl) {
-			return mService.playAt(fileOrUrl, startTime);
-		} else {
-			try {
-				return playAt((new FileInputStream(new File(fileOrUrl))).getFD(), startTime);
-			} catch (Exception e) {
-				return false;
-			}
-		}
+		return mService.play(startTime);
 	}
 
-	@Override
-	public String getNowPlaying() {
-		return mService.getNowPlaying();
+	public void setNotificationTitle(String title) {
+		mService.getNotification().setTitle(title);
 	}
 
-	@Override
-	public boolean isPlaying() {
-		return mService.isPlaying();
-	}
-	
-	@Override 
-	public boolean isLoading() { 
-		return mService.isLoading(); 
+	public void setNotificationText(String artist) {
+		mService.getNotification().setText(artist);
 	}
 
-	@Override
-	public boolean play(String fileOrUrl, boolean isUrl, Activity activity)
-			throws IllegalStateException, IllegalArgumentException,
-			SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		return play(fileOrUrl, isUrl);
-	}
-	
-	@Override
-	public boolean playAt(String fileOrUrl, boolean isUrl, Activity activity, int startTime) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		return playAt(fileOrUrl, isUrl, startTime);
-	}
-	
-	@Override
-	public boolean play(String fileOrUrl, boolean isUrl, Activity activity,
-			int view) throws IllegalStateException, IllegalArgumentException,
-			SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		setNotificationView(view);
-		return play(fileOrUrl, isUrl);
-	}
-	
-	@Override
-	public boolean playAt(String fileOrUrl, boolean isUrl, Activity activity, int view, int startTime)
-			throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		setNotificationView(view);
-		return playAt(fileOrUrl, isUrl, startTime);
+	public void setIntentActivity(Activity activity) {
+		mService.getNotification().setIntentClass(activity.getClass());
 	}
 
-	@Override
-	public boolean play(FileDescriptor fd) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
-		return mService.play(fd);
-	}
-	
-	@Override
-	public boolean playAt(FileDescriptor fd, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
-		return mService.playAt(fd, startTime); 
-	}
-
-	@Override
-	public boolean play(FileDescriptor fd, Activity activity)
-			throws IllegalStateException, IllegalArgumentException,
-			SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		return play(fd);
-	}
-	
-	@Override
-	public boolean playAt(FileDescriptor fd, Activity activity, int startTime) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		return playAt(fd, startTime);
-	}
-
-	@Override
-	public boolean play(FileDescriptor fd, Activity activity, int view)
-			throws IllegalStateException, IllegalArgumentException,
-			SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		setNotificationView(view);
-		return play(fd);
-	}
-	
-	@Override
-	public boolean playAt(FileDescriptor fd, Activity activity, int view, int startTime) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		setNotificationView(view);
-		return playAt(fd, startTime);
-	}
-
-	@Override
-	public boolean play(Uri url) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
-		return play(url.toString(), true);
-	}
-	
-	@Override
-	public boolean playAt(Uri url, int startTime) throws IllegalStateException, IllegalArgumentException, SecurityException, IOException {
-		return playAt(url.toString(), true, startTime); 
-	}
-
-	@Override
-	public boolean play(Uri url, Activity activity)
-			throws IllegalStateException, IllegalArgumentException,
-			SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		return play(url);
-	}
-	
-	@Override
-	public boolean playAt(Uri url, Activity activity, int startTime) throws IllegalStateException, IllegalArgumentException,
-			SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		return playAt(url, startTime);
-	}
-	
-	@Override
-	public boolean play(Uri url, Activity activity, int view)
-			throws IllegalStateException, IllegalArgumentException,
-			SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		setNotificationView(view);
-		return play(url);
-	}
-
-	@Override
-	public boolean playAt(Uri url, Activity activity, int view, int startTime) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
-		setNotificationIntentActivity(activity);
-		setNotificationView(view);
-		return playAt(url, startTime);
-	}
-
-	@Override
-	public void setNotificationIntentActivity(Activity activity) {
-		mService.setNotificationIntentActivity(activity);
-	}
-
-	@Override
-	public void setNotificationView(int view) {
-		mService.setNotificationView(view);
-	}
-	
-	@Override
-	public void seekTo(int position) {
-		mService.seekTo(position);
-	}
-
-	@Override
 	public int getCurrentPosition() {
 		return mService.getCurrentPosition();
 	}
 
-	@Override
-	public int getState() {
-		return mService.getState();
-	}
-
-	/*
-	 * We use the delegation pattern here, rather than doing things
-	 * automatically
-	 */
-	@Override
-	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
-		mPlayerListenerManager.setOnBufferingUpdateListener(listener);
-	}
-
-	@Override
-	public void setOnCompletionListener(OnCompletionListener listener) {
-		mPlayerListenerManager.setOnCompletionListener(listener);
-	}
-
-	@Override
-	public void setOnInfoListener(OnInfoListener listener) {
-		mPlayerListenerManager.setOnInfoListener(listener);
-	}
-
-	@Override
-	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-		mService.setOnSeekCompleteListener(listener);
-	}
-
-	@Override
-	public void setOnErrorListener(OnErrorListener listener) {
-		mService.setOnErrorListener(listener);
-	}
-
-	@Override
-	public void setOnPreparedListener(OnPreparedListener listener) {
-		mService.setOnPreparedListener(listener);
-	}
-
-	@Override
-	public void setListener(PlayerHaterListener listener) {
-		mService.setListener(listener);
-	}
-
-	/*
-	 * End delegated listener methods
-	 */
-
-	@Override
-	public Bundle getBundle() {
-		return mService.getBundle();
-	}
-
-	@Override
-	public void commitBundle(Bundle icicle) {
-		mService.commitBundle(icicle);
-	}
-
-	@Override
-	public TransientPlayer transientPlay(String fileOrUrl) {
-		return transientPlay(fileOrUrl, false);
-	}
-
-	@Override
-	public TransientPlayer transientPlay(String fileOrUrl, boolean isDuckable) {
-		if (fileOrUrl.charAt(0) == '/') {
-			try {
-				return transientPlay(
-						(new FileInputStream(new File(fileOrUrl))).getFD(),
-						isDuckable);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		} 
-		return mService.transientPlay(fileOrUrl, isDuckable);
-	}
-
-	@Override
-	public TransientPlayer transientPlay(FileDescriptor file) {
-		return transientPlay(file, false);
-	}
-
-	@Override
-	public TransientPlayer transientPlay(FileDescriptor file, boolean isDuckable) {
-		return mService.transientPlay(file, isDuckable);
-	}
-
-	@Override
 	public int getDuration() {
 		return mService.getDuration();
 	}
 
-	@Override
-	public void setNotificationIcon(int notificationIcon) {
-		mService.setNotificationIcon(notificationIcon);
-	}
-	
-	@Override
-	public void setAutoNotify(boolean autoNotify) {
-		mService.setAutoNotify(autoNotify);
-	}
-	
-	@Override
-	public void startForeground() {
-		mService.doStartForeground();
-	}
-	
-	@Override
-	public void stopForeground() {
-		mService.doStopForeground();
+	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
+		mPlayerListenerManager.setOnBufferingUpdateListener(listener);
 	}
 
-	@Override
-	public void setNotificationTitle(String notificationTitle) {
-		mService.setNotificationTitle(notificationTitle);
+	public void setOnCompletionListener(OnCompletionListener listener) {
+		mPlayerListenerManager.setOnCompletionListener(listener);
 	}
 
-	@Override
-	public void setNotificationText(String notificationText) {
-		mService.setNotificationText(notificationText);
+	public void setOnInfoListener(OnInfoListener listener) {
+		mPlayerListenerManager.setOnInfoListener(listener);
 	}
 
-	@Override
-	public void setLockScreenImage(FileDescriptor file) {
-		mService.setLockScreenImage(file); 
-	}
-	
-	@Override 
-	public void setLockScreenImage(Resources res, int id) { 
-		mService.setLockScreenImage(res, id); 
+	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
+		mPlayerListenerManager.setOnSeekCompleteListener(listener);
 	}
 
-	@Override
-	public void setLockScreenTitle(String title) {
-		mService.setLockScreenTitle(title); 
+	public void setOnErrorListener(OnErrorListener listener) {
+		mPlayerListenerManager.setOnErrorListener(listener);
 	}
 
-	@Override
-	public void resetLockScreenControls() { 
-		mService.resetLockScreenControls(); 
+	public void setOnPreparedListener(OnPreparedListener listener) {
+		mPlayerListenerManager.setOnPreparedListener(listener);
+	}
+
+	public void setListener(PlayerHaterListener listener) {
+		mService.setListener(listener);
+	}
+
+	public Song getNowPlaying() {
+		return mService.getNowPlaying();
+	}
+
+	public boolean isPlaying() {
+		return mService.isPlaying();
+	}
+
+	public boolean isLoading() {
+		return mService.isLoading();
+	}
+
+	public int getState() {
+		return mService.getState();
+	}
+
+	public void setNotificationImage(int resourceId) {
+		mService.getNotification().setImage(resourceId);
+	}
+
+	public void setNotificationImage(Uri url) {
+		mService.getNotification().setImage(url);
 	}
 
 }
