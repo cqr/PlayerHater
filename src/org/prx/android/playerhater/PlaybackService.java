@@ -210,11 +210,6 @@ public class PlaybackService extends Service implements OnErrorListener,
 	public boolean play(Song song, int startTime) throws IllegalStateException,
 			IllegalArgumentException, SecurityException, IOException {
 		nowPlaying = song;
-		Log.d(TAG, "I AM COMING IN.");
-		Log.d(TAG, "WITH " + song);
-		if (mediaPlayer == null) {
-			Log.d(TAG, "BUT MEDIA PLAYER IS NULL");
-		}
 		if (mediaPlayer.getState() != MediaPlayerWrapper.IDLE)
 			reset();
 		mediaPlayer.setDataSource(getApplicationContext(), nowPlaying.getUri());
@@ -253,7 +248,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 		case MediaPlayerWrapper.PAUSED:
 			mediaPlayer.start();
 			sendIsPlaying();
-			mNotificationHandler.startNotification();
+			mNotificationHandler.resume();
 			startProgressThread();
 			break;
 		case MediaPlayerWrapper.IDLE:
@@ -416,7 +411,8 @@ public class PlaybackService extends Service implements OnErrorListener,
 	@Override
 	public void onPrepared(MediaPlayer mp) {
 		mediaPlayer.start();
-		mNotificationHandler.startNotification();
+		Log.d(TAG, getNowPlaying().toString());
+		mNotificationHandler.startNotification(getNowPlaying());
 		sendIsPlaying();
 
 		mAudioManager.requestAudioFocus(mAudioFocusChangeListener,

@@ -4,9 +4,12 @@ import com.jakewharton.notificationcompat2.NotificationCompat2;
 
 import android.app.Activity;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 public class NotificationHandler {
@@ -23,35 +26,62 @@ public class NotificationHandler {
 	private final PlaybackService mService;
 	private PendingIntent mContentIntent;
 	private RemoteViews mNotificationView;
-	private int mNotificationIcon;
+	private int mNotificationIcon = R.drawable.__player_hater_icon;
 	private Notification mNotification;
 	private int mNotificationImageResourceId;
 	private boolean mIsPlaying = false;
+	private boolean mIsVisible = false;
 
 	private Uri mNotificationImageUrl;
 
+	private NotificationManager mNotificationManager;
+
 	public NotificationHandler(PlaybackService service) {
 		mService = service;
+		mNotificationManager = (NotificationManager) mService
+				.getApplicationContext().getSystemService(
+						Context.NOTIFICATION_SERVICE);
 	}
 
-	public void startNotification() {
+	public void startNotification(Song forSong) {
+		Log.d("NOTIFY", forSong.toString());
+		if (forSong != null) {
+			setTitle(forSong.getTitle());
+			setText(forSong.getArtist());
+			setImage(forSong.getAlbumArt());
+		}
 		mService.startForeground(NOTIFICATION_NU, getNotification());
+		mIsVisible = true;
+	}
+	
+	public void resume() {
+		if (!mIsVisible) {
+			startNotification(null);
+		} else {
+			updateNotification();
+		}
+		mIsVisible = true;
 	}
 
 	public void stopNotification() {
+		mIsVisible = false;
 		mService.stopForeground(true);
 	}
 
 	public void setTitle(String notificationTitle) {
 		mNotificationTitle = notificationTitle;
-		if (mNotificationView != null)
+		if (mNotificationView != null) {
 			mNotificationView.setTextViewText(R.id.title, mNotificationTitle);
+			updateNotification();
+		}
 	}
 
 	public void setText(String notificationText) {
 		mNotificationText = notificationText;
-		if (mNotificationView != null)
+		if (mNotificationView != null) {
 			mNotificationView.setTextViewText(R.id.text, mNotificationText);
+			updateNotification();
+		}
 	}
 
 	public void setImage(int resourceId) {
@@ -62,6 +92,7 @@ public class NotificationHandler {
 				mNotificationView.setImageViewResource(R.id.image,
 						mNotificationImageResourceId);
 			}
+			updateNotification();
 		}
 	}
 
@@ -73,6 +104,7 @@ public class NotificationHandler {
 				mNotificationView.setImageViewUri(R.id.image,
 						mNotificationImageUrl);
 			}
+			updateNotification();
 		}
 	}
 
@@ -94,6 +126,7 @@ public class NotificationHandler {
 				mNotificationView.setImageViewResource(R.id.button,
 						R.drawable.__player_hater_play);
 			}
+			updateNotification();
 		}
 	}
 
@@ -149,6 +182,12 @@ public class NotificationHandler {
 		}
 
 		return mNotification;
+	}
+
+	private void updateNotification() {
+		if (mIsVisible) {
+			mNotificationManager.notify(NOTIFICATION_NU, mNotification);
+		}
 	}
 
 }
