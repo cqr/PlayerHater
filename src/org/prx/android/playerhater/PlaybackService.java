@@ -7,7 +7,6 @@ import org.prx.android.playerhater.lifecycle.MediaButtonHandler;
 import org.prx.android.playerhater.lifecycle.NotificationHandler;
 import org.prx.android.playerhater.lifecycle.RemoteControlClientHandler;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
@@ -24,7 +23,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 
-@SuppressLint("NewApi")
+
 public class PlaybackService extends Service implements OnErrorListener,
 		OnPreparedListener, OnSeekCompleteListener, OnCompletionListener {
 
@@ -63,7 +62,6 @@ public class PlaybackService extends Service implements OnErrorListener,
 	};
 
 	@SuppressWarnings("deprecation")
-	@SuppressLint("NewApi")
 	@Override
 	public void onStart(Intent intent, int startId) {
 		super.onStart(intent, startId);

@@ -23,12 +23,11 @@ public class BasicSong implements Song {
 		mAlbumArt = Uri.parse(mBundle.getString(ALBUM_ART));
 	}
 	
-	public BasicSong(Uri url, String title, String artist, String albumArt, int resourceId) {
+	public BasicSong(Uri url, String title, String artist, String albumArt, int _) {
 		mUrl = url;
 		mTitle = title;
 		mArtist = artist;
 		mAlbumArt = Uri.parse(albumArt);
-		
 	}
 	
 	public BasicSong(Uri url, String title, String artist, Uri albumArt) {

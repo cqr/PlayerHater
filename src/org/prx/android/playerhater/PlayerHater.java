@@ -62,7 +62,6 @@ public class PlayerHater implements AudioPlaybackInterface {
 
 	private String mPendingAlbumArtType;
 	private Uri mPendingAlbumArtUrl;
-	private PlayerHaterListener mPendingListener;
 	private OnErrorListener mPendingErrorListener;
 	private OnSeekCompleteListener mPendingSeekListener;
 	private OnPreparedListener mPendingPreparedListener;
@@ -73,10 +72,12 @@ public class PlayerHater implements AudioPlaybackInterface {
 	private String mPendingNotificationText;
 	private Activity mPendingNotificationIntentActivity;
 	private OnBufferingUpdateListener mPendingBufferingListener;
+	private ListenerEcho mListener;
 
 	private PlayerHater(Context context) {
 		mPlayQueue = new ArrayList<Song>();
 		mStartPositions = new HashMap<Song, Integer>();
+		mListener = new ListenerEcho();
 		setContext(context);
 	}
 
@@ -106,9 +107,7 @@ public class PlayerHater implements AudioPlaybackInterface {
 			}
 		}
 
-		if (mPendingListener != null) {
-			setListener(mPendingListener);
-		}
+		service.setListener(mListener);
 
 		if (mPendingErrorListener != null) {
 			setOnErrorListener(mPendingErrorListener);
@@ -343,10 +342,7 @@ public class PlayerHater implements AudioPlaybackInterface {
 
 	@Override
 	public void setListener(PlayerHaterListener listener) {
-		mPendingListener = listener;
-		if (mPlayerHater != null) {
-			mPlayerHater.setListener(listener);
-		}
+		mListener.setListener(listener);
 	}
 
 	@Override
