@@ -2,4 +2,5 @@
 <resources>
     <bool name="__playerhater_lockscreen">false</bool>
     <bool name="__playerhater_audiofocus">false</bool>
+    <bool name="__playerhater_active_notification">false</bool>
 </resources>
