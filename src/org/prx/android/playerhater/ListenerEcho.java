@@ -8,9 +8,9 @@ public class ListenerEcho implements PlayerHaterListener {
 	private Song lastSong;
 	private int lastProgress;
 	
-	public void setListener(PlayerHaterListener listener) {
+	public void setListener(PlayerHaterListener listener, boolean withEcho) {
 		mListener = listener;
-		sendLastAction();
+		if (withEcho) sendLastAction();
 	}
 
 

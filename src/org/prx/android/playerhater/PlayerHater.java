@@ -342,7 +342,12 @@ public class PlayerHater implements AudioPlaybackInterface {
 
 	@Override
 	public void setListener(PlayerHaterListener listener) {
-		mListener.setListener(listener);
+		setListener(listener, true);
+	}
+	
+	@Override
+	public void setListener(PlayerHaterListener listener, boolean withEcho) {
+		mListener.setListener(listener, withEcho);
 	}
 
 	@Override

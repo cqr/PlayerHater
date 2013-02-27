@@ -50,6 +50,7 @@ public interface AudioPlaybackInterface {
 	
 	//PlayerHater listener
 	void setListener(PlayerHaterListener listener);
+	void setListener(PlayerHaterListener listener, boolean withEcho);
 	
 	
 	// Other Getters
