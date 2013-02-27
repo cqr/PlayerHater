@@ -89,10 +89,14 @@ public class PlaybackService extends Service implements OnErrorListener,
 		if (mLifecycleListener == null) {
 			mLifecycleListener = new ListenerCollection();
 			mLifecycleListener.add(new NotificationHandler(this));
-			mLifecycleListener.add(new MediaButtonHandler(this));
-			mLifecycleListener.add(new AudioFocusHandler(this,
-					mAudioFocusChangeListener));
-			mLifecycleListener.add(new RemoteControlClientHandler(this));
+			if (getResources().getBoolean(R.bool.__playerhater_audiofocus)) {
+				mLifecycleListener.add(new AudioFocusHandler(this,
+						mAudioFocusChangeListener));
+				mLifecycleListener.add(new MediaButtonHandler(this));
+			}
+			if (getResources().getBoolean(R.bool.__playerhater_lockscreen)) {
+				mLifecycleListener.add(new RemoteControlClientHandler(this));
+			}
 		}
 
 		if (mBroadcastReceiver == null) {
