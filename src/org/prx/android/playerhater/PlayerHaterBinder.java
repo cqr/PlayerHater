@@ -45,16 +45,16 @@ public class PlayerHaterBinder extends Binder {
 		return mService.play(startTime);
 	}
 
-	public void setNotificationTitle(String title) {
-		mService.getNotification().setTitle(title);
+	public void setTitle(String title) {
+		mService.setTitle(title);
 	}
 
-	public void setNotificationText(String artist) {
-		mService.getNotification().setText(artist);
+	public void setArtist(String artist) {
+		mService.setArtist(artist);
 	}
 
 	public void setIntentActivity(Activity activity) {
-		mService.getNotification().setIntentClass(activity.getClass());
+		mService.setIntentClass(activity.getClass());
 	}
 
 	public int getCurrentPosition() {
@@ -109,12 +109,12 @@ public class PlayerHaterBinder extends Binder {
 		return mService.getState();
 	}
 
-	public void setNotificationImage(int resourceId) {
-		mService.getNotification().setImage(resourceId);
+	public void setAlbumArt(int resourceId) {
+		mService.setAlbumArt(resourceId);
 	}
 
-	public void setNotificationImage(Uri url) {
-		mService.getNotification().setImage(url);
+	public void setAlbumArt(Uri url) {
+		mService.setAlbumArt(url);
 	}
 
 }

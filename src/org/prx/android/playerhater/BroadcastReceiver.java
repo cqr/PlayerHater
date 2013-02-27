@@ -2,6 +2,8 @@ package org.prx.android.playerhater;
 
 import java.io.IOException;
 
+import org.prx.android.playerhater.lifecycle.NotificationHandler;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;

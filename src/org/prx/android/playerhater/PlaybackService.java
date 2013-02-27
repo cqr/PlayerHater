@@ -1,26 +1,24 @@
 package org.prx.android.playerhater;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
+import org.prx.android.playerhater.lifecycle.AudioFocusHandler;
+import org.prx.android.playerhater.lifecycle.ListenerCollection;
+import org.prx.android.playerhater.lifecycle.MediaButtonHandler;
+import org.prx.android.playerhater.lifecycle.NotificationHandler;
+import org.prx.android.playerhater.lifecycle.RemoteControlClientHandler;
 
 import android.annotation.SuppressLint;
-import android.app.PendingIntent;
+import android.app.Activity;
 import android.app.Service;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.AudioManager;
-import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
-import android.media.RemoteControlClient;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -33,35 +31,27 @@ public class PlaybackService extends Service implements OnErrorListener,
 	protected static final String TAG = "PlayerHater/Service";
 	protected static final int PROGRESS_UPDATE = 9747244;
 
-	protected Song nowPlaying;
-
+	protected Song mNowPlaying;
 	private MediaPlayerWrapper mediaPlayer;
 	private UpdateProgressRunnable updateProgressRunner;
 	private Thread updateProgressThread;
 	private BroadcastReceiver mBroadcastReceiver;
 	private PlayerListenerManager playerListenerManager;
-	private OnErrorListener mOnErrorListener;
 	private OnSeekCompleteListener mOnSeekCompleteListener;
 	private OnPreparedListener mOnPreparedListener;
-	private AudioManager mAudioManager;
-	private ComponentName mRemoteControlResponder;
 	private PlayerHaterListener mPlayerHaterListener;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
 	private OnCompletionListener mOnCompletionListener;
-	private RemoteControlClient mRemoteControlClient;
+	private OnErrorListener mOnErrorListener;
 
-	private String lockScreenTitle;
-	private Bitmap lockScreenImage;
-
-	private NotificationHandler mNotificationHandler;
+	private ListenerCollection mLifecycleListener;
 	private boolean playAfterSeek;
-	private boolean seekOnStart = false;
-	private int startTime = 0;
+	private boolean mSeekOnStart = false;
+	private int mStartTime = 0;
 
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message m) {
-
 			switch (m.what) {
 			case PROGRESS_UPDATE:
 				sendIsPlaying(m.arg1);
@@ -72,11 +62,11 @@ public class PlaybackService extends Service implements OnErrorListener,
 		}
 	};
 
+	@SuppressWarnings("deprecation")
 	@SuppressLint("NewApi")
 	@Override
 	public void onStart(Intent intent, int startId) {
 		super.onStart(intent, startId);
-		Log.d(TAG, "I AM BEING ASKED TO START");
 
 		if (playerListenerManager == null) {
 			playerListenerManager = createPlayerListenerManager(this);
@@ -92,16 +82,17 @@ public class PlaybackService extends Service implements OnErrorListener,
 					mHandler);
 		}
 
-		if (mAudioManager == null) {
-			mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-		}
-
 		if (mAudioFocusChangeListener == null) {
-			mAudioFocusChangeListener = createAudioFocusChangeListener(this);
+			mAudioFocusChangeListener = new OnAudioFocusChangeListener(this);
 		}
 
-		if (mNotificationHandler == null) {
-			mNotificationHandler = createNotificationHandler(this);
+		if (mLifecycleListener == null) {
+			mLifecycleListener = new ListenerCollection();
+			mLifecycleListener.add(new NotificationHandler(this));
+			mLifecycleListener.add(new MediaButtonHandler(this));
+			mLifecycleListener.add(new AudioFocusHandler(this,
+					mAudioFocusChangeListener));
+			mLifecycleListener.add(new RemoteControlClientHandler(this));
 		}
 
 		if (mBroadcastReceiver == null) {
@@ -113,24 +104,6 @@ public class PlaybackService extends Service implements OnErrorListener,
 			filter.setPriority(10000);
 			getBaseContext().registerReceiver(mBroadcastReceiver, filter);
 		}
-		mRemoteControlResponder = new ComponentName(getPackageName(),
-				BroadcastReceiver.class.getName());
-		mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
-		// build the PendingIntent for the remote control client
-		Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-		mediaButtonIntent.setComponent(mRemoteControlResponder);
-		PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(
-				getApplicationContext(), 0, mediaButtonIntent, 0);
-		// create and register the remote control client
-		try {
-			mRemoteControlClient = new RemoteControlClient(mediaPendingIntent);
-			mAudioManager.registerRemoteControlClient(mRemoteControlClient);
-		} catch (NoClassDefFoundError e) {
-
-		} catch (java.lang.NoSuchMethodError e) {
-
-		}
-
 	}
 
 	@Override
@@ -142,36 +115,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 		mediaPlayer.pause();
 		stopProgressThread();
 		sendIsPaused();
-		mNotificationHandler.setToPlay();
-		try {
-			mRemoteControlClient
-					.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
-		} catch (NoClassDefFoundError e) {
-
-		} catch (java.lang.NoSuchMethodError e) {
-
-		}
 		return true;
-	}
-
-	public void setLockScreenImage(FileDescriptor fd) {
-		if (fd != null) {
-			this.lockScreenImage = BitmapFactory.decodeFileDescriptor(fd);
-		}
-	}
-
-	public void setLockScreenImage(Resources res, int id) {
-		if (res != null) {
-			this.lockScreenImage = BitmapFactory.decodeResource(res, id);
-		}
-	}
-
-	public void setLockScreenTitle(String title) {
-		this.lockScreenTitle = title;
-	}
-
-	public RemoteControlClient getRemoteControlClient() {
-		return this.mRemoteControlClient;
 	}
 
 	public int getState() {
@@ -179,7 +123,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	}
 
 	public Song getNowPlaying() {
-		return nowPlaying;
+		return mNowPlaying;
 	}
 
 	public boolean isPlaying() {
@@ -198,29 +142,23 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	public boolean play(Song song) throws IllegalStateException,
 			IllegalArgumentException, SecurityException, IOException {
-		nowPlaying = song;
-		if (mediaPlayer.getState() != MediaPlayerWrapper.IDLE) {
-			reset();
-		}
-		mediaPlayer.setDataSource(getApplicationContext(), nowPlaying.getUri());
-		return play();
-
+		return play(song, 0);
 	}
 
 	public boolean play(Song song, int startTime) throws IllegalStateException,
 			IllegalArgumentException, SecurityException, IOException {
-		nowPlaying = song;
+		mNowPlaying = song;
 		if (mediaPlayer.getState() != MediaPlayerWrapper.IDLE)
 			reset();
-		mediaPlayer.setDataSource(getApplicationContext(), nowPlaying.getUri());
+		mediaPlayer.setDataSource(getApplicationContext(), getNowPlaying()
+				.getUri());
 		return play(startTime);
-
 	}
 
 	public boolean play(int startTime) throws IllegalStateException,
 			IOException {
-		seekOnStart = true;
-		this.startTime = startTime * 1000;
+		mSeekOnStart = (startTime != 0);
+		mStartTime = startTime * 1000;
 		return play();
 	}
 
@@ -247,86 +185,17 @@ public class PlaybackService extends Service implements OnErrorListener,
 		case MediaPlayerWrapper.PREPARED:
 		case MediaPlayerWrapper.PAUSED:
 			mediaPlayer.start();
-			sendIsPlaying();
-			mNotificationHandler.resume();
+			sendStartedPlaying();
 			startProgressThread();
 			break;
 		case MediaPlayerWrapper.IDLE:
-			play(nowPlaying);
+			play(getNowPlaying());
 			break;
 		default:
 			throw new IllegalStateException("State is "
 					+ mediaPlayer.getState());
 		}
-		try {
-			mAudioManager
-					.registerMediaButtonEventReceiver(mRemoteControlResponder);
-			if (this.lockScreenTitle != null && this.lockScreenImage != null) {
-				mRemoteControlClient
-						.editMetadata(true)
-						.putString(MediaMetadataRetriever.METADATA_KEY_TITLE,
-								this.lockScreenTitle)
-						.putBitmap(100, this.lockScreenImage).apply();
-			} else if (this.lockScreenTitle != null) {
-				mRemoteControlClient
-						.editMetadata(true)
-						.putString(MediaMetadataRetriever.METADATA_KEY_TITLE,
-								this.lockScreenTitle).apply();
-			} else if (this.lockScreenImage != null) {
-				mRemoteControlClient.editMetadata(true)
-						.putBitmap(100, this.lockScreenImage).apply();
-			}
-			mRemoteControlClient
-					.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
-			mRemoteControlClient
-					.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
-							| RemoteControlClient.FLAG_KEY_MEDIA_STOP);
-			mAudioManager.registerRemoteControlClient(mRemoteControlClient);
-		} catch (NoClassDefFoundError e) {
-
-		} catch (java.lang.NoSuchMethodError e) {
-
-		}
-		this.mNotificationHandler.setToPause();
 		return true;
-
-	}
-
-	public void resetLockScreenControls() {
-		try {
-			mAudioManager
-					.registerMediaButtonEventReceiver(mRemoteControlResponder);
-			if (this.lockScreenTitle != null && this.lockScreenImage != null) {
-				mRemoteControlClient
-						.editMetadata(true)
-						.putString(MediaMetadataRetriever.METADATA_KEY_TITLE,
-								this.lockScreenTitle)
-						.putBitmap(100, this.lockScreenImage).apply();
-			} else if (this.lockScreenTitle != null) {
-				mRemoteControlClient
-						.editMetadata(true)
-						.putString(MediaMetadataRetriever.METADATA_KEY_TITLE,
-								this.lockScreenTitle).apply();
-			} else if (this.lockScreenImage != null) {
-				mRemoteControlClient.editMetadata(true)
-						.putBitmap(100, this.lockScreenImage).apply();
-			}
-			mRemoteControlClient
-					.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
-							| RemoteControlClient.FLAG_KEY_MEDIA_STOP);
-			mAudioManager.registerRemoteControlClient(mRemoteControlClient);
-			if (this.isPlaying() || this.isLoading()) {
-				mRemoteControlClient
-						.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
-			} else {
-				mRemoteControlClient
-						.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
-			}
-		} catch (NoClassDefFoundError e) {
-
-		} catch (java.lang.NoSuchMethodError e) {
-
-		}
 	}
 
 	private void reset() {
@@ -343,10 +212,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	}
 
 	public void seekTo(int pos) {
-		playAfterSeek = false;
-
-		if (getState() == MediaPlayerWrapper.STARTED)
-			playAfterSeek = true;
+		playAfterSeek = (getState() == MediaPlayerWrapper.STARTED);
 
 		try {
 			mediaPlayer.pause();
@@ -367,20 +233,10 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	public boolean stop() {
 		mediaPlayer.stop();
-		mNotificationHandler.stopNotification();
 		sendIsStopped();
 		stopProgressThread();
 		getBaseContext().unregisterReceiver(mBroadcastReceiver);
-		mAudioManager
-				.unregisterMediaButtonEventReceiver(mRemoteControlResponder);
-		try {
-			mAudioManager.unregisterRemoteControlClient(mRemoteControlClient);
-		} catch (NoClassDefFoundError e) {
-
-		} catch (java.lang.NoSuchMethodError e) {
-
-		}
-		super.stopSelf();
+		stopSelf();
 		return true;
 	}
 
@@ -411,21 +267,14 @@ public class PlaybackService extends Service implements OnErrorListener,
 	@Override
 	public void onPrepared(MediaPlayer mp) {
 		mediaPlayer.start();
-		Log.d(TAG, getNowPlaying().toString());
-		mNotificationHandler.startNotification(getNowPlaying());
-		sendIsPlaying();
 
-		mAudioManager.requestAudioFocus(mAudioFocusChangeListener,
-				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-
-		if (mOnPreparedListener != null) {
-			Log.d(TAG, "Passing prepared along.");
-			mOnPreparedListener.onPrepared(mp);
+		if (mSeekOnStart && mStartTime > 0) {
+			mSeekOnStart = false;
+			seekTo(mStartTime);
 		}
-
-		if (this.seekOnStart && this.startTime > 0) {
-			this.seekOnStart = false;
-			this.seekTo(startTime);
+		sendStartedPlaying();
+		if (mOnPreparedListener != null) {
+			mOnPreparedListener.onPrepared(mp);
 		}
 	}
 
@@ -460,7 +309,8 @@ public class PlaybackService extends Service implements OnErrorListener,
 	/*
 	 * These are the events we send back to PlayerHaterListener;
 	 */
-	private void sendIsPlaying() {
+	private void sendStartedPlaying() {
+		mLifecycleListener.start(getNowPlaying(), getDuration());
 		sendIsPlaying(getCurrentPosition());
 	}
 
@@ -473,17 +323,19 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	private void sendIsLoading() {
 		if (mPlayerHaterListener != null) {
-			mPlayerHaterListener.onLoading();
+			mPlayerHaterListener.onLoading(getNowPlaying());
 		}
 	}
 
 	private void sendIsPaused() {
+		mLifecycleListener.setIsPlaying(false);
 		if (mPlayerHaterListener != null) {
-			mPlayerHaterListener.onPaused();
+			mPlayerHaterListener.onPaused(getNowPlaying());
 		}
 	}
 
 	private void sendIsStopped() {
+		mLifecycleListener.stop();
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onStopped();
 		}
@@ -501,6 +353,15 @@ public class PlaybackService extends Service implements OnErrorListener,
 	public void unduck() {
 		Log.d(TAG, "Unducking...");
 		mediaPlayer.setVolume(1.0f, 1.0f);
+	}
+
+	@Override
+	public void onCompletion(MediaPlayer mp) {
+		stopProgressThread();
+		if (mOnCompletionListener != null) {
+			mOnCompletionListener.onCompletion(mp);
+		}
+		stop();
 	}
 
 	/*
@@ -536,33 +397,25 @@ public class PlaybackService extends Service implements OnErrorListener,
 		return mgr;
 	}
 
-	/*
-	 * These methods just exist so that they can be overridden.
-	 */
-	protected static OnAudioFocusChangeListener createAudioFocusChangeListener(
-			PlaybackService service) {
-		return new OnAudioFocusChangeListener(service);
+	public void setTitle(String title) {
+		mLifecycleListener.setTitle(title);
 	}
 
-	/*
-	 * One more...
-	 */
-	protected static NotificationHandler createNotificationHandler(
-			PlaybackService service) {
-		return new NotificationHandler(service);
+	public void setArtist(String artist) {
+		mLifecycleListener.setArtist(artist);
 	}
 
-	@Override
-	public void onCompletion(MediaPlayer mp) {
-		stopProgressThread();
-		if (mOnCompletionListener != null) {
-			mOnCompletionListener.onCompletion(mp);
-		}
-		stop();
+	public void setIntentClass(Class<? extends Activity> klass) {
+		// XXX: TODO FIXME
+		// NOOP FOR NOW;
 	}
 
-	public NotificationHandler getNotification() {
-		return mNotificationHandler;
+	public void setAlbumArt(int resourceId) {
+		mLifecycleListener.setAlbumArt(resourceId);
+	}
+
+	public void setAlbumArt(Uri url) {
+		mLifecycleListener.setAlbumArt(url);
 	}
 
 }

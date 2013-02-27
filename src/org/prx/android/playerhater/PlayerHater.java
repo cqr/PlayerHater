@@ -26,13 +26,13 @@ public class PlayerHater implements AudioPlaybackInterface {
 	public static PlayerHater get(Context context) {
 		if (sPlayerHater == null) {
 			sPlayerHater = new PlayerHater(context);
-		} else if (!sPlayerHater.usingContext(context)){
+		} else if (!sPlayerHater.usingContext(context)) {
 			sPlayerHater.setContext(context);
 		}
-		
+
 		return sPlayerHater;
 	}
-	
+
 	private static final ServiceConnection sServiceConnection = new ServiceConnection() {
 
 		@Override
@@ -48,18 +48,18 @@ public class PlayerHater implements AudioPlaybackInterface {
 				sPlayerHater.unbind();
 			}
 		}
-		
+
 	};
 
 	private static final String RESOURCE = "resource";
 	private static final String URL = "url";
-	
+
 	private Context mContext;
 	private Intent mServiceIntent;
 	private PlayerHaterBinder mPlayerHater;
 	private final List<Song> mPlayQueue;
 	private final Map<Song, Integer> mStartPositions;
-	
+
 	private String mPendingAlbumArtType;
 	private Uri mPendingAlbumArtUrl;
 	private PlayerHaterListener mPendingListener;
@@ -73,7 +73,7 @@ public class PlayerHater implements AudioPlaybackInterface {
 	private String mPendingNotificationText;
 	private Activity mPendingNotificationIntentActivity;
 	private OnBufferingUpdateListener mPendingBufferingListener;
-	
+
 	private PlayerHater(Context context) {
 		mPlayQueue = new ArrayList<Song>();
 		mStartPositions = new HashMap<Song, Integer>();
@@ -87,82 +87,71 @@ public class PlayerHater implements AudioPlaybackInterface {
 	private void setContext(Context context) {
 		mContext = context;
 		mServiceIntent = new Intent(mContext, PlaybackService.class);
-		
-		// If we're already bound (but in another context), we should rebind on this one.
+
+		// If we're already bound (but in another context), we should rebind on
+		// this one.
 		if (mPlayerHater != null) {
 			startService();
 		}
 	}
-	
+
 	private void bind(PlayerHaterBinder service) {
 		mPlayerHater = service;
-		
+
 		if (mPendingAlbumArtType != null) {
 			if (mPendingAlbumArtType.equals(RESOURCE)) {
 				setAlbumArt(mPendingAlbumArtResourceId);
 			} else if (mPendingAlbumArtType.equals(URL)) {
 				setAlbumArt(mPendingAlbumArtUrl);
 			}
-			mPendingAlbumArtUrl = null;
-			mPendingAlbumArtResourceId = 0;
-			mPendingAlbumArtType = null;
 		}
-		
+
 		if (mPendingListener != null) {
 			setListener(mPendingListener);
-			mPendingListener = null;
 		}
-		
+
 		if (mPendingErrorListener != null) {
 			setOnErrorListener(mPendingErrorListener);
-			mPendingErrorListener = null;
 		}
-		
+
 		if (mPendingSeekListener != null) {
 			setOnSeekCompleteListener(mPendingSeekListener);
-			mPendingSeekListener = null;
 		}
-		
+
 		if (mPendingPreparedListener != null) {
 			setOnPreparedListener(mPendingPreparedListener);
-			mPendingPreparedListener = null;
 		}
-		
+
 		if (mPendingInfoListener != null) {
 			setOnInfoListener(mPendingInfoListener);
-			mPendingInfoListener = null;
 		}
-		
+
 		if (mPendingCompleteListener != null) {
 			setOnCompletionListener(mPendingCompleteListener);
-			mPendingCompleteListener = null;
 		}
-		
+
 		if (mPendingBufferingListener != null) {
 			setOnBufferingUpdateListener(mPendingBufferingListener);
-			mPendingBufferingListener = null;
 		}
-		
+
 		if (mPendingNotificationTitle != null) {
 			setTitle(mPendingNotificationTitle);
-			mPendingNotificationTitle = null;
 		}
-		
+
 		if (mPendingNotificationText != null) {
 			setArtist(mPendingNotificationText);
-			mPendingNotificationText = null;
 		}
-		
+
 		if (mPendingNotificationIntentActivity != null) {
 			setActivity(mPendingNotificationIntentActivity);
-			mPendingNotificationIntentActivity = null;
 		}
-		
+
 		if (!mPlayQueue.isEmpty()) {
 			Song song = mPlayQueue.remove(0);
 			Integer startPosition = mStartPositions.remove(song);
 			try {
-				mPlayerHater.play(song, startPosition == null ? 0 : startPosition);
+				mPlayerHater.play(song, startPosition == null ? 0
+						: startPosition);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -177,11 +166,11 @@ public class PlayerHater implements AudioPlaybackInterface {
 		}
 		mPlayQueue.add(song);
 	}
-	
+
 	private void unbind() {
 		mPlayerHater = null;
 	}
-	
+
 	private void startService() {
 		if (mPlayerHater == null) {
 			mContext.startService(mServiceIntent);
@@ -198,7 +187,6 @@ public class PlayerHater implements AudioPlaybackInterface {
 		}
 	}
 
-	
 	// Let's unbind the service if it is bound on "stop"
 	@Override
 	public boolean stop() {
@@ -206,7 +194,7 @@ public class PlayerHater implements AudioPlaybackInterface {
 			return false;
 		} else {
 			boolean stopped = mPlayerHater.stop();
-			if (stopped){
+			if (stopped) {
 				mContext.unbindService(sServiceConnection);
 				return true;
 			} else {
@@ -258,7 +246,7 @@ public class PlayerHater implements AudioPlaybackInterface {
 		if (mPlayerHater == null) {
 			schedulePlay(song, startTime);
 			startService();
-			
+
 			return true;
 		} else {
 			return mPlayerHater.play(song, startTime);
@@ -267,27 +255,24 @@ public class PlayerHater implements AudioPlaybackInterface {
 
 	@Override
 	public void setTitle(String title) {
-		if (mPlayerHater == null) {
-			mPendingNotificationTitle = title;
-		} else {
-			mPlayerHater.setNotificationTitle(title);
+		mPendingNotificationTitle = title;
+		if (mPlayerHater != null) {
+			mPlayerHater.setTitle(title);
 		}
 	}
 
 	@Override
 	public void setArtist(String artist) {
-		if (mPlayerHater == null) {
-			mPendingNotificationText = artist;
-		} else {
-			mPlayerHater.setNotificationText(artist);
+		mPendingNotificationText = artist;
+		if (mPlayerHater != null) {
+			mPlayerHater.setArtist(artist);
 		}
 	}
 
 	@Override
 	public void setActivity(Activity activity) {
-		if (mPlayerHater == null) {
-			mPendingNotificationIntentActivity = activity;
-		} else {
+		mPendingNotificationIntentActivity = activity;
+		if (mPlayerHater != null) {
 			mPlayerHater.setIntentActivity(activity);
 		}
 	}
@@ -310,63 +295,56 @@ public class PlayerHater implements AudioPlaybackInterface {
 
 	@Override
 	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
-		if (mPlayerHater == null) {
-			mPendingBufferingListener = listener;
-		} else {
+		mPendingBufferingListener = listener;
+		if (mPlayerHater != null) {
 			mPlayerHater.setOnBufferingUpdateListener(listener);
 		}
 	}
 
 	@Override
 	public void setOnCompletionListener(OnCompletionListener listener) {
-		if (mPlayerHater == null) {
-			mPendingCompleteListener = listener;
-		} else {
+		mPendingCompleteListener = listener;
+		if (mPlayerHater != null) {
 			mPlayerHater.setOnCompletionListener(listener);
 		}
 	}
 
 	@Override
 	public void setOnInfoListener(OnInfoListener listener) {
-		if (mPlayerHater == null) {
-			mPendingInfoListener = listener;
-		} else {
+		mPendingInfoListener = listener;
+		if (mPlayerHater != null) {
 			mPlayerHater.setOnInfoListener(listener);
 		}
 	}
 
 	@Override
 	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-		if (mPlayerHater == null) {
-			mPendingSeekListener = listener;
-		} else {
+		mPendingSeekListener = listener;
+		if (mPlayerHater != null) {
 			mPlayerHater.setOnSeekCompleteListener(listener);
 		}
 	}
 
 	@Override
 	public void setOnErrorListener(OnErrorListener listener) {
-		if (mPlayerHater == null) {
-			mPendingErrorListener =listener;
-		} else {
+		mPendingErrorListener = listener;
+		if (mPlayerHater != null) {
 			mPlayerHater.setOnErrorListener(listener);
 		}
 	}
 
 	@Override
 	public void setOnPreparedListener(OnPreparedListener listener) {
-		if (mPlayerHater == null) {
-			mPendingPreparedListener = listener;
-		} else {
+		mPendingPreparedListener = listener;
+		if (mPlayerHater != null) {
 			mPlayerHater.setOnPreparedListener(listener);
 		}
 	}
 
 	@Override
 	public void setListener(PlayerHaterListener listener) {
-		if (mPlayerHater == null) {
-			mPendingListener = listener;
-		} else {
+		mPendingListener = listener;
+		if (mPlayerHater != null) {
 			mPlayerHater.setListener(listener);
 		}
 	}
@@ -407,21 +385,19 @@ public class PlayerHater implements AudioPlaybackInterface {
 
 	@Override
 	public void setAlbumArt(int resourceId) {
-		if (mPlayerHater == null) {
-			mPendingAlbumArtType = RESOURCE;
-			mPendingAlbumArtResourceId = resourceId;
-		} else {
-			mPlayerHater.setNotificationImage(resourceId);
+		mPendingAlbumArtType = RESOURCE;
+		mPendingAlbumArtResourceId = resourceId;
+		if (mPlayerHater != null) {
+			mPlayerHater.setAlbumArt(resourceId);
 		}
 	}
 
 	@Override
 	public void setAlbumArt(Uri url) {
-		if (mPlayerHater == null) {
-			mPendingAlbumArtType = URL;
-			mPendingAlbumArtUrl = url;
-		} else {
-			mPlayerHater.setNotificationImage(url);
+		mPendingAlbumArtType = URL;
+		mPendingAlbumArtUrl = url;
+		if (mPlayerHater != null) {
+			mPlayerHater.setAlbumArt(url);
 		}
 	}
 
@@ -434,5 +410,5 @@ public class PlayerHater implements AudioPlaybackInterface {
 	public TransientPlayer playEffect(Uri url, boolean isDuckable) {
 		return TransientPlayer.play(mContext, url, isDuckable);
 	}
-	
+
 }

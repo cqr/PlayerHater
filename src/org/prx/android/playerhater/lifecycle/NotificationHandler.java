@@ -1,5 +1,9 @@
-package org.prx.android.playerhater;
+package org.prx.android.playerhater.lifecycle;
 
+import org.prx.android.playerhater.BroadcastReceiver;
+import org.prx.android.playerhater.PlaybackService;
+import org.prx.android.playerhater.R;
+import org.prx.android.playerhater.Song;
 import com.jakewharton.notificationcompat2.NotificationCompat2;
 
 import android.app.Activity;
@@ -9,10 +13,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
 import android.widget.RemoteViews;
 
-public class NotificationHandler {
+public class NotificationHandler implements LifecycleListener.RemoteControl {
 
 	protected static final int NOTIFICATION_NU = 9747245;
 
@@ -39,35 +42,28 @@ public class NotificationHandler {
 	public NotificationHandler(PlaybackService service) {
 		mService = service;
 		mNotificationManager = (NotificationManager) mService
-				.getApplicationContext().getSystemService(
-						Context.NOTIFICATION_SERVICE);
+				.getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
-	public void startNotification(Song forSong) {
-		Log.d("NOTIFY", forSong.toString());
+	@Override
+	public void start(Song forSong, int duration) {
 		if (forSong != null) {
 			setTitle(forSong.getTitle());
-			setText(forSong.getArtist());
-			setImage(forSong.getAlbumArt());
+			setArtist(forSong.getArtist());
+			setAlbumArt(forSong.getAlbumArt());
+			setIsPlaying(true);
 		}
 		mService.startForeground(NOTIFICATION_NU, getNotification());
 		mIsVisible = true;
 	}
-	
-	public void resume() {
-		if (!mIsVisible) {
-			startNotification(null);
-		} else {
-			updateNotification();
-		}
-		mIsVisible = true;
-	}
 
-	public void stopNotification() {
+	@Override
+	public void stop() {
 		mIsVisible = false;
 		mService.stopForeground(true);
 	}
 
+	@Override
 	public void setTitle(String notificationTitle) {
 		mNotificationTitle = notificationTitle;
 		if (mNotificationView != null) {
@@ -76,7 +72,8 @@ public class NotificationHandler {
 		}
 	}
 
-	public void setText(String notificationText) {
+	@Override
+	public void setArtist(String notificationText) {
 		mNotificationText = notificationText;
 		if (mNotificationView != null) {
 			mNotificationView.setTextViewText(R.id.text, mNotificationText);
@@ -84,7 +81,8 @@ public class NotificationHandler {
 		}
 	}
 
-	public void setImage(int resourceId) {
+	@Override
+	public void setAlbumArt(int resourceId) {
 		mNotificationImageResourceId = resourceId;
 		if (mNotificationImageResourceId != 0) {
 			mNotificationImageUrl = null;
@@ -96,7 +94,8 @@ public class NotificationHandler {
 		}
 	}
 
-	public void setImage(Uri url) {
+	@Override
+	public void setAlbumArt(Uri url) {
 		mNotificationImageUrl = url;
 		if (mNotificationImageUrl != null) {
 			mNotificationImageResourceId = 0;
@@ -108,20 +107,14 @@ public class NotificationHandler {
 		}
 	}
 
-	public void setToPause() {
-		setIsPlaying(true);
-	}
-
-	public void setToPlay() {
-		setIsPlaying(false);
-	}
-
+	@Override
 	public void setIsPlaying(boolean isPlaying) {
 		mIsPlaying = isPlaying;
 		if (mNotificationView != null) {
 			if (mIsPlaying) {
 				mNotificationView.setImageViewResource(R.id.button,
 						R.drawable.__player_hater_pause);
+
 			} else {
 				mNotificationView.setImageViewResource(R.id.button,
 						R.drawable.__player_hater_play);
@@ -175,9 +168,9 @@ public class NotificationHandler {
 			mNotificationView.setOnClickPendingIntent(R.id.stop,
 					stopPendingIntent);
 			setTitle(mNotificationTitle);
-			setText(mNotificationText);
-			setImage(mNotificationImageUrl);
-			setImage(mNotificationImageResourceId);
+			setArtist(mNotificationText);
+			setAlbumArt(mNotificationImageUrl);
+			setAlbumArt(mNotificationImageResourceId);
 			mNotification.contentView = mNotificationView;
 		}
 
@@ -189,5 +182,4 @@ public class NotificationHandler {
 			mNotificationManager.notify(NOTIFICATION_NU, mNotification);
 		}
 	}
-
 }
