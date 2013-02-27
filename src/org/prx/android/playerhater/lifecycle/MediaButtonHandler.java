@@ -3,18 +3,22 @@ package org.prx.android.playerhater.lifecycle;
 import org.prx.android.playerhater.BroadcastReceiver;
 import org.prx.android.playerhater.Song;
 
+import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.Build;
 
+@TargetApi(Build.VERSION_CODES.FROYO)
 public class MediaButtonHandler implements LifecycleListener {
 	private final AudioManager mAudioManager;
 	private ComponentName mEventReceiver;
 	private Context mContext;
-	
+
 	public MediaButtonHandler(Context context) {
 		mContext = context;
-		mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+		mAudioManager = (AudioManager) context
+				.getSystemService(Context.AUDIO_SERVICE);
 	}
 
 	@Override
@@ -31,7 +35,8 @@ public class MediaButtonHandler implements LifecycleListener {
 
 	private ComponentName getEventReceiver() {
 		if (mEventReceiver == null) {
-			mEventReceiver = new ComponentName(mContext, BroadcastReceiver.class);
+			mEventReceiver = new ComponentName(mContext,
+					BroadcastReceiver.class);
 		}
 		return mEventReceiver;
 	}

@@ -6,6 +6,7 @@ import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
 import com.jakewharton.notificationcompat2.NotificationCompat2;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -13,9 +14,11 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.widget.RemoteViews;
 
-public class NotificationHandler implements LifecycleListener.RemoteControl {
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+public class ModernNotificationHandler implements LifecycleListener.RemoteControl {
 
 	protected static final int NOTIFICATION_NU = 9747245;
 
@@ -39,7 +42,7 @@ public class NotificationHandler implements LifecycleListener.RemoteControl {
 
 	private NotificationManager mNotificationManager;
 
-	public NotificationHandler(PlaybackService service) {
+	public ModernNotificationHandler(PlaybackService service) {
 		mService = service;
 		mNotificationManager = (NotificationManager) mService
 				.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -146,17 +149,17 @@ public class NotificationHandler implements LifecycleListener.RemoteControl {
 
 		Intent intent = new Intent(mService.getApplicationContext(),
 				BroadcastReceiver.class);
-		intent.setAction(NotificationHandler.PLAY_PAUSE_ACTION);
+		intent.setAction(ModernNotificationHandler.PLAY_PAUSE_ACTION);
 		PendingIntent playPausePendingIntent = PendingIntent.getBroadcast(
 				mService.getApplicationContext(),
-				NotificationHandler.PLAY_PAUSE_CLICK_ID, intent, 0);
+				ModernNotificationHandler.PLAY_PAUSE_CLICK_ID, intent, 0);
 
 		Intent stopIntent = new Intent(mService.getApplicationContext(),
 				BroadcastReceiver.class);
-		stopIntent.setAction(NotificationHandler.STOP_ACTION);
+		stopIntent.setAction(ModernNotificationHandler.STOP_ACTION);
 		PendingIntent stopPendingIntent = PendingIntent.getBroadcast(
 				mService.getApplicationContext(),
-				NotificationHandler.STOP_CLICK_ID, stopIntent, 0);
+				ModernNotificationHandler.STOP_CLICK_ID, stopIntent, 0);
 
 		// Remoteview and intent for my button
 		mNotificationView = new RemoteViews(mService.getBaseContext()

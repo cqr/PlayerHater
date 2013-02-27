@@ -11,6 +11,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
@@ -23,9 +24,22 @@ import android.os.IBinder;
 public class PlayerHater implements AudioPlaybackInterface {
 	private static PlayerHater sPlayerHater;
 
+	public static boolean LOCK_SCREEN_CONTROLS = false;
+	public static boolean MODERN_AUDIO_FOCUS   = false;
+	public static boolean MODERN_NOTIFICATION  = false;
+
+
 	public static PlayerHater get(Context context) {
 		if (sPlayerHater == null) {
 			sPlayerHater = new PlayerHater(context);
+
+			Resources resources = context.getResources();
+			String applicationName = context.getPackageName();
+
+			LOCK_SCREEN_CONTROLS = ConfigurationManager.getFlag(applicationName, resources, "playerhater_lockscreen");
+			MODERN_AUDIO_FOCUS   = ConfigurationManager.getFlag(applicationName, resources, "playerhater_audiofocus");
+			MODERN_NOTIFICATION  = ConfigurationManager.getFlag(applicationName, resources, "playerhater_notification");
+
 		} else if (!sPlayerHater.usingContext(context)) {
 			sPlayerHater.setContext(context);
 		}

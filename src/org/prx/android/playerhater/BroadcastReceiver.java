@@ -2,7 +2,7 @@ package org.prx.android.playerhater;
 
 import java.io.IOException;
 
-import org.prx.android.playerhater.lifecycle.NotificationHandler;
+import org.prx.android.playerhater.lifecycle.ModernNotificationHandler;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -64,7 +64,7 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
             	} 
             }
 		}
-		if (intent.getAction() != null && intent.getAction().equals(NotificationHandler.PLAY_PAUSE_ACTION)) { 
+		if (intent.getAction() != null && intent.getAction().equals(ModernNotificationHandler.PLAY_PAUSE_ACTION)) { 
 			try { 
 				if (mService.isPlaying()) { 
 					mService.pause(); 
@@ -77,7 +77,7 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 				e.printStackTrace(); 
 			}
 		}
-		if (intent.getAction() != null && intent.getAction().equals(NotificationHandler.STOP_ACTION)) { 
+		if (intent.getAction() != null && intent.getAction().equals(ModernNotificationHandler.STOP_ACTION)) { 
 			try { 
 				mService.stop(); 
 			} catch (Exception e) { 

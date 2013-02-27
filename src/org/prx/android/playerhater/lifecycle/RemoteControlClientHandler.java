@@ -5,6 +5,7 @@ import java.net.URL;
 import org.prx.android.playerhater.BroadcastReceiver;
 import org.prx.android.playerhater.Song;
 
+import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -16,7 +17,9 @@ import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
 import android.net.Uri;
+import android.os.Build;
 
+@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class RemoteControlClientHandler implements
 		LifecycleListener.RemoteControl {
 
@@ -38,7 +41,7 @@ public class RemoteControlClientHandler implements
 					RemoteControlClient.PLAYSTATE_PAUSED);
 		}
 	}
-
+	
 	@Override
 	public void start(Song forSong, int duration) {
 		String imageUriScheme = forSong.getUri().getScheme();

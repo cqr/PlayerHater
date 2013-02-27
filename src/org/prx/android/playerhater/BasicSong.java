@@ -17,10 +17,15 @@ public class BasicSong implements Song {
 
 	public BasicSong(Bundle bundle) {
 		putBundle(bundle);
-		mUrl = Uri.parse(mBundle.getString(URL));
-		mArtist = mBundle.getString(ARTIST);
-		mTitle = mBundle.getString(TITLE);
-		mAlbumArt = Uri.parse(mBundle.getString(ALBUM_ART));
+		mUrl = Uri.parse(bundle.getString(URL));
+		mArtist = bundle.getString(ARTIST);
+		mTitle = bundle.getString(TITLE);
+		String albumArtString = bundle.getString(ALBUM_ART);
+		if (albumArtString != null) {
+			mAlbumArt = Uri.parse(bundle.getString(ALBUM_ART));
+		} else {
+			mAlbumArt = null;
+		}
 	}
 	
 	public BasicSong(Uri url, String title, String artist, String albumArt, int _) {

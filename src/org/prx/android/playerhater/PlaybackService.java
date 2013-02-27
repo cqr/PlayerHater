@@ -4,7 +4,7 @@ import java.io.IOException;
 import org.prx.android.playerhater.lifecycle.AudioFocusHandler;
 import org.prx.android.playerhater.lifecycle.ListenerCollection;
 import org.prx.android.playerhater.lifecycle.MediaButtonHandler;
-import org.prx.android.playerhater.lifecycle.NotificationHandler;
+import org.prx.android.playerhater.lifecycle.ModernNotificationHandler;
 import org.prx.android.playerhater.lifecycle.RemoteControlClientHandler;
 
 import android.app.Activity;
@@ -39,7 +39,6 @@ public class PlaybackService extends Service implements OnErrorListener,
 	private OnSeekCompleteListener mOnSeekCompleteListener;
 	private OnPreparedListener mOnPreparedListener;
 	private PlayerHaterListener mPlayerHaterListener;
-	private OnAudioFocusChangeListener mAudioFocusChangeListener;
 	private OnCompletionListener mOnCompletionListener;
 	private OnErrorListener mOnErrorListener;
 
@@ -48,18 +47,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 	private boolean mSeekOnStart = false;
 	private int mStartTime = 0;
 
-	private Handler mHandler = new Handler() {
-		@Override
-		public void handleMessage(Message m) {
-			switch (m.what) {
-			case PROGRESS_UPDATE:
-				sendIsPlaying(m.arg1);
-				break;
-			default:
-				onHandlerMessage(m);
-			}
-		}
-	};
+	private Handler mHandler = new UpdateHandler(this);
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -80,19 +68,16 @@ public class PlaybackService extends Service implements OnErrorListener,
 					mHandler);
 		}
 
-		if (mAudioFocusChangeListener == null) {
-			mAudioFocusChangeListener = new OnAudioFocusChangeListener(this);
-		}
-
 		if (mLifecycleListener == null) {
 			mLifecycleListener = new ListenerCollection();
-			mLifecycleListener.add(new NotificationHandler(this));
-			if (getResources().getBoolean(R.bool.__playerhater_audiofocus)) {
-				mLifecycleListener.add(new AudioFocusHandler(this,
-						mAudioFocusChangeListener));
+			if (PlayerHater.MODERN_NOTIFICATION) {
+				mLifecycleListener.add(new ModernNotificationHandler(this));
+			}
+			if (PlayerHater.MODERN_AUDIO_FOCUS) {
+				mLifecycleListener.add(new AudioFocusHandler(this));
 				mLifecycleListener.add(new MediaButtonHandler(this));
 			}
-			if (getResources().getBoolean(R.bool.__playerhater_lockscreen)) {
+			if (PlayerHater.LOCK_SCREEN_CONTROLS) {
 				mLifecycleListener.add(new RemoteControlClientHandler(this));
 			}
 		}
@@ -156,7 +141,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 				.getUri());
 		return play(startTime);
 	}
-
+	
 	public boolean play(int startTime) throws IllegalStateException,
 			IOException {
 		mSeekOnStart = (startTime != 0);
@@ -418,6 +403,25 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	public void setAlbumArt(Uri url) {
 		mLifecycleListener.setAlbumArt(url);
+	}
+	
+	private static class UpdateHandler extends Handler {
+			private PlaybackService mService;
+			
+			private UpdateHandler(PlaybackService service) {
+				mService = service;
+			}
+		
+			@Override
+			public void handleMessage(Message m) {
+				switch (m.what) {
+				case PROGRESS_UPDATE:
+					mService.sendIsPlaying(m.arg1);
+					break;
+				default:
+					mService.onHandlerMessage(m);
+				}
+		}
 	}
 
 }

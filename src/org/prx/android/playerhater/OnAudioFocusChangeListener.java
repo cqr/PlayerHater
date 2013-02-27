@@ -4,7 +4,7 @@ import android.media.AudioManager;
 import android.util.Log;
 
 public class OnAudioFocusChangeListener implements
-		AudioManager.OnAudioFocusChangeListener {
+		AudioManager.OnAudioFocusChangeListener, FocusChangeListenerCompat {
 
 	// 5 seconds
 	public static final int REWIND_ON_RESUME_DURATION = 5000;

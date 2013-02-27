@@ -15,7 +15,7 @@ public class ListenerCollection implements LifecycleListener.RemoteControl {
 	public ListenerCollection() {
 		mListeners = new ArrayList<LifecycleListener>();
 	}
-	
+
 	public void add(LifecycleListener listener) {
 		mListeners.add(listener);
 	}
