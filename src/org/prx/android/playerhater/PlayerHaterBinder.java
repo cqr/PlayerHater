@@ -1,7 +1,5 @@
 package org.prx.android.playerhater;
 
-import java.io.IOException;
-
 import android.app.Activity;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -23,8 +21,8 @@ public class PlayerHaterBinder extends Binder {
 		mPlayerListenerManager = playerListenerManager;
 	}
 
-	public boolean play(Song song, int position) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
+	public boolean play(Song song, int position)
+			throws IllegalArgumentException {
 		return mService.play(song, position);
 	}
 
@@ -36,12 +34,11 @@ public class PlayerHaterBinder extends Binder {
 		return mService.stop();
 	}
 
-	public boolean play() throws IllegalStateException, IOException {
+	public boolean play() throws IllegalStateException {
 		return mService.play();
 	}
 
-	public boolean play(int startTime) throws IllegalStateException,
-			IOException {
+	public boolean play(int startTime) throws IllegalStateException {
 		return mService.play(startTime);
 	}
 

@@ -1,6 +1,5 @@
 package org.prx.android.playerhater;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -217,17 +216,16 @@ public class PlayerHater implements AudioPlaybackInterface {
 	}
 
 	@Override
-	public boolean play() throws IllegalStateException, IOException {
+	public boolean play() {
 		if (mPlayerHater == null) {
-			throw new IllegalStateException();
+			return false;
 		} else {
 			return mPlayerHater.play();
 		}
 	}
 
 	@Override
-	public boolean play(int startTime) throws IllegalStateException,
-			IOException {
+	public boolean play(int startTime) {
 		if (mPlayerHater == null) {
 			throw new IllegalStateException();
 		} else {
@@ -236,26 +234,22 @@ public class PlayerHater implements AudioPlaybackInterface {
 	}
 
 	@Override
-	public boolean play(Uri url) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
+	public boolean play(Uri url) {
 		return play(new BasicSong(url, null, null, null), 0);
 	}
 
 	@Override
-	public boolean play(Uri url, int startTime) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
+	public boolean play(Uri url, int startTime) {
 		return play(new BasicSong(url, null, null, null), startTime);
 	}
 
 	@Override
-	public boolean play(Song song) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
+	public boolean play(Song song) {
 		return play(song, 0);
 	}
 
 	@Override
-	public boolean play(Song song, int startTime) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
+	public boolean play(Song song, int startTime) {
 		if (mPlayerHater == null) {
 			schedulePlay(song, startTime);
 			startService();

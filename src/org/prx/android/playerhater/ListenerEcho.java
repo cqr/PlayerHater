@@ -3,16 +3,17 @@ package org.prx.android.playerhater;
 public class ListenerEcho implements PlayerHaterListener {
 	private enum Action { STOP, PAUSE, LOADING, PLAYING }
 	
+
 	private Action lastAction;
 	private PlayerHaterListener mListener;
 	private Song lastSong;
 	private int lastProgress;
-	
+
 	public void setListener(PlayerHaterListener listener, boolean withEcho) {
 		mListener = listener;
-		if (withEcho) sendLastAction();
+		if (withEcho)
+			sendLastAction();
 	}
-
 
 	@Override
 	public void onStopped() {

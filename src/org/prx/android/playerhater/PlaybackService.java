@@ -1,6 +1,8 @@
 package org.prx.android.playerhater;
 
 import java.io.IOException;
+
+import java.util.List;
 import org.prx.android.playerhater.lifecycle.AudioFocusHandler;
 import org.prx.android.playerhater.lifecycle.ListenerCollection;
 import org.prx.android.playerhater.lifecycle.MediaButtonHandler;
@@ -23,15 +25,15 @@ import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 
-
 public class PlaybackService extends Service implements OnErrorListener,
 		OnPreparedListener, OnSeekCompleteListener, OnCompletionListener {
 
 	protected static final String TAG = "PlayerHater/Service";
 	protected static final int PROGRESS_UPDATE = 9747244;
 
-	protected Song mNowPlaying;
-	private MediaPlayerWrapper mediaPlayer;
+	private List<Song> mSongs;
+	private int mNowPlayingPosition;
+	private MediaPlayerWrapper mMediaPlayer;
 	private UpdateProgressRunnable updateProgressRunner;
 	private Thread updateProgressThread;
 	private BroadcastReceiver mBroadcastReceiver;
@@ -58,14 +60,18 @@ public class PlaybackService extends Service implements OnErrorListener,
 			playerListenerManager = createPlayerListenerManager(this);
 		}
 
-		if (mediaPlayer == null) {
-			mediaPlayer = createMediaPlayer(this);
-			playerListenerManager.setMediaPlayer(mediaPlayer);
+		if (mMediaPlayer == null) {
+			mMediaPlayer = createMediaPlayer(this);
+			playerListenerManager.setMediaPlayer(mMediaPlayer);
 		}
 
 		if (updateProgressRunner == null) {
-			updateProgressRunner = createUpdateProgressRunner(mediaPlayer,
+			updateProgressRunner = createUpdateProgressRunner(mMediaPlayer,
 					mHandler);
+		}
+
+		if (mBroadcastReceiver == null) {
+			mBroadcastReceiver = new BroadcastReceiver(this);
 		}
 
 		if (mLifecycleListener == null) {
@@ -81,16 +87,6 @@ public class PlaybackService extends Service implements OnErrorListener,
 				mLifecycleListener.add(new RemoteControlClientHandler(this));
 			}
 		}
-
-		if (mBroadcastReceiver == null) {
-			mBroadcastReceiver = new BroadcastReceiver(this);
-			IntentFilter filter = new IntentFilter();
-			filter.addAction(Intent.ACTION_HEADSET_PLUG);
-			filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-			filter.addAction(Intent.ACTION_MEDIA_BUTTON);
-			filter.setPriority(10000);
-			getBaseContext().registerReceiver(mBroadcastReceiver, filter);
-		}
 	}
 
 	@Override
@@ -99,51 +95,57 @@ public class PlaybackService extends Service implements OnErrorListener,
 	}
 
 	public boolean pause() throws IllegalStateException {
-		mediaPlayer.pause();
+		mMediaPlayer.pause();
 		stopProgressThread();
 		sendIsPaused();
 		return true;
 	}
 
 	public int getState() {
-		return mediaPlayer.getState();
+		return mMediaPlayer.getState();
 	}
 
 	public Song getNowPlaying() {
-		return mNowPlaying;
+		return mSongs.get(mNowPlayingPosition);
 	}
 
 	public boolean isPlaying() {
-		return (mediaPlayer.getState() == MediaPlayerWrapper.STARTED);
+		return (mMediaPlayer.getState() == MediaPlayerWrapper.STARTED);
 	}
 
 	public boolean isPaused() {
-		return (mediaPlayer.getState() == MediaPlayerWrapper.PAUSED);
+		return (mMediaPlayer.getState() == MediaPlayerWrapper.PAUSED);
 	}
 
 	public boolean isLoading() {
-		return (mediaPlayer.getState() == MediaPlayerWrapper.INITIALIZED
-				|| mediaPlayer.getState() == MediaPlayerWrapper.PREPARING || mediaPlayer
+		return (mMediaPlayer.getState() == MediaPlayerWrapper.INITIALIZED
+				|| mMediaPlayer.getState() == MediaPlayerWrapper.PREPARING || mMediaPlayer
 					.getState() == MediaPlayerWrapper.PREPARED);
 	}
 
-	public boolean play(Song song) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
+	public boolean play(Song song) throws IllegalArgumentException {
 		return play(song, 0);
 	}
 
-	public boolean play(Song song, int startTime) throws IllegalStateException,
-			IllegalArgumentException, SecurityException, IOException {
+	public boolean play(Song song, int startTime)
+			throws IllegalArgumentException {
 		mNowPlaying = song;
-		if (mediaPlayer.getState() != MediaPlayerWrapper.IDLE)
+		if (mMediaPlayer.getState() != MediaPlayerWrapper.IDLE)
 			reset();
-		mediaPlayer.setDataSource(getApplicationContext(), getNowPlaying()
-				.getUri());
+		try {
+			mMediaPlayer.setDataSource(getApplicationContext(), getNowPlaying()
+					.getUri());
+		} catch (IllegalStateException e) {
+			return false;
+		} catch (SecurityException e) {
+			throw new IllegalArgumentException("Illegal :" + song);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Illegal :" + song);
+		}
 		return play(startTime);
 	}
-	
-	public boolean play(int startTime) throws IllegalStateException,
-			IOException {
+
+	public boolean play(int startTime) throws IllegalStateException {
 		mSeekOnStart = (startTime != 0);
 		mStartTime = startTime * 1000;
 		return play();
@@ -163,15 +165,15 @@ public class PlaybackService extends Service implements OnErrorListener,
 		updateProgressThread.start();
 	}
 
-	public boolean play() throws IllegalStateException, IOException {
-		switch (mediaPlayer.getState()) {
+	public boolean play() throws IllegalStateException {
+		switch (mMediaPlayer.getState()) {
 		case MediaPlayerWrapper.INITIALIZED:
 		case MediaPlayerWrapper.STOPPED:
 			performPrepare();
 			break;
 		case MediaPlayerWrapper.PREPARED:
 		case MediaPlayerWrapper.PAUSED:
-			mediaPlayer.start();
+			mMediaPlayer.start();
 			sendStartedPlaying();
 			startProgressThread();
 			break;
@@ -180,31 +182,31 @@ public class PlaybackService extends Service implements OnErrorListener,
 			break;
 		default:
 			throw new IllegalStateException("State is "
-					+ mediaPlayer.getState());
+					+ mMediaPlayer.getState());
 		}
 		return true;
 	}
 
 	private void reset() {
 		Log.d(TAG, "Resetting media player.");
-		mediaPlayer.reset();
+		mMediaPlayer.reset();
 	}
 
 	public int getDuration() {
-		return mediaPlayer.getDuration();
+		return mMediaPlayer.getDuration();
 	}
 
 	public int getCurrentPosition() {
-		return mediaPlayer.getCurrentPosition();
+		return mMediaPlayer.getCurrentPosition();
 	}
 
 	public void seekTo(int pos) {
 		playAfterSeek = (getState() == MediaPlayerWrapper.STARTED);
 
 		try {
-			mediaPlayer.pause();
+			mMediaPlayer.pause();
 			sendIsLoading();
-			mediaPlayer.seekTo(pos);
+			mMediaPlayer.seekTo(pos);
 		} catch (java.lang.IllegalStateException e) {
 			// do nothing
 		}
@@ -213,13 +215,13 @@ public class PlaybackService extends Service implements OnErrorListener,
 	private void performPrepare() {
 		Log.d(TAG, "Starting preparation of: " + getNowPlaying());
 		sendIsLoading();
-		mediaPlayer.prepareAsync();
+		mMediaPlayer.prepareAsync();
 
 		startProgressThread();
 	}
 
 	public boolean stop() {
-		mediaPlayer.stop();
+		mMediaPlayer.stop();
 		sendIsStopped();
 		stopProgressThread();
 		getBaseContext().unregisterReceiver(mBroadcastReceiver);
@@ -253,7 +255,7 @@ public class PlaybackService extends Service implements OnErrorListener,
 
 	@Override
 	public void onPrepared(MediaPlayer mp) {
-		mediaPlayer.start();
+		mMediaPlayer.start();
 
 		if (mSeekOnStart && mStartTime > 0) {
 			mSeekOnStart = false;
@@ -333,13 +335,11 @@ public class PlaybackService extends Service implements OnErrorListener,
 	}
 
 	public void duck() {
-		Log.d(TAG, "Ducking...");
-		mediaPlayer.setVolume(0.1f, 0.1f);
+		mMediaPlayer.setVolume(0.1f, 0.1f);
 	}
 
 	public void unduck() {
-		Log.d(TAG, "Unducking...");
-		mediaPlayer.setVolume(1.0f, 1.0f);
+		mMediaPlayer.setVolume(1.0f, 1.0f);
 	}
 
 	@Override

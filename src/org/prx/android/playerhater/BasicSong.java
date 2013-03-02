@@ -9,7 +9,7 @@ public class BasicSong implements Song {
 	private final String mArtist;
 	private final Uri mAlbumArt;
 	private final Bundle mBundle = new Bundle();
-	
+
 	public static final String URL = "url";
 	public static final String ARTIST = "artist";
 	public static final String TITLE = "title";
@@ -27,47 +27,49 @@ public class BasicSong implements Song {
 			mAlbumArt = null;
 		}
 	}
-	
-	public BasicSong(Uri url, String title, String artist, String albumArt, int _) {
+
+	public BasicSong(Uri url, String title, String artist, String albumArt,
+			int _) {
 		mUrl = url;
 		mTitle = title;
 		mArtist = artist;
 		mAlbumArt = Uri.parse(albumArt);
 	}
-	
+
 	public BasicSong(Uri url, String title, String artist, Uri albumArt) {
 		mUrl = url;
 		mTitle = title;
 		mArtist = artist;
 		mAlbumArt = albumArt;
 	}
-	
+
+
 	public Bundle putBundle(Bundle bundle) {
 		mBundle.clear();
 		mBundle.putAll(bundle);
-		
+
 		return mBundle;
 	}
-	
+
 	public Bundle getBundle() {
 		return mBundle;
 	}
-	
+
 	@Override
 	public Uri getUri() {
 		return mUrl;
 	}
-	
+
 	@Override
 	public String getTitle() {
 		return mTitle;
 	}
-	
+
 	@Override
 	public String getArtist() {
 		return mArtist;
 	}
-	
+
 	@Override
 	public Uri getAlbumArt() {
 		return mAlbumArt;
