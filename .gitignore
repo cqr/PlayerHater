@@ -1,0 +1,9 @@
+bin
+gen
+gen
+local.properties
+.settings/org.eclipse.jdt.core.prefs
+.settings/*
+.project
+.classpath
+.DS_Store

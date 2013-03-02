@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.prx.android.playerhater"
+    android:versionCode="2"
+    android:versionName="2.0.0" >
+
+    <uses-sdk android:minSdkVersion="3" />
+
+    <application>
+        <service android:name=".PlaybackService" >
+        </service>
+
+        <receiver android:name=".BroadcastReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

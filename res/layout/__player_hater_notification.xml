@@ -1,0 +1,59 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    style="?android:style/TextAppearance.StatusBar.EventContent">
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="64dp"
+        android:layout_height="match_parent"
+        android:scaleType="center"
+        android:layout_alignParentTop="true"
+        android:background="#3333B5E5"
+        android:layout_marginRight="10dp" />
+
+    <ImageView
+        android:id="@+id/stop"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="center_vertical"
+        android:scaleType="center"
+        android:paddingRight="5dp"
+        android:alpha="0.4"
+        android:src="@drawable/__player_hater_stop" />
+
+    <ImageView
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_toLeftOf="@id/stop"
+        android:padding="5dp"
+        android:paddingRight="10dp"
+        android:scaleType="center"
+        android:src="@drawable/__player_hater_pause" />
+
+    <TextView
+        android:id="@+id/title"
+        style="@android:style/TextAppearance.StatusBar.EventContent.Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/button"
+        android:layout_toRightOf="@id/image"
+        android:paddingBottom="2dp"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:paddingTop="5dp" />
+
+    <TextView
+        android:id="@+id/text"
+        style="@android:style/TextAppearance.StatusBar.EventContent"
+        android:alpha="0.7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title"
+        android:layout_toLeftOf="@id/button"
+        android:layout_toRightOf="@id/image" />
+
+</RelativeLayout>
