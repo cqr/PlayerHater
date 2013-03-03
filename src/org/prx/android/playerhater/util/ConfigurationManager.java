@@ -1,4 +1,4 @@
-package org.prx.android.playerhater;
+package org.prx.android.playerhater.util;
 
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;

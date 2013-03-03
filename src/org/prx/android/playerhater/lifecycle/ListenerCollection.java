@@ -73,4 +73,27 @@ public class ListenerCollection implements LifecycleListener.RemoteControl {
 		}
 	}
 
+	@Override
+	public void setCanSkipForward(boolean canSkipForward) {
+		for (LifecycleListener listener : mListeners) {
+			if (listener instanceof LifecycleListener.RemoteControl)
+				((RemoteControl) listener).setCanSkipForward(canSkipForward);
+		}
+	}
+
+	@Override
+	public void setCanSkipBack(boolean canSkipBack) {
+		for (LifecycleListener listener : mListeners) {
+			if (listener instanceof LifecycleListener.RemoteControl)
+				((RemoteControl) listener).setCanSkipBack(canSkipBack);
+		}
+	}
+
+	@Override
+	public void setIsLoading(Song forSong) {
+		for (LifecycleListener listener : mListeners) {
+			listener.setIsLoading(forSong);
+		}
+	}
+
 }

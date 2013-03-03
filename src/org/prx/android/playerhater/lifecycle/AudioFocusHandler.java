@@ -1,8 +1,8 @@
 package org.prx.android.playerhater.lifecycle;
 
-import org.prx.android.playerhater.OnAudioFocusChangeListener;
-import org.prx.android.playerhater.PlaybackService;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.service.PlayerHaterService;
+import org.prx.android.playerhater.util.OnAudioFocusChangeListener;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -14,9 +14,9 @@ public class AudioFocusHandler implements LifecycleListener {
 	private final AudioManager mAudioService;
 	private final OnAudioFocusChangeListener mAudioFocusChangeListener;
 
-	public AudioFocusHandler(PlaybackService context) {
+	public AudioFocusHandler(PlayerHaterService context) {
 		mAudioFocusChangeListener = new OnAudioFocusChangeListener(context);
-		mAudioService = (AudioManager) context
+		mAudioService = (AudioManager) context.getBaseContext()
 				.getSystemService(Context.AUDIO_SERVICE);
 	}
 
@@ -36,6 +36,12 @@ public class AudioFocusHandler implements LifecycleListener {
 	@Override
 	public void stop() {
 		mAudioService.abandonAudioFocus(mAudioFocusChangeListener);
+	}
+
+	@Override
+	public void setIsLoading(Song forSong) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

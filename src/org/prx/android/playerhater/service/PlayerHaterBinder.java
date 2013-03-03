@@ -1,4 +1,7 @@
-package org.prx.android.playerhater;
+package org.prx.android.playerhater.service;
+
+import org.prx.android.playerhater.PlayerHaterListener;
+import org.prx.android.playerhater.Song;
 
 import android.app.Activity;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -12,13 +15,14 @@ import android.os.Binder;
 
 public class PlayerHaterBinder extends Binder {
 
-	private final PlaybackService mService;
-	private PlayerListenerManager mPlayerListenerManager;
+	private final PlayerHaterService mService;
 
-	public PlayerHaterBinder(PlaybackService service,
-			PlayerListenerManager playerListenerManager) {
+	public PlayerHaterBinder(PlayerHaterService service) {
 		mService = service;
-		mPlayerListenerManager = playerListenerManager;
+	}
+	
+	public void registerShutdownRequestListener(OnShutdownRequestListener listener) {
+		mService.setOnShutdownRequestListener(listener);
 	}
 
 	public boolean play(Song song, int position)
@@ -53,7 +57,7 @@ public class PlayerHaterBinder extends Binder {
 	public void setIntentActivity(Activity activity) {
 		mService.setIntentClass(activity.getClass());
 	}
-
+	
 	public int getCurrentPosition() {
 		return mService.getCurrentPosition();
 	}
@@ -63,27 +67,27 @@ public class PlayerHaterBinder extends Binder {
 	}
 
 	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
-		mPlayerListenerManager.setOnBufferingUpdateListener(listener);
+		mService.setOnBufferingUpdateListener(listener);
 	}
 
 	public void setOnCompletionListener(OnCompletionListener listener) {
-		mPlayerListenerManager.setOnCompletionListener(listener);
+		mService.setOnCompletionListener(listener);
 	}
 
 	public void setOnInfoListener(OnInfoListener listener) {
-		mPlayerListenerManager.setOnInfoListener(listener);
+		mService.setOnInfoListener(listener);
 	}
 
 	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-		mPlayerListenerManager.setOnSeekCompleteListener(listener);
+		mService.setOnSeekCompleteListener(listener);
 	}
 
 	public void setOnErrorListener(OnErrorListener listener) {
-		mPlayerListenerManager.setOnErrorListener(listener);
+		mService.setOnErrorListener(listener);
 	}
 
 	public void setOnPreparedListener(OnPreparedListener listener) {
-		mPlayerListenerManager.setOnPreparedListener(listener);
+		mService.setOnPreparedListener(listener);
 	}
 
 	public void setListener(PlayerHaterListener listener) {
@@ -112,6 +116,14 @@ public class PlayerHaterBinder extends Binder {
 
 	public void setAlbumArt(Uri url) {
 		mService.setAlbumArt(url);
+	}
+
+	public void enqueue(Song song) {
+		mService.enqueue(song);
+	}
+
+	public void emptyQueue() {
+		mService.emptyQueue();
 	}
 
 }

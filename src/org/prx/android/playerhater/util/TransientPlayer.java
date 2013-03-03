@@ -1,4 +1,4 @@
-package org.prx.android.playerhater;
+package org.prx.android.playerhater.util;
 
 import java.io.FileDescriptor;
 import android.content.Context;

@@ -1,4 +1,7 @@
-package org.prx.android.playerhater;
+package org.prx.android.playerhater.util;
+
+import org.prx.android.playerhater.PlayerHaterListener;
+import org.prx.android.playerhater.Song;
 
 public class ListenerEcho implements PlayerHaterListener {
 	private enum Action { STOP, PAUSE, LOADING, PLAYING }

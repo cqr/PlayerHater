@@ -1,4 +1,4 @@
-package org.prx.android.playerhater;
+package org.prx.android.playerhater.util;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -264,5 +264,9 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	public void setVolume(float leftVolume, float rightVolume) {
 		mMediaPlayer.setVolume(leftVolume, rightVolume);
+	}
+	
+	public boolean equals(MediaPlayer mp) {
+		return mp == mMediaPlayer;
 	}
 }

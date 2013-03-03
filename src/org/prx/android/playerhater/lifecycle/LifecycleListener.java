@@ -7,6 +7,7 @@ import android.net.Uri;
 public interface LifecycleListener {
 	
 	void setIsPlaying(boolean isPlaying);
+	void setIsLoading(Song forSong);
 	void start(Song forSong, int duration);
 	void stop();
 
@@ -15,5 +16,7 @@ public interface LifecycleListener {
 		void setArtist(String artist);
 		void setAlbumArt(int resourceId);
 		void setAlbumArt(Uri url);
+		void setCanSkipForward(boolean canSkipForward);
+		void setCanSkipBack(boolean canSkipBack);
 	}
 }

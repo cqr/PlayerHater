@@ -1,7 +1,7 @@
 package org.prx.android.playerhater.lifecycle;
 
-import org.prx.android.playerhater.BroadcastReceiver;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.util.BroadcastReceiver;
 
 import android.annotation.TargetApi;
 import android.content.ComponentName;
@@ -44,5 +44,11 @@ public class MediaButtonHandler implements LifecycleListener {
 	@Override
 	public void stop() {
 		mAudioManager.unregisterMediaButtonEventReceiver(getEventReceiver());
+	}
+
+	@Override
+	public void setIsLoading(Song forSong) {
+		// TODO Auto-generated method stub
+		
 	}
 }

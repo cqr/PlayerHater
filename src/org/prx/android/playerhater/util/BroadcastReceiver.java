@@ -1,9 +1,9 @@
-package org.prx.android.playerhater;
-
-import java.io.IOException;
+package org.prx.android.playerhater.util;
 
 import org.prx.android.playerhater.lifecycle.ModernNotificationHandler;
+import org.prx.android.playerhater.service.PlayerHaterService;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -14,15 +14,15 @@ import android.view.KeyEvent;
 public class BroadcastReceiver extends android.content.BroadcastReceiver {
 
 	private static final String TAG = "BroadcastReceiver";
-	private static PlaybackService mService;
+	private static PlayerHaterService mService;
 
 	public BroadcastReceiver() {
 		super();
 	}
 
-	public BroadcastReceiver(PlaybackService service) {
+	public BroadcastReceiver(PlayerHaterService playbackService) {
 		super();
-		mService = service;
+		mService = playbackService;
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Intent.ACTION_HEADSET_PLUG);
 		filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -36,6 +36,7 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 		BroadcastReceiver.doReceive(context, intent);
 	}
 
+	@SuppressLint("InlinedApi")
 	public static void doReceive(Context context, Intent intent) {
 		if (mService.isPlaying()
 				&& intent.getAction() != null
@@ -49,24 +50,23 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 				&& intent.getAction().equals(Intent.ACTION_MEDIA_BUTTON)) {
 			KeyEvent event = (KeyEvent) intent
 					.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-			Log.d(TAG, "Key event is " + event);
+
 			if (event.getAction() == KeyEvent.ACTION_DOWN) {
 				return;
 			}
-			if (KeyEvent.KEYCODE_MEDIA_PLAY == event.getKeyCode()
-					|| KeyEvent.KEYCODE_MEDIA_PAUSE == event.getKeyCode()
-					|| KeyEvent.KEYCODE_HEADSETHOOK == event.getKeyCode()
-					|| KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE == event.getKeyCode()) {
+
+			int keyCode = event.getKeyCode();
+			if (KeyEvent.KEYCODE_MEDIA_PLAY == keyCode
+					|| KeyEvent.KEYCODE_MEDIA_PAUSE == keyCode
+					|| KeyEvent.KEYCODE_HEADSETHOOK == keyCode
+					|| KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE == keyCode) {
 				if (mService.isPlaying()) {
-					mService.pause();
+					keyCode = KeyEvent.KEYCODE_MEDIA_PAUSE;
 				} else if (mService.isPaused()) {
-					try {
-						mService.play();
-					} catch (java.lang.IllegalStateException e) {
-						e.printStackTrace();
-					}
+					keyCode = KeyEvent.KEYCODE_MEDIA_PLAY;
 				}
 			}
+			mService.onRemoteControlButtonPressed(keyCode);
 		}
 		if (intent.getAction() != null
 				&& intent.getAction().equals(
@@ -89,6 +89,9 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+		if (intent.getAction() != null) {
+			Log.d(TAG, "GOT BROADCAST INTENT: " + intent.getAction());
 		}
 	}
 

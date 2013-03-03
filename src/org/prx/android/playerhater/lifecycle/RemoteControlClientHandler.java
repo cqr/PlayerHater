@@ -2,8 +2,8 @@ package org.prx.android.playerhater.lifecycle;
 
 import java.net.URL;
 
-import org.prx.android.playerhater.BroadcastReceiver;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.util.BroadcastReceiver;
 
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
@@ -26,6 +26,8 @@ public class RemoteControlClientHandler implements
 	private Context mContext;
 	private RemoteControlClient mRemoteControlClient;
 	private AudioManager mAudioManager;
+	private boolean mCanSkipForward = false;
+	private boolean mCanSkipBack;
 
 	public RemoteControlClientHandler(Context context) {
 		mContext = context;
@@ -119,7 +121,7 @@ public class RemoteControlClientHandler implements
 					0, mediaButtonIntent, 0);
 			mRemoteControlClient = new RemoteControlClient(pendingIntent);
 			mRemoteControlClient
-					.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE);
+					.setTransportControlFlags(getTCFs());
 		}
 		return mRemoteControlClient;
 	}
@@ -131,6 +133,32 @@ public class RemoteControlClientHandler implements
 		}
 
 		return mAudioManager;
+	}
+
+	@Override
+	public void setCanSkipForward(boolean canSkipForward) {
+		mCanSkipForward = canSkipForward;
+		getRemoteControlClient().setTransportControlFlags(getTCFs());
+	}
+
+	@Override
+	public void setCanSkipBack(boolean canSkipBack) {
+		mCanSkipBack = canSkipBack;
+		getRemoteControlClient().setTransportControlFlags(getTCFs());
+	}
+	
+	private int getTCFs() {
+		int tcfs = RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE;
+		if (mCanSkipForward) tcfs = tcfs | RemoteControlClient.FLAG_KEY_MEDIA_NEXT;
+		if (mCanSkipBack) tcfs = tcfs | RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS;
+		
+		return tcfs;
+	}
+
+	@Override
+	public void setIsLoading(Song forSong) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

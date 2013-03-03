@@ -1,4 +1,6 @@
-package org.prx.android.playerhater;
+package org.prx.android.playerhater.util;
+
+import org.prx.android.playerhater.Song;
 
 import android.net.Uri;
 import android.os.Bundle;

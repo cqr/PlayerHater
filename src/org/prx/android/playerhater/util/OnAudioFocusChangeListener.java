@@ -1,10 +1,12 @@
-package org.prx.android.playerhater;
+package org.prx.android.playerhater.util;
+
+import org.prx.android.playerhater.service.PlayerHaterService;
 
 import android.media.AudioManager;
 import android.util.Log;
 
 public class OnAudioFocusChangeListener implements
-		AudioManager.OnAudioFocusChangeListener, FocusChangeListenerCompat {
+		AudioManager.OnAudioFocusChangeListener {
 
 	// 5 seconds
 	public static final int REWIND_ON_RESUME_DURATION = 5000;
@@ -14,14 +16,14 @@ public class OnAudioFocusChangeListener implements
 
 	private static final String TAG = "PlayerHater/FocusChange";
 
-	private PlaybackService mService;
+	private PlayerHaterService mService;
 	private long pausedAt;
 	private boolean isBeingDucked;
 
 	private boolean isBeingPaused;
 
-	public OnAudioFocusChangeListener(PlaybackService service) {
-		mService = service;
+	public OnAudioFocusChangeListener(PlayerHaterService context) {
+		mService = context;
 		isBeingDucked = false;
 	}
 
@@ -52,7 +54,7 @@ public class OnAudioFocusChangeListener implements
 		case AudioManager.AUDIOFOCUS_LOSS:
 			// Oh, no! Ok, let's handle that.
 			if (mService.isPlaying()) {
-				mService.stop();
+				mService.pause();
 			}
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
@@ -68,7 +70,7 @@ public class OnAudioFocusChangeListener implements
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
 			if (mService.isPlaying() && !isBeingDucked) {
 				isBeingDucked = true;
-				mService.duck();
+				mService.unduck();
 			}
 			break;
 		default:

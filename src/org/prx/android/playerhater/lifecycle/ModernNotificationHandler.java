@@ -1,9 +1,10 @@
 package org.prx.android.playerhater.lifecycle;
 
-import org.prx.android.playerhater.BroadcastReceiver;
-import org.prx.android.playerhater.PlaybackService;
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.service.PlayerHaterService;
+import org.prx.android.playerhater.util.BroadcastReceiver;
+
 import com.jakewharton.notificationcompat2.NotificationCompat2;
 
 import android.annotation.TargetApi;
@@ -13,23 +14,32 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.View;
 import android.widget.RemoteViews;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-public class ModernNotificationHandler implements LifecycleListener.RemoteControl {
+public class ModernNotificationHandler implements
+		LifecycleListener.RemoteControl {
 
 	protected static final int NOTIFICATION_NU = 9747245;
 
 	public static final int PLAY_PAUSE_CLICK_ID = 845832;
 	public static final int STOP_CLICK_ID = 845833;
-	public static final String PLAY_PAUSE_ACTION = "org.prx.playerhater.PlayPause";
-	public static final String STOP_ACTION = "org.prx.playerhater.Stop";
+	public static final int SKIP_ACTION_ID = 845834;
+	public static final String PLAY_PAUSE_ACTION = "org.prx.playerhater.PLAYPAUSE";
+	public static final String STOP_ACTION = "org.prx.playerhater.STOP";
+	public static final String SKIP_ACTION = "org.prx.playerhater.SKIP";
+
+	private static final String TAG = "DAWG";
 
 	private String mNotificationTitle = "PlayerHater";
 	private String mNotificationText = "Version 0.1.0";
-	private final PlaybackService mService;
+	private final PlayerHaterService mService;
 	private PendingIntent mContentIntent;
 	private RemoteViews mNotificationView;
 	private int mNotificationIcon = R.drawable.__player_hater_icon;
@@ -37,19 +47,30 @@ public class ModernNotificationHandler implements LifecycleListener.RemoteContro
 	private int mNotificationImageResourceId;
 	private boolean mIsPlaying = false;
 	private boolean mIsVisible = false;
+	private boolean mCanSkipForward = false;
 
 	private Uri mNotificationImageUrl;
 
 	private NotificationManager mNotificationManager;
 
-	public ModernNotificationHandler(PlaybackService service) {
+	public ModernNotificationHandler(PlayerHaterService service) {
 		mService = service;
-		mNotificationManager = (NotificationManager) mService
+		Context c = mService.getBaseContext();
+		PackageManager packageManager = c.getPackageManager();
+		mNotificationManager = (NotificationManager) c
 				.getSystemService(Context.NOTIFICATION_SERVICE);
+
+		Intent resumeActivityIntent = packageManager
+				.getLaunchIntentForPackage(c.getPackageName());
+		resumeActivityIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+		mContentIntent = PendingIntent.getActivity(c, NOTIFICATION_NU,
+				resumeActivityIntent, 0);
+		Log.d(TAG, "THIS IS NOT A JOKE");
 	}
 
 	@Override
 	public void start(Song forSong, int duration) {
+		Log.d(TAG, "THIS IS NOT A JOKE " + forSong);
 		if (forSong != null) {
 			setTitle(forSong.getTitle());
 			setArtist(forSong.getArtist());
@@ -127,11 +148,10 @@ public class ModernNotificationHandler implements LifecycleListener.RemoteContro
 	}
 
 	public void setIntentClass(Class<? extends Activity> intentClass) {
-		Intent i = new Intent(mService.getApplicationContext(), intentClass);
+		Intent i = new Intent(mService.getBaseContext(), intentClass);
 		i.putExtra("fromPlayerHaterNotification", true);
-		mContentIntent = PendingIntent.getActivity(
-				mService.getApplicationContext(), 777, i,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+		mContentIntent = PendingIntent.getActivity(mService.getBaseContext(),
+				777, i, PendingIntent.FLAG_UPDATE_CURRENT);
 		mNotification.contentIntent = mContentIntent;
 	}
 
@@ -141,25 +161,32 @@ public class ModernNotificationHandler implements LifecycleListener.RemoteContro
 		}
 		// Notification and intent of the notification
 		this.mNotification = new NotificationCompat2.Builder(
-				mService.getApplicationContext())
-				.setContentTitle(mNotificationTitle)
+				mService.getBaseContext()).setContentTitle(mNotificationTitle)
 				.setContentText(mNotificationText)
 				.setContentIntent(mContentIntent)
 				.setSmallIcon(mNotificationIcon).build();
 
-		Intent intent = new Intent(mService.getApplicationContext(),
+		Intent intent = new Intent(mService.getBaseContext(),
 				BroadcastReceiver.class);
 		intent.setAction(ModernNotificationHandler.PLAY_PAUSE_ACTION);
 		PendingIntent playPausePendingIntent = PendingIntent.getBroadcast(
-				mService.getApplicationContext(),
+				mService.getBaseContext(),
 				ModernNotificationHandler.PLAY_PAUSE_CLICK_ID, intent, 0);
 
-		Intent stopIntent = new Intent(mService.getApplicationContext(),
+		Intent stopIntent = new Intent(mService.getBaseContext(),
 				BroadcastReceiver.class);
 		stopIntent.setAction(ModernNotificationHandler.STOP_ACTION);
 		PendingIntent stopPendingIntent = PendingIntent.getBroadcast(
-				mService.getApplicationContext(),
+				mService.getBaseContext(),
 				ModernNotificationHandler.STOP_CLICK_ID, stopIntent, 0);
+
+		Intent skipIntent = new Intent(mService.getBaseContext(),
+				BroadcastReceiver.class);
+		skipIntent.setAction(Intent.ACTION_MEDIA_BUTTON);
+		skipIntent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(
+				KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT));
+		PendingIntent skipPendingIntent = PendingIntent.getBroadcast(
+				mService.getBaseContext(), SKIP_ACTION_ID, skipIntent, 0);
 
 		// Remoteview and intent for my button
 		mNotificationView = new RemoteViews(mService.getBaseContext()
@@ -170,6 +197,9 @@ public class ModernNotificationHandler implements LifecycleListener.RemoteContro
 					playPausePendingIntent);
 			mNotificationView.setOnClickPendingIntent(R.id.stop,
 					stopPendingIntent);
+			mNotificationView.setOnClickPendingIntent(R.id.skip,
+					skipPendingIntent);
+			setCanSkipForward(mCanSkipForward);
 			setTitle(mNotificationTitle);
 			setArtist(mNotificationText);
 			setAlbumArt(mNotificationImageUrl);
@@ -184,5 +214,30 @@ public class ModernNotificationHandler implements LifecycleListener.RemoteContro
 		if (mIsVisible) {
 			mNotificationManager.notify(NOTIFICATION_NU, mNotification);
 		}
+	}
+
+	@Override
+	public void setCanSkipForward(boolean canSkipForward) {
+		mCanSkipForward = canSkipForward;
+		if (mNotificationView != null) {
+			if (mCanSkipForward) {
+				mNotificationView.setViewVisibility(R.id.skip, View.VISIBLE);
+			} else {
+				mNotificationView.setViewVisibility(R.id.skip, View.GONE);
+			}
+			updateNotification();
+		}
+	}
+
+	@Override
+	public void setCanSkipBack(boolean canSkipBack) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void setIsLoading(Song forSong) {
+		// TODO Auto-generated method stub
+
 	}
 }

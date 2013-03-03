@@ -4,13 +4,13 @@
     android:versionCode="2"
     android:versionName="2.0.0" >
     
-    <uses-sdk android:minSdkVersion="4" />
+    <uses-sdk android:minSdkVersion="3" />
 
     <application>
         <service android:name=".PlaybackService" >
         </service>
 
-        <receiver android:name=".BroadcastReceiver" >
+        <receiver android:name="org.prx.android.playerhater.util.BroadcastReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>

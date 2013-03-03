@@ -5,6 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.prx.android.playerhater.service.OnShutdownRequestListener;
+import org.prx.android.playerhater.service.PlayerHaterBinder;
+import org.prx.android.playerhater.util.AudioPlaybackInterface;
+import org.prx.android.playerhater.util.BasicSong;
+import org.prx.android.playerhater.util.ConfigurationManager;
+import org.prx.android.playerhater.util.ListenerEcho;
+import org.prx.android.playerhater.util.MediaPlayerWrapper;
+import org.prx.android.playerhater.util.TransientPlayer;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -19,14 +28,17 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.os.IBinder;
+import android.util.Log;
 
-public class PlayerHater implements AudioPlaybackInterface {
+public class PlayerHater implements AudioPlaybackInterface,
+		OnShutdownRequestListener {
+	protected static final String TAG = "PLAYERHATER";
+
 	private static PlayerHater sPlayerHater;
 
 	public static boolean LOCK_SCREEN_CONTROLS = false;
-	public static boolean MODERN_AUDIO_FOCUS   = false;
-	public static boolean MODERN_NOTIFICATION  = false;
-
+	public static boolean MODERN_AUDIO_FOCUS = false;
+	public static boolean MODERN_NOTIFICATION = false;
 
 	public static PlayerHater get(Context context) {
 		if (sPlayerHater == null) {
@@ -35,9 +47,12 @@ public class PlayerHater implements AudioPlaybackInterface {
 			Resources resources = context.getResources();
 			String applicationName = context.getPackageName();
 
-			LOCK_SCREEN_CONTROLS = ConfigurationManager.getFlag(applicationName, resources, "playerhater_lockscreen");
-			MODERN_AUDIO_FOCUS   = ConfigurationManager.getFlag(applicationName, resources, "playerhater_audiofocus");
-			MODERN_NOTIFICATION  = ConfigurationManager.getFlag(applicationName, resources, "playerhater_notification");
+			LOCK_SCREEN_CONTROLS = ConfigurationManager.getFlag(
+					applicationName, resources, "playerhater_lockscreen");
+			MODERN_AUDIO_FOCUS = ConfigurationManager.getFlag(applicationName,
+					resources, "playerhater_audiofocus");
+			MODERN_NOTIFICATION = ConfigurationManager.getFlag(applicationName,
+					resources, "playerhater_notification");
 
 		} else if (!sPlayerHater.usingContext(context)) {
 			sPlayerHater.setContext(context);
@@ -46,10 +61,17 @@ public class PlayerHater implements AudioPlaybackInterface {
 		return sPlayerHater;
 	}
 
+	public static void release(Context context) {
+		if (sPlayerHater != null && sPlayerHater.usingContext(context)) {
+			sPlayerHater.requestRelease(context, true);
+		}
+	}
+
 	private static final ServiceConnection sServiceConnection = new ServiceConnection() {
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
+			Log.d(TAG, "CONNECTED");
 			if (sPlayerHater != null) {
 				sPlayerHater.bind((PlayerHaterBinder) service);
 			}
@@ -57,6 +79,7 @@ public class PlayerHater implements AudioPlaybackInterface {
 
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
+			Log.d(TAG, "DISCONNECTED");
 			if (sPlayerHater != null) {
 				sPlayerHater.unbind();
 			}
@@ -99,18 +122,26 @@ public class PlayerHater implements AudioPlaybackInterface {
 	}
 
 	private void setContext(Context context) {
-		mContext = context;
-		mServiceIntent = new Intent(mContext, PlaybackService.class);
+		Context contextWas = mContext;
+		if (contextWas != context) {
+			mContext = context;
+			mServiceIntent = new Intent(mContext, PlaybackService.class);
 
-		// If we're already bound (but in another context), we should rebind on
-		// this one.
-		if (mPlayerHater != null) {
-			startService();
+			// If we're already bound, we need to rebind with the new context.
+			// the way this works, the service will never become "disconnected"
+			// because it will stay running. We add another reference and then
+			// remove the old one.
+			if (mPlayerHater != null) {
+				Log.d(TAG, "We are starting to switch the context out...");
+				startService();
+				requestRelease(contextWas, false);
+			}
 		}
 	}
 
 	private void bind(PlayerHaterBinder service) {
 		mPlayerHater = service;
+		mPlayerHater.registerShutdownRequestListener(this);
 
 		if (mPendingAlbumArtType != null) {
 			if (mPendingAlbumArtType.equals(RESOURCE)) {
@@ -179,15 +210,31 @@ public class PlayerHater implements AudioPlaybackInterface {
 		mPlayQueue.add(song);
 	}
 
+	private void requestRelease(Context context, boolean resetContext) {
+		if (mPlayerHater != null && context != null) {
+			context.unbindService(sServiceConnection);
+			// If it worked, then we no longer have a handle on the context
+			// and shouldn't be fooled.
+			if (resetContext && mContext == context) {
+				mContext = null;
+			} else if (mContext == context) {
+				mPlayerHater = null;
+			}
+		}
+	}
+
 	private void unbind() {
 		mPlayerHater = null;
 	}
 
 	private void startService() {
 		if (mPlayerHater == null) {
+			Log.d(TAG, "Starting a new service up");
 			mContext.startService(mServiceIntent);
 		}
-		mContext.bindService(mServiceIntent, sServiceConnection, 0);
+		Log.d(TAG, "Binding to our new context");
+		mContext.bindService(mServiceIntent, sServiceConnection,
+				Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -352,7 +399,7 @@ public class PlayerHater implements AudioPlaybackInterface {
 	public void setListener(PlayerHaterListener listener) {
 		setListener(listener, true);
 	}
-	
+
 	@Override
 	public void setListener(PlayerHaterListener listener, boolean withEcho) {
 		mListener.setListener(listener, withEcho);
@@ -418,6 +465,37 @@ public class PlayerHater implements AudioPlaybackInterface {
 	@Override
 	public TransientPlayer playEffect(Uri url, boolean isDuckable) {
 		return TransientPlayer.play(mContext, url, isDuckable);
+	}
+
+	@Override
+	public void enqueue(Song song) {
+		if (mPlayerHater != null) {
+			mPlayerHater.enqueue(song);
+		} else {
+			mPlayQueue.add(song);
+		}
+	}
+
+	@Override
+	public boolean skipTo(int position) {
+		return false;
+	}
+
+	@Override
+	public void emptyQueue() {
+		if (mPlayerHater != null) {
+			mPlayQueue.clear();
+		} else {
+			mPlayerHater.emptyQueue();
+		}
+	}
+
+	// When the player asks us to let go, we can do that.
+	// but we should hold onto the context we have so that
+	// we can start back up again.
+	@Override
+	public void onShutdownRequested() {
+		requestRelease(mContext, false);
 	}
 
 }
