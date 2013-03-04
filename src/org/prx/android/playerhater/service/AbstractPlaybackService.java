@@ -292,7 +292,9 @@ public abstract class AbstractPlaybackService extends Service implements
 	 */
 	protected void sendStartedPlaying() {
 		Log.d(TAG, "SENDING START PLAY");
-		mLifecycleListener.onPlaybackStarted(getNowPlaying(), getDuration());
+		mLifecycleListener.onSongChanged(getNowPlaying());
+		mLifecycleListener.onDurationChanged(getDuration());
+		mLifecycleListener.onPlay();
 		sendIsPlaying(getCurrentPosition());
 	}
 
@@ -306,7 +308,8 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	protected void sendIsLoading() {
 		Log.d(TAG, "SENDING IS LOADING");
-		mLifecycleListener.onLoading(getNowPlaying());
+		mLifecycleListener.onSongChanged(getNowPlaying());
+		mLifecycleListener.onLoading();
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onLoading(getNowPlaying());
 		}
@@ -314,7 +317,7 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	protected void sendIsPaused() {
 		Log.d(TAG, "SENDING IS PAUSED");
-		mLifecycleListener.setIsPlaying(false);
+		mLifecycleListener.onPause();
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onPaused(getNowPlaying());
 		}
@@ -326,10 +329,6 @@ public abstract class AbstractPlaybackService extends Service implements
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onStopped();
 		}
-	}
-
-	protected void sendCanSkipForward(boolean canSkip) {
-		mLifecycleListener.setCanSkipForward(canSkip);
 	}
 
 	@Override

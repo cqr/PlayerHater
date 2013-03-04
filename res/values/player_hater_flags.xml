@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
     <bool name="__playerhater_lockscreen">false</bool>
     <bool name="__playerhater_audiofocus">false</bool>
     <bool name="__playerhater_touchable_notification">false</bool>
     <bool name="__playerhater_expanding_notification">false</bool>
+
     <string name="stop">Stop</string>
     <string name="back">Previous</string>
     <string name="album_art">ALbum Art</string>
     <string name="skip">Skip</string>
     <string name="play_pause">Toggle Playback</string>
+
+    <style name="PHSkipButton">
+        <item name="android:visibility">gone</item>
+    </style>
+
 </resources>

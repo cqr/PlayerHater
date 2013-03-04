@@ -1,6 +1,5 @@
 package org.prx.android.playerhater.plugins;
 
-import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.service.PlayerHaterService;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.OnAudioFocusChangeListener;
@@ -26,8 +25,7 @@ public class AudioFocusPlugin extends PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onPlaybackStarted(Song forSong, int duration) {
-		super.onPlaybackStarted(forSong, duration);
+	public void onPlay() {
 		mAudioService.requestAudioFocus(mAudioFocusChangeListener,
 				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 		mAudioService.registerMediaButtonEventReceiver(getEventReceiver());
@@ -37,6 +35,17 @@ public class AudioFocusPlugin extends PlayerHaterPlugin {
 	public void onStop() {
 		mAudioService.abandonAudioFocus(mAudioFocusChangeListener);
 		mAudioService.unregisterMediaButtonEventReceiver(getEventReceiver());
+	}
+
+	@Override
+	public void onPause() {
+		mAudioService.abandonAudioFocus(mAudioFocusChangeListener);
+	}
+
+	@Override
+	public void onResume() {
+		mAudioService.requestAudioFocus(mAudioFocusChangeListener,
+				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 	}
 
 	private ComponentName getEventReceiver() {

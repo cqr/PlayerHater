@@ -11,13 +11,14 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
 public class NotificationPlugin extends PlayerHaterPlugin {
 	
 	protected static final int NOTIFICATION_NU = 9747245;
+	private static final String TAG = "NotificationPlugin";
 	protected PlayerHaterService mService;
 	protected NotificationManager mNotificationManager;
 	protected PendingIntent mContentIntent;
@@ -41,24 +42,15 @@ public class NotificationPlugin extends PlayerHaterPlugin {
 	}
 
 	@Override
-	public void setIsPlaying(boolean isPlaying) {
-		// XXX TODO FIXME
+	public void onSongChanged(Song song) {
+		onTitleChanged(song.getTitle());
+		onArtistChanged(song.getArtist());
+		onAlbumArtChangedToUri(song.getAlbumArt());
 	}
-
+	
 	@Override
-	public void onLoading(Song forSong) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onPlaybackStarted(Song forSong, int duration) {
-		if (forSong != null) {
-			onTitleChanged(forSong.getTitle());
-			onArtistChanged(forSong.getArtist());
-			onAlbumArtChangedToUri(forSong.getAlbumArt());
-			setIsPlaying(true);
-		}
+	public void onPlay() {
+		Log.d(TAG, "Starting up our notification");
 		mService.startForeground(NOTIFICATION_NU, getNotification());
 		mIsVisible  = true;
 	}
@@ -72,12 +64,6 @@ public class NotificationPlugin extends PlayerHaterPlugin {
 
 		return mNotification;
 	}
-	
-	@Override
-	public void onAlbumArtChangedToUri(Uri albumArt) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public void onStop() {
@@ -90,7 +76,6 @@ public class NotificationPlugin extends PlayerHaterPlugin {
 		mNotificationTitle = notificationTitle;
 		updateNotification();
 	}
-	
 	
 	@Override
 	public void onArtistChanged(String notificationText) {

@@ -19,73 +19,81 @@ public class PluginCollection implements PlayerHaterPluginInterface {
 	}
 
 	@Override
-	public void setIsPlaying(boolean isPlaying) {
-		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.setIsPlaying(isPlaying);
-		}
-	}
-
-	@Override
-	public void onPlaybackStarted(Song forSong, int duration) {
-		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.onPlaybackStarted(forSong, duration);
-		}
-	}
-
-	@Override
 	public void onStop() {
-		for (PlayerHaterPluginInterface listener : mListeners) {
+		for (PlayerHaterPluginInterface listener : mListeners)
 			listener.onStop();
-		}
 	}
 
 	@Override
 	public void onTitleChanged(String title) {
-		for (PlayerHaterPluginInterface listener : mListeners) {
+		for (PlayerHaterPluginInterface listener : mListeners)
 			listener.onTitleChanged(title);
-		}
 	}
 
 	@Override
 	public void onArtistChanged(String artist) {
-		for (PlayerHaterPluginInterface listener : mListeners) {
+		for (PlayerHaterPluginInterface listener : mListeners)
 			listener.onArtistChanged(artist);
-		}
 	}
 
 	@Override
 	public void onAlbumArtChanged(int resourceId) {
-		for (PlayerHaterPluginInterface listener : mListeners) {
+		for (PlayerHaterPluginInterface listener : mListeners)
 			listener.onAlbumArtChanged(resourceId);
-		}
 	}
 
 	@Override
 	public void onAlbumArtChangedToUri(Uri url) {
-		for (PlayerHaterPluginInterface listener : mListeners) {
+		for (PlayerHaterPluginInterface listener : mListeners)
 			listener.onAlbumArtChangedToUri(url);
-		}
 	}
 
 	@Override
-	public void setCanSkipForward(boolean canSkipForward) {
-		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.setCanSkipForward(canSkipForward);
-		}
+	public void onSongChanged(Song song) {
+		for (PlayerHaterPluginInterface plugin : mListeners)
+			plugin.onSongChanged(song);
 	}
 
 	@Override
-	public void setCanSkipBack(boolean canSkipBack) {
-		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.setCanSkipBack(canSkipBack);
-		}
+	public void onDurationChanged(int duration) {
+		for (PlayerHaterPluginInterface plugin : mListeners)
+			plugin.onDurationChanged(duration);
 	}
 
 	@Override
-	public void onLoading(Song forSong) {
-		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.onLoading(forSong);
-		}
+	public void onLoading() {
+		for (PlayerHaterPluginInterface plugin : mListeners)
+			plugin.onLoading();
+	}
+
+	@Override
+	public void onPause() {
+		for (PlayerHaterPluginInterface plugin : mListeners)
+			plugin.onPause();
+	}
+
+	@Override
+	public void onResume() {
+		for (PlayerHaterPluginInterface plugin : mListeners)
+			plugin.onResume();
+	}
+
+	@Override
+	public void onPlay() {
+		for (PlayerHaterPluginInterface plugin : mListeners)
+			plugin.onPlay();
+	}
+
+	@Override
+	public void onNextTrackAvailable() {
+		for (PlayerHaterPluginInterface plugin : mListeners)
+			plugin.onNextTrackAvailable();
+	}
+
+	@Override
+	public void onNextTrackUnavailable() {
+		for (PlayerHaterPluginInterface plugin : mListeners)
+			plugin.onNextTrackUnavailable();
 	}
 
 }

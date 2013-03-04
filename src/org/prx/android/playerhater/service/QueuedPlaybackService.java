@@ -22,7 +22,7 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		sendCanSkipForward(true);
+		mLifecycleListener.onNextTrackAvailable();
 	}
 
 	@Override
@@ -119,10 +119,13 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	private void skipForward() {
 		if (!isLast()) {
 			mCurrentPosition +=1;
+			skipWasPressed();
 		} else {
 			mCurrentPosition = 1;
+			mLifecycleListener.onSongChanged(getNowPlaying());
+			pause();
+			seekTo(0);
 		}
-		skipWasPressed();
 	}
 
 	private void skipWasPressed() {

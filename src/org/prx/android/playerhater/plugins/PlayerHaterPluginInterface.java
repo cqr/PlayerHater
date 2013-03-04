@@ -5,11 +5,17 @@ import org.prx.android.playerhater.Song;
 import android.net.Uri;
 
 public interface PlayerHaterPluginInterface {
-	void setIsPlaying(boolean isPlaying);
+	void onSongChanged(Song song);
+	
+	void onDurationChanged(int duration);
 
-	void onLoading(Song forSong);
-
-	void onPlaybackStarted(Song forSong, int duration);
+	void onLoading();
+	
+	void onPause();
+	
+	void onResume();
+	
+	void onPlay();
 
 	void onStop();
 
@@ -20,8 +26,8 @@ public interface PlayerHaterPluginInterface {
 	void onAlbumArtChanged(int resourceId);
 
 	void onAlbumArtChangedToUri(Uri url);
-
-	void setCanSkipForward(boolean canSkipForward);
-
-	void setCanSkipBack(boolean canSkipBack);
+	
+	void onNextTrackAvailable();
+	
+	void onNextTrackUnavailable();
 }

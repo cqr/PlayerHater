@@ -1,7 +1,6 @@
 package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.R;
-import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.service.PlayerHaterService;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 
@@ -20,9 +19,6 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 
 	private Notification mNotification;
 	private int mNotificationImageResourceId;
-	private boolean mIsPlaying = false;
-	private boolean mCanSkipForward = false;
-
 	private Uri mNotificationImageUrl;
 
 	private RemoteViews mCollapsedView;
@@ -63,15 +59,17 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 			updateNotification();
 		}
 	}
+	
+	@Override
+	public void onPlay() {
+		super.onPlay();
+		setImageViewResource(R.id.button, R.drawable.__player_hater_pause);
+		updateNotification();
+	}
 
 	@Override
-	public void setIsPlaying(boolean isPlaying) {
-		mIsPlaying = isPlaying;
-		if (mIsPlaying) {
-			setImageViewResource(R.id.button, R.drawable.__player_hater_pause);
-		} else {
-			setImageViewResource(R.id.button, R.drawable.__player_hater_play);
-		}
+	public void onPause() {
+		setImageViewResource(R.id.button, R.drawable.__player_hater_play);
 		updateNotification();
 	}
 
@@ -92,28 +90,15 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	@Override
-	public void setCanSkipForward(boolean canSkipForward) {
-		mCanSkipForward = canSkipForward;
-		if (mCanSkipForward) {
-			setViewEnabled(R.id.skip, true);
-		} else {
-			setViewEnabled(R.id.skip, false);
-		}
+	public void onNextTrackAvailable() {
+		setViewEnabled(R.id.skip, true);
 		updateNotification();
 	}
-
-
-
+	
 	@Override
-	public void setCanSkipBack(boolean canSkipBack) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void onLoading(Song forSong) {
-		// TODO Auto-generated method stub
-
+	public void onNextTrackUnavailable() {
+		setViewEnabled(R.id.skip, false);
+		updateNotification();
 	}
 
 	private RemoteViews getNotificationView() {

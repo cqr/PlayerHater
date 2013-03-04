@@ -6,24 +6,14 @@ import org.prx.android.playerhater.plugins.PlayerHaterPluginInterface;
 import android.net.Uri;
 
 public class PlayerHaterPlugin implements PlayerHaterPluginInterface {
-	private Song mSong;
-	private int mDuration;
 
 	@Override
-	public void setIsPlaying(boolean isPlaying) {
-		if (isPlaying) {
-			onPlaybackStarted(mSong, mDuration);
-		}
+	public void onPlay() {
 	}
-
+	
 	@Override
-	public void onLoading(Song forSong) {
-	}
-
-	@Override
-	public void onPlaybackStarted(Song forSong, int duration) {
-		mSong = forSong;
-		mDuration = duration;
+	public void onResume() {
+		onPlay();
 	}
 
 	@Override
@@ -47,11 +37,27 @@ public class PlayerHaterPlugin implements PlayerHaterPluginInterface {
 	}
 
 	@Override
-	public void setCanSkipForward(boolean canSkipForward) {
+	public void onSongChanged(Song song) {
 	}
 
 	@Override
-	public void setCanSkipBack(boolean canSkipBack) {
+	public void onDurationChanged(int duration) {
+	}
+
+	@Override
+	public void onLoading() {
+	}
+
+	@Override
+	public void onPause() {
+	}
+
+	@Override
+	public void onNextTrackAvailable() {
+	}
+
+	@Override
+	public void onNextTrackUnavailable() {
 	}
 
 }

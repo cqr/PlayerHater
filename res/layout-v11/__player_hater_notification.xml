@@ -16,26 +16,25 @@
     <ImageView
         android:id="@+id/stop"
         android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
         android:layout_alignParentRight="true"
-        android:layout_gravity="center_vertical"
         android:alpha="0.4"
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@string/stop"
-        android:paddingRight="5dp"
+        android:padding="10dp"
         android:scaleType="center"
         android:src="@drawable/__player_hater_stop" />
 
     <ImageView
         android:id="@+id/skip"
         android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:layout_gravity="center_vertical"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
         android:layout_toLeftOf="@id/stop"
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@string/skip"
-        android:padding="5dp"
-        android:paddingRight="10dp"
+        android:padding="10dp"
         android:scaleType="center"
         android:src="@drawable/__player_hater_skip" />
 
@@ -43,13 +42,11 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
-        android:layout_gravity="center_vertical"
+        android:layout_centerVertical="true"
         android:layout_toLeftOf="@id/skip"
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@string/play_pause"
-        android:padding="5dp"
-        android:paddingRight="10dp"
-        android:scaleType="center"
+        android:padding="10dp"
         android:src="@drawable/__player_hater_pause" />
     
     <ImageView
@@ -59,11 +56,10 @@
         android:layout_gravity="center_vertical"
         android:layout_toLeftOf="@id/button"
         android:background="?android:attr/selectableItemBackground"
-        android:padding="5dp"
-        android:paddingRight="10dp"
+        android:padding="10dp"
         android:scaleType="center"
         android:contentDescription="@string/back"
-        android:visibility="gone"
+        style="@style/PHSkipButton"
         android:src="@drawable/__player_hater_skip" />
 
     <TextView

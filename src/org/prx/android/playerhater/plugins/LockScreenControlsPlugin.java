@@ -26,37 +26,45 @@ public class LockScreenControlsPlugin extends PlayerHaterPlugin {
 	private RemoteControlClient mRemoteControlClient;
 	private AudioManager mAudioManager;
 	private boolean mCanSkipForward = false;
-	private boolean mCanSkipBack;
 
 	public LockScreenControlsPlugin(Context context) {
 		mContext = context;
 	}
 
 	@Override
-	public void setIsPlaying(boolean isPlaying) {
-		if (isPlaying) {
-			getRemoteControlClient().setPlaybackState(
-					RemoteControlClient.PLAYSTATE_PLAYING);
-		} else {
-			getRemoteControlClient().setPlaybackState(
-					RemoteControlClient.PLAYSTATE_PAUSED);
-		}
+	public void onResume() {
+		getRemoteControlClient().setPlaybackState(
+				RemoteControlClient.PLAYSTATE_PLAYING);
 	}
-	
+
 	@Override
-	public void onPlaybackStarted(Song forSong, int duration) {
-		String imageUriScheme = forSong.getUri().getScheme();
+	public void onPause() {
+		getRemoteControlClient().setPlaybackState(
+				RemoteControlClient.PLAYSTATE_PAUSED);
+	}
+
+	@Override
+	public void onDurationChanged(int duration) {
+		getRemoteControlClient()
+				.editMetadata(false)
+				.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, duration)
+				.apply();
+	}
+
+	@Override
+	public void onSongChanged(Song song) {
+
+		String imageUriScheme = song.getUri().getScheme();
 		Bitmap image = null;
 
 		try {
 			if (imageUriScheme.equals(ContentResolver.SCHEME_CONTENT)
 					|| imageUriScheme
 							.equals(ContentResolver.SCHEME_ANDROID_RESOURCE)) {
-				image = BitmapFactory
-						.decodeStream(mContext.getContentResolver()
-								.openInputStream(forSong.getUri()));
+				image = BitmapFactory.decodeStream(mContext
+						.getContentResolver().openInputStream(song.getUri()));
 			} else {
-				image = BitmapFactory.decodeStream(new URL(forSong.getUri()
+				image = BitmapFactory.decodeStream(new URL(song.getUri()
 						.toString()).openStream());
 			}
 		} catch (Exception e) {
@@ -65,13 +73,16 @@ public class LockScreenControlsPlugin extends PlayerHaterPlugin {
 		getRemoteControlClient()
 				.editMetadata(true)
 				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE,
-						forSong.getTitle())
+						song.getTitle())
 				.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST,
-						forSong.getArtist())
-				.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, duration)
+						song.getArtist())
 				.putBitmap(
 						RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
 						image).apply();
+	}
+
+	@Override
+	public void onPlay() {
 		getRemoteControlClient().setPlaybackState(
 				RemoteControlClient.PLAYSTATE_PLAYING);
 
@@ -119,8 +130,7 @@ public class LockScreenControlsPlugin extends PlayerHaterPlugin {
 			PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext,
 					0, mediaButtonIntent, 0);
 			mRemoteControlClient = new RemoteControlClient(pendingIntent);
-			mRemoteControlClient
-					.setTransportControlFlags(getTCFs());
+			mRemoteControlClient.setTransportControlFlags(getTCFs());
 		}
 		return mRemoteControlClient;
 	}
@@ -135,22 +145,24 @@ public class LockScreenControlsPlugin extends PlayerHaterPlugin {
 	}
 
 	@Override
-	public void setCanSkipForward(boolean canSkipForward) {
-		mCanSkipForward = canSkipForward;
+	public void onNextTrackAvailable() {
+		mCanSkipForward = true;
 		getRemoteControlClient().setTransportControlFlags(getTCFs());
 	}
 
 	@Override
-	public void setCanSkipBack(boolean canSkipBack) {
-		mCanSkipBack = canSkipBack;
+	public void onNextTrackUnavailable() {
+		mCanSkipForward = false;
 		getRemoteControlClient().setTransportControlFlags(getTCFs());
 	}
-	
+
 	private int getTCFs() {
-		int tcfs = RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE;
-		if (mCanSkipForward) tcfs = tcfs | RemoteControlClient.FLAG_KEY_MEDIA_NEXT;
-		if (mCanSkipBack) tcfs = tcfs | RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS;
-		
+		int tcfs = RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
+				| RemoteControlClient.FLAG_KEY_MEDIA_STOP
+				| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS;
+		if (mCanSkipForward)
+			tcfs = tcfs | RemoteControlClient.FLAG_KEY_MEDIA_NEXT;
+
 		return tcfs;
 	}
 
