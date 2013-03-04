@@ -1,40 +1,35 @@
 PlayerHater
 ===========
 
-Let's call it a library? For working with audio playback in Android. 2.2+ only, kthx.
+Android Audio Playback. You hear rumblings of a 2.0 release in the distance.
+The earth moves slightly beneath your feet. It is coming.
 
 Usage
 -----
 
-Basically, you should do the following:
+Everything is changing. We're getting leaner and faster and much, much easier to deal with.
+
+How about this?
 
 ```java
 import org.prx.android.playerhater.PlayerHater;
-import org.prx.android.playerhater.PlaybackService;
 
 class MyApplicationActivity extends Activity {
 
 	private PlayerHater mPlayerHater;
 
-	private ServiceConnection mConnection = new ServiceConnection() {
-
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			mPlayerHater = (PlayerHater)service;
-		}
-
-		public void onServiceDisconnected(ComponentName name) {
-			mPlayerHater = null;
-		}
-	};
-
-	public void onStart() {
-		if (mPlayerHater == null) {
-			Intent playerHaterIntent = new Intent(this, PlaybackService.class);
-			Context context = getApplicationContext();
-
-			context.bindService(playerHaterIntent, mConnection, Context.BIND_AUTO_CREATE);
-		}
+	@Override
+	public void onResume(Bundle savedInstanceState) {
+		super.onResume(savedInstanceState);
+		mPlayerHater = PlayerHater.get(this);
 	}
+	
+	@Override
+	public void onPause() {
+		PlayerHater.release(this);
+	}
+	
+	// All your crazy stuff happens here.
 
 }
 ```
@@ -42,69 +37,68 @@ class MyApplicationActivity extends Activity {
 Architecture
 ------------
 
-Ok, so the way it works is this
+Lots of changes to the way this works since last time. Many more files. Plugins. Docs coming soon.
 
-```
-PlayerHater
-├── MediaPlayerWrapper.java        // Implements the state machine for Android's MediaPlayer class.
-├── OnPlayerLoadingListener.java   // An interface you should implement
-├── PlayerHater.java               // An interface that PlayerHaterBinder implements
-├── PlayerHaterBinder.java         // Your main interaction point with PlayerHater
-├── PlaybackService.java        // The workhorse
-├── PlayerListenerManager.java     // Handles maintaining MediaPlayer event listeners between sessions
-└── UpdateProgressRunnable.java    // Handles updating the scrubber/duration indicator.
-```
+The PlayerHater Object
+----------------------
 
-If you want to build your own extensions to the library, here's how you do it for now:
+It's a singleton that automatically binds and tears down the service that you're attached to.
+It also lets you start working immediately, and will send the stuff you've asked for along to the
+service once it's ready.
 
- * Build a new interface which extends PlayerHater and adds any methods you want.
- * Extend PlayerHaterBinder and implement the interface you just created.
- * Extend PlaybackService to add the actual functionality/persistence (Binders are disposable)
- * Cast the binder you got back with the interface you created.
- * ???
- * Profit!
+All public methods conform to this interface:
 
- The Interface:
- --------------
+```java
+public interface AudioPlaybackInterface {
+	// Controls
+	boolean pause();
+	boolean stop();
 
- Basically, this should answer your questions.
+	// Playback
+	boolean play();
+	boolean play(int startTime);
+	boolean play(Uri url);
+	boolean play(Uri url, int startTime);
+	boolean play(Song song);
+	boolean play(Song song, int startTime);
 
- ```java
-void seekTo(int position);
+	// Queuing
+	void enqueue(Song song);
+	boolean skipTo(int position);
+	void emptyQueue();
 
-boolean pause();
-boolean stop();
+	// For sound effects
+	TransientPlayer playEffect(Uri url);
+	TransientPlayer playEffect(Uri url, boolean isDuckable);
 
-boolean play();
+	// Notification data
+	void setAlbumArt(int resourceId);
+	void setAlbumArt(Uri url);
+	void setTitle(String title);
+	void setArtist(String artist);
+	void setActivity(Activity activity);
 
-boolean play(String fileOrUrl);
-boolean play(String fileOrUrl, boolean isUrl);
-boolean play(String fileOrUrl, boolean isUrl, Activity activity);
-boolean play(String fileOrUrl, boolean isUrl, Activity activity, int view);
+	// Scubber-related data
+	int getCurrentPosition();
+	int getDuration();
 
-boolean play(FileDescriptor fd);
-boolean play(FileDescriptor fd, Activity activity);
-boolean play(FileDescriptor fd, Activity activity, int view);
+	// Media Player listeners
+	void setOnBufferingUpdateListener(OnBufferingUpdateListener listener);
+	void setOnCompletionListener(OnCompletionListener listener);
+	void setOnInfoListener(OnInfoListener listener);
+	void setOnSeekCompleteListener(OnSeekCompleteListener listener);
+	void setOnErrorListener(OnErrorListener listener);
+	void setOnPreparedListener(OnPreparedListener listener);
 
-boolean play(Uri url);
-boolean play(Uri url, Activity activity);
-boolean play(Uri url, Activity activity, int view);
+	// PlayerHater listener
+	void setListener(PlayerHaterListener listener);
+	void setListener(PlayerHaterListener listener, boolean withEcho);
 
-void setNotificationIntentActivity(Activity activity);
-void setNotificationView(int notificationView);
-
-int getCurrentPosition();
-
-void setOnBufferingUpdateListener(OnBufferingUpdateListener listener);
-void setOnCompletionListener(OnCompletionListener listener);
-void setOnInfoListener(OnInfoListener listener);
-void setOnSeekCompleteListener(OnSeekCompleteListener listener);
-void setOnErrorListener(OnErrorListener listener);
-void setOnPreparedListener(OnPreparedListener listener);
-void setOnProgressChangeListener(OnSeekBarChangeListener listener);
-
-String getNowPlaying();
-boolean isPlaying();
-int getState();
+	// Other Getters
+	Song nowPlaying();
+	boolean isPlaying();
+	boolean isLoading();
+	int getState();
+}
 ```
 
