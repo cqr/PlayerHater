@@ -14,11 +14,15 @@ import org.prx.android.playerhater.util.ListenerEcho;
 import org.prx.android.playerhater.util.MediaPlayerWrapper;
 import org.prx.android.playerhater.util.TransientPlayer;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -27,6 +31,7 @@ import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -129,7 +134,9 @@ public class PlayerHater implements AudioPlaybackInterface,
 		Context contextWas = mContext;
 		if (contextWas != context) {
 			mContext = context;
-			mServiceIntent = new Intent(mContext, PlaybackService.class);
+			
+			mServiceIntent = new Intent("org.prx.android.playerhater.SERVICE");
+			mServiceIntent.setPackage(mContext.getPackageName()); 
 
 			// If we're already bound, we need to rebind with the new context.
 			// the way this works, the service will never become "disconnected"
@@ -411,8 +418,10 @@ public class PlayerHater implements AudioPlaybackInterface,
 
 	@Override
 	public Song nowPlaying() {
-		if (mPlayerHater == null) {
+		if (mPlayerHater == null && mPlayQueue.size() > 0) {
 			return mPlayQueue.get(0);
+		} else if (mPlayerHater == null) { 
+			return null; 
 		}
 		return mPlayerHater.getNowPlaying();
 	}
