@@ -1,6 +1,5 @@
 package org.prx.android.playerhater.util;
 
-import org.prx.android.playerhater.lifecycle.ModernNotificationHandler;
 import org.prx.android.playerhater.service.PlayerHaterService;
 
 import android.annotation.SuppressLint;
@@ -8,12 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.util.Log;
 import android.view.KeyEvent;
 
 public class BroadcastReceiver extends android.content.BroadcastReceiver {
 
-	private static final String TAG = "BroadcastReceiver";
 	private static PlayerHaterService mService;
 
 	public BroadcastReceiver() {
@@ -67,31 +64,6 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 				}
 			}
 			mService.onRemoteControlButtonPressed(keyCode);
-		}
-		if (intent.getAction() != null
-				&& intent.getAction().equals(
-						ModernNotificationHandler.PLAY_PAUSE_ACTION)) {
-			try {
-				if (mService.isPlaying()) {
-					mService.pause();
-				} else {
-					mService.play();
-				}
-			} catch (IllegalStateException e) {
-				e.printStackTrace();
-			}
-		}
-		if (intent.getAction() != null
-				&& intent.getAction().equals(
-						ModernNotificationHandler.STOP_ACTION)) {
-			try {
-				mService.stop();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		if (intent.getAction() != null) {
-			Log.d(TAG, "GOT BROADCAST INTENT: " + intent.getAction());
 		}
 	}
 

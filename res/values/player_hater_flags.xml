@@ -2,8 +2,11 @@
 <resources>
     <bool name="__playerhater_lockscreen">false</bool>
     <bool name="__playerhater_audiofocus">false</bool>
-    <bool name="__playerhater_active_notification">false</bool>
+    <bool name="__playerhater_touchable_notification">false</bool>
+    <bool name="__playerhater_expanding_notification">false</bool>
     <string name="stop">Stop</string>
+    <string name="back">Previous</string>
+    <string name="album_art">ALbum Art</string>
     <string name="skip">Skip</string>
     <string name="play_pause">Toggle Playback</string>
 </resources>

@@ -7,8 +7,9 @@ import org.prx.android.playerhater.lifecycle.AudioFocusHandler;
 import org.prx.android.playerhater.lifecycle.LifecycleListener;
 import org.prx.android.playerhater.lifecycle.ListenerCollection;
 import org.prx.android.playerhater.lifecycle.MediaButtonHandler;
-import org.prx.android.playerhater.lifecycle.ModernNotificationHandler;
+import org.prx.android.playerhater.lifecycle.ExpandableNotificationPlugin;
 import org.prx.android.playerhater.lifecycle.RemoteControlClientHandler;
+import org.prx.android.playerhater.lifecycle.TouchableNotificationPlugin;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.MediaPlayerWrapper;
 import org.prx.android.playerhater.util.PlayerListenerManager;
@@ -62,8 +63,10 @@ public abstract class AbstractPlaybackService extends Service implements
 
 		ListenerCollection collection = new ListenerCollection();
 
-		if (PlayerHater.MODERN_NOTIFICATION) {
-			collection.add(new ModernNotificationHandler(this));
+		if (PlayerHater.EXPANDING_NOTIFICATIONS) {
+			collection.add(new ExpandableNotificationPlugin(this));
+		} else if (PlayerHater.TOUCHABLE_NOTIFICATIONS) {
+			collection.add(new TouchableNotificationPlugin(this));
 		}
 		if (PlayerHater.MODERN_AUDIO_FOCUS) {
 			collection.add(new AudioFocusHandler(this));

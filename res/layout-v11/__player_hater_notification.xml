@@ -10,6 +10,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginRight="10dp"
         android:background="#3333B5E5"
+        android:contentDescription="@string/album_art"
         android:scaleType="fitCenter" />
 
     <ImageView
@@ -61,6 +62,7 @@
         android:padding="5dp"
         android:paddingRight="10dp"
         android:scaleType="center"
+        android:contentDescription="@string/back"
         android:visibility="gone"
         android:src="@drawable/__player_hater_skip" />
 

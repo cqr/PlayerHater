@@ -9,6 +9,7 @@
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:background="#3333B5E5"
+        android:contentDescription="@string/album_art"
         android:scaleType="fitCenter" />
 
     <LinearLayout
@@ -43,9 +44,9 @@
             android:layout_weight="0"
             android:gravity="top" />
 
-        <ImageView
+        <View
             android:layout_width="match_parent"
-            android:layout_height="1px"
+            android:layout_height="1dp"
             android:background="?android:attr/dividerHorizontal" />
 
         <LinearLayout
@@ -64,6 +65,7 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center"
                 android:padding="6dp"
+                android:contentDescription="@string/back"
                 android:scaleType="center"
                 android:src="@drawable/__player_hater_skip" />
 

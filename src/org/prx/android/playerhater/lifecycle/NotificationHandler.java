@@ -3,9 +3,6 @@ package org.prx.android.playerhater.lifecycle;
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.service.PlayerHaterService;
-import org.prx.android.playerhater.util.BroadcastReceiver;
-import org.prx.android.playerhater.util.NotificationBuilder;
-
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -15,9 +12,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.widget.RemoteViews;
 
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
 public class NotificationHandler implements LifecycleListener {

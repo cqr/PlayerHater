@@ -38,7 +38,9 @@ public class PlayerHater implements AudioPlaybackInterface,
 
 	public static boolean LOCK_SCREEN_CONTROLS = false;
 	public static boolean MODERN_AUDIO_FOCUS = false;
-	public static boolean MODERN_NOTIFICATION = false;
+	public static boolean TOUCHABLE_NOTIFICATIONS = false;
+	public static boolean EXPANDING_NOTIFICATIONS = false;
+	
 
 	public static PlayerHater get(Context context) {
 		if (sPlayerHater == null) {
@@ -51,8 +53,10 @@ public class PlayerHater implements AudioPlaybackInterface,
 					applicationName, resources, "playerhater_lockscreen");
 			MODERN_AUDIO_FOCUS = ConfigurationManager.getFlag(applicationName,
 					resources, "playerhater_audiofocus");
-			MODERN_NOTIFICATION = ConfigurationManager.getFlag(applicationName,
-					resources, "playerhater_notification");
+			TOUCHABLE_NOTIFICATIONS = ConfigurationManager.getFlag(applicationName,
+					resources, "playerhater_touchable_notification");
+			EXPANDING_NOTIFICATIONS = ConfigurationManager.getFlag(applicationName,
+					resources, "playerhater_expanding_notification");
 
 		} else if (!sPlayerHater.usingContext(context)) {
 			sPlayerHater.setContext(context);
