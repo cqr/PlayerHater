@@ -4,29 +4,19 @@ import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.service.PlayerHaterService;
 import org.prx.android.playerhater.util.BroadcastReceiver;
-
-import com.jakewharton.notificationcompat2.NotificationCompat2;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.RemoteViews;
 
-@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-public class ModernNotificationHandler implements
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+public class ModernNotificationHandler extends NotificationHandler implements
 		LifecycleListener.RemoteControl {
-
-	protected static final int NOTIFICATION_NU = 9747245;
 
 	public static final int PLAY_PAUSE_CLICK_ID = 845832;
 	public static final int STOP_CLICK_ID = 845833;
@@ -35,74 +25,39 @@ public class ModernNotificationHandler implements
 	public static final String STOP_ACTION = "org.prx.playerhater.STOP";
 	public static final String SKIP_ACTION = "org.prx.playerhater.SKIP";
 
-	private static final String TAG = "DAWG";
-
-	private String mNotificationTitle = "PlayerHater";
-	private String mNotificationText = "Version 0.1.0";
-	private final PlayerHaterService mService;
-	private PendingIntent mContentIntent;
-	private RemoteViews mNotificationView;
-	private int mNotificationIcon = R.drawable.__player_hater_icon;
 	private Notification mNotification;
 	private int mNotificationImageResourceId;
 	private boolean mIsPlaying = false;
-	private boolean mIsVisible = false;
 	private boolean mCanSkipForward = false;
 
 	private Uri mNotificationImageUrl;
 
-	private NotificationManager mNotificationManager;
+	private RemoteViews mCollapsedView;
+	private RemoteViews mExpandedView;
 
 	public ModernNotificationHandler(PlayerHaterService service) {
-		mService = service;
-		Context c = mService.getBaseContext();
-		PackageManager packageManager = c.getPackageManager();
-		mNotificationManager = (NotificationManager) c
-				.getSystemService(Context.NOTIFICATION_SERVICE);
-
-		Intent resumeActivityIntent = packageManager
-				.getLaunchIntentForPackage(c.getPackageName());
-		resumeActivityIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-		mContentIntent = PendingIntent.getActivity(c, NOTIFICATION_NU,
-				resumeActivityIntent, 0);
-		Log.d(TAG, "THIS IS NOT A JOKE");
+		super(service);
 	}
 
 	@Override
-	public void start(Song forSong, int duration) {
-		Log.d(TAG, "THIS IS NOT A JOKE " + forSong);
-		if (forSong != null) {
-			setTitle(forSong.getTitle());
-			setArtist(forSong.getArtist());
-			setAlbumArt(forSong.getAlbumArt());
-			setIsPlaying(true);
+	public void setTitle(String title) {
+		setTextViewText(R.id.title, title);
+		super.setTitle(title);
+	}
+
+	private void setTextViewText(int id, String text) {
+		if (mCollapsedView != null) {
+			mCollapsedView.setTextViewText(id, text);
 		}
-		mService.startForeground(NOTIFICATION_NU, getNotification());
-		mIsVisible = true;
-	}
-
-	@Override
-	public void stop() {
-		mIsVisible = false;
-		mService.stopForeground(true);
-	}
-
-	@Override
-	public void setTitle(String notificationTitle) {
-		mNotificationTitle = notificationTitle;
-		if (mNotificationView != null) {
-			mNotificationView.setTextViewText(R.id.title, mNotificationTitle);
-			updateNotification();
+		if (mExpandedView != null) {
+			mExpandedView.setTextViewText(id, text);
 		}
 	}
 
 	@Override
-	public void setArtist(String notificationText) {
-		mNotificationText = notificationText;
-		if (mNotificationView != null) {
-			mNotificationView.setTextViewText(R.id.text, mNotificationText);
-			updateNotification();
-		}
+	public void setArtist(String artist) {
+		setTextViewText(R.id.text, artist);
+		super.setArtist(artist);
 	}
 
 	@Override
@@ -110,11 +65,18 @@ public class ModernNotificationHandler implements
 		mNotificationImageResourceId = resourceId;
 		if (mNotificationImageResourceId != 0) {
 			mNotificationImageUrl = null;
-			if (mNotificationView != null) {
-				mNotificationView.setImageViewResource(R.id.image,
-						mNotificationImageResourceId);
-			}
+			setImageViewResource(R.id.image, mNotificationImageResourceId);
+
 			updateNotification();
+		}
+	}
+
+	private void setImageViewResource(int id, int resourceId) {
+		if (mCollapsedView != null) {
+			mCollapsedView.setImageViewResource(id, resourceId);
+		}
+		if (mExpandedView != null) {
+			mExpandedView.setImageViewResource(id, resourceId);
 		}
 	}
 
@@ -123,28 +85,43 @@ public class ModernNotificationHandler implements
 		mNotificationImageUrl = url;
 		if (mNotificationImageUrl != null) {
 			mNotificationImageResourceId = 0;
-			if (mNotificationView != null) {
-				mNotificationView.setImageViewUri(R.id.image,
-						mNotificationImageUrl);
-			}
+			setImageViewUri(R.id.image, mNotificationImageUrl);
 			updateNotification();
+		}
+	}
+
+	private void setImageViewUri(int id, Uri contentUri) {
+		if (mCollapsedView != null) {
+			mCollapsedView.setImageViewUri(id, contentUri);
+		}
+		if (mExpandedView != null) {
+			mExpandedView.setImageViewUri(id, contentUri);
 		}
 	}
 
 	@Override
 	public void setIsPlaying(boolean isPlaying) {
 		mIsPlaying = isPlaying;
-		if (mNotificationView != null) {
-			if (mIsPlaying) {
-				mNotificationView.setImageViewResource(R.id.button,
-						R.drawable.__player_hater_pause);
+		if (mIsPlaying) {
+			setImageViewResource(R.id.button, R.drawable.__player_hater_pause);
 
-			} else {
-				mNotificationView.setImageViewResource(R.id.button,
-						R.drawable.__player_hater_play);
-			}
-			updateNotification();
+		} else {
+			setImageViewResource(R.id.button, R.drawable.__player_hater_play);
 		}
+		updateNotification();
+	}
+
+	@Override
+	protected Notification getNotification() {
+		if (mNotification == null) {
+			mNotification = new Notification.Builder(mService.getBaseContext())
+					.setAutoCancel(false)
+					.setSmallIcon(R.drawable.__player_hater_icon)
+					.setTicker("Playing: " + mNotificationTitle)
+					.setContent(getCollapsedView()).build();
+			mNotification.bigContentView = getExpandedView();
+		}
+		return mNotification;
 	}
 
 	public void setIntentClass(Class<? extends Activity> intentClass) {
@@ -155,77 +132,23 @@ public class ModernNotificationHandler implements
 		mNotification.contentIntent = mContentIntent;
 	}
 
-	private Notification getNotification() {
-		if (this.mNotification != null) {
-			return this.mNotification;
-		}
-		// Notification and intent of the notification
-		this.mNotification = new NotificationCompat2.Builder(
-				mService.getBaseContext()).setContentTitle(mNotificationTitle)
-				.setContentText(mNotificationText)
-				.setContentIntent(mContentIntent)
-				.setSmallIcon(mNotificationIcon).build();
-
-		Intent intent = new Intent(mService.getBaseContext(),
-				BroadcastReceiver.class);
-		intent.setAction(ModernNotificationHandler.PLAY_PAUSE_ACTION);
-		PendingIntent playPausePendingIntent = PendingIntent.getBroadcast(
-				mService.getBaseContext(),
-				ModernNotificationHandler.PLAY_PAUSE_CLICK_ID, intent, 0);
-
-		Intent stopIntent = new Intent(mService.getBaseContext(),
-				BroadcastReceiver.class);
-		stopIntent.setAction(ModernNotificationHandler.STOP_ACTION);
-		PendingIntent stopPendingIntent = PendingIntent.getBroadcast(
-				mService.getBaseContext(),
-				ModernNotificationHandler.STOP_CLICK_ID, stopIntent, 0);
-
-		Intent skipIntent = new Intent(mService.getBaseContext(),
-				BroadcastReceiver.class);
-		skipIntent.setAction(Intent.ACTION_MEDIA_BUTTON);
-		skipIntent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(
-				KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT));
-		PendingIntent skipPendingIntent = PendingIntent.getBroadcast(
-				mService.getBaseContext(), SKIP_ACTION_ID, skipIntent, 0);
-
-		// Remoteview and intent for my button
-		mNotificationView = new RemoteViews(mService.getBaseContext()
-				.getPackageName(), R.layout.__player_hater_notification);
-
-		if (mNotificationView != null) {
-			mNotificationView.setOnClickPendingIntent(R.id.button,
-					playPausePendingIntent);
-			mNotificationView.setOnClickPendingIntent(R.id.stop,
-					stopPendingIntent);
-			mNotificationView.setOnClickPendingIntent(R.id.skip,
-					skipPendingIntent);
-			setCanSkipForward(mCanSkipForward);
-			setTitle(mNotificationTitle);
-			setArtist(mNotificationText);
-			setAlbumArt(mNotificationImageUrl);
-			setAlbumArt(mNotificationImageResourceId);
-			mNotification.contentView = mNotificationView;
-		}
-
-		return mNotification;
-	}
-
-	private void updateNotification() {
-		if (mIsVisible) {
-			mNotificationManager.notify(NOTIFICATION_NU, mNotification);
-		}
-	}
-
 	@Override
 	public void setCanSkipForward(boolean canSkipForward) {
 		mCanSkipForward = canSkipForward;
-		if (mNotificationView != null) {
-			if (mCanSkipForward) {
-				mNotificationView.setViewVisibility(R.id.skip, View.VISIBLE);
-			} else {
-				mNotificationView.setViewVisibility(R.id.skip, View.GONE);
-			}
-			updateNotification();
+		if (mCanSkipForward) {
+			setViewEnabled(R.id.skip, true);
+		} else {
+			setViewEnabled(R.id.skip, false);
+		}
+		updateNotification();
+	}
+
+	private void setViewEnabled(int viewId, boolean enabled) {
+		if (mCollapsedView != null) {
+			mCollapsedView.setBoolean(viewId, "setEnabled", enabled);
+		}
+		if (mExpandedView != null) {
+			mExpandedView.setBoolean(viewId, "setEnabled", enabled);
 		}
 	}
 
@@ -240,4 +163,57 @@ public class ModernNotificationHandler implements
 		// TODO Auto-generated method stub
 
 	}
+
+	private RemoteViews getCollapsedView() {
+		if (mCollapsedView == null) {
+			mCollapsedView = new RemoteViews(mService.getBaseContext()
+					.getPackageName(), R.layout.__player_hater_notification);
+			setListeners(mCollapsedView);
+		}
+
+		mCollapsedView.setTextViewText(R.id.title, mNotificationTitle);
+		mCollapsedView.setTextViewText(R.id.text, mNotificationText);
+		mCollapsedView.setImageViewResource(R.id.image,
+				mNotificationImageResourceId);
+
+		return mCollapsedView;
+	}
+
+	private RemoteViews getExpandedView() {
+		if (mExpandedView == null) {
+			mExpandedView = new RemoteViews(mService.getBaseContext()
+					.getPackageName(),
+					R.layout.__player_hater_notification_expanded);
+			setListeners(mExpandedView);
+		}
+
+		mExpandedView.setTextViewText(R.id.title, mNotificationTitle);
+		mExpandedView.setTextViewText(R.id.text, mNotificationText);
+		mExpandedView.setImageViewResource(R.id.image,
+				mNotificationImageResourceId);
+
+		return mExpandedView;
+	}
+
+	private PendingIntent getMediaButtonPendingIntent(int keycode) {
+		Intent intent = new Intent(mService.getBaseContext(),
+				BroadcastReceiver.class);
+		intent.setAction(Intent.ACTION_MEDIA_BUTTON);
+		intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(
+				KeyEvent.ACTION_UP, keycode));
+		return PendingIntent.getBroadcast(mService.getBaseContext(), keycode, intent,
+				0);
+	}
+
+	private void setListeners(RemoteViews view) {
+		view.setOnClickPendingIntent(R.id.skip,
+				getMediaButtonPendingIntent(KeyEvent.KEYCODE_MEDIA_NEXT));
+		view.setOnClickPendingIntent(R.id.button,
+				getMediaButtonPendingIntent(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
+		view.setOnClickPendingIntent(R.id.stop,
+				getMediaButtonPendingIntent(KeyEvent.KEYCODE_MEDIA_STOP));
+		view.setOnClickPendingIntent(R.id.back,
+				getMediaButtonPendingIntent(KeyEvent.KEYCODE_MEDIA_PREVIOUS));
+	}
+
 }

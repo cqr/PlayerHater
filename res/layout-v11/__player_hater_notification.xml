@@ -10,7 +10,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginRight="10dp"
         android:background="#3333B5E5"
-        android:scaleType="center" />
+        android:scaleType="fitCenter" />
 
     <ImageView
         android:id="@+id/stop"
@@ -50,22 +50,34 @@
         android:paddingRight="10dp"
         android:scaleType="center"
         android:src="@drawable/__player_hater_pause" />
+    
+    <ImageView
+        android:id="@+id/back"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_toLeftOf="@id/button"
+        android:background="?android:attr/selectableItemBackground"
+        android:padding="5dp"
+        android:paddingRight="10dp"
+        android:scaleType="center"
+        android:visibility="gone"
+        android:src="@drawable/__player_hater_skip" />
 
     <TextView
         android:id="@+id/title"
         style="@android:style/TextAppearance.StatusBar.EventContent.Title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toLeftOf="@id/button"
+        android:layout_toLeftOf="@id/back"
         android:layout_toRightOf="@id/image"
         android:ellipsize="marquee"
-        android:marqueeRepeatLimit="marquee_forever"
-    	android:scrollHorizontally="false"                                     
+        android:marqueeRepeatLimit="marquee_forever"                                
     	android:focusable="true"
     	android:focusableInTouchMode="true" 
         android:paddingBottom="2dp"
         android:paddingTop="5dp"
-        android:singleLine="true" >
+        android:lines="1" >
         <requestFocus/>
     </TextView>
 
