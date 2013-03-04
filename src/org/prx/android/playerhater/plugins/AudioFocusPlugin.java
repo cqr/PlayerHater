@@ -36,17 +36,17 @@ public class AudioFocusPlugin extends AbstractPlugin {
 		mAudioService.abandonAudioFocus(mAudioFocusChangeListener);
 		mAudioService.unregisterMediaButtonEventReceiver(getEventReceiver());
 	}
+//
+//	@Override
+//	public void onPlaybackPaused() {
+//		mAudioService.abandonAudioFocus(mAudioFocusChangeListener);
+//	}
 
-	@Override
-	public void onPlaybackPaused() {
-		mAudioService.abandonAudioFocus(mAudioFocusChangeListener);
-	}
-
-	@Override
-	public void onPlaybackResumed() {
-		mAudioService.requestAudioFocus(mAudioFocusChangeListener,
-				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-	}
+//	@Override
+//	public void onPlaybackResumed() {
+//		mAudioService.requestAudioFocus(mAudioFocusChangeListener,
+//				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+//	}
 
 	private ComponentName getEventReceiver() {
 		if (mEventReceiver == null) {
