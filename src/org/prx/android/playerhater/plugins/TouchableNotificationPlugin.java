@@ -1,4 +1,4 @@
-package org.prx.android.playerhater.lifecycle;
+package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
@@ -16,7 +16,7 @@ import android.view.KeyEvent;
 import android.widget.RemoteViews;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-public class TouchableNotificationPlugin extends NotificationHandler implements LifecycleListener.RemoteControl {
+public class TouchableNotificationPlugin extends NotificationPlugin {
 
 	private Notification mNotification;
 	private int mNotificationImageResourceId;

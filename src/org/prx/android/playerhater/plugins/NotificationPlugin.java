@@ -1,8 +1,9 @@
-package org.prx.android.playerhater.lifecycle;
+package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.service.PlayerHaterService;
+
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -14,7 +15,7 @@ import android.net.Uri;
 import android.os.Build;
 
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
-public class NotificationHandler implements LifecycleListener {
+public class NotificationPlugin extends PlayerHaterPlugin {
 	
 	protected static final int NOTIFICATION_NU = 9747245;
 	protected PlayerHaterService mService;
@@ -25,7 +26,7 @@ public class NotificationHandler implements LifecycleListener {
 	private boolean mIsVisible = false;
 	private Notification mNotification;
 	
-	public NotificationHandler(PlayerHaterService service) {
+	public NotificationPlugin(PlayerHaterService service) {
 		mService = service;
 		Context c = mService.getBaseContext();
 		PackageManager packageManager = c.getPackageManager();
@@ -72,7 +73,8 @@ public class NotificationHandler implements LifecycleListener {
 		return mNotification;
 	}
 	
-	private void setAlbumArt(Uri albumArt) {
+	@Override
+	public void setAlbumArt(Uri albumArt) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -83,13 +85,15 @@ public class NotificationHandler implements LifecycleListener {
 		mService.stopForeground(true);
 	}
 	
-	protected void setTitle(String notificationTitle) {
+	@Override
+	public void setTitle(String notificationTitle) {
 		mNotificationTitle = notificationTitle;
 		updateNotification();
 	}
 	
 	
-	protected void setArtist(String notificationText) {
+	@Override
+	public void setArtist(String notificationText) {
 		mNotificationText = notificationText;
 		updateNotification();
 	}

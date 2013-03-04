@@ -1,7 +1,8 @@
-package org.prx.android.playerhater.lifecycle;
+package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.service.PlayerHaterService;
+
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.net.Uri;
@@ -9,8 +10,7 @@ import android.os.Build;
 import android.widget.RemoteViews;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-public class ExpandableNotificationPlugin extends TouchableNotificationPlugin implements
-		LifecycleListener.RemoteControl {
+public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 	
 	private RemoteViews mExpandedView;
 	private Notification mNotification;

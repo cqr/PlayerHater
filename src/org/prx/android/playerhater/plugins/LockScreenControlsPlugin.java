@@ -1,4 +1,4 @@
-package org.prx.android.playerhater.lifecycle;
+package org.prx.android.playerhater.plugins;
 
 import java.net.URL;
 

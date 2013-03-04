@@ -1,4 +1,4 @@
-package org.prx.android.playerhater.lifecycle;
+package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.service.PlayerHaterService;

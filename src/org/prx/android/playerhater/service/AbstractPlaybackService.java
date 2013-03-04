@@ -3,12 +3,12 @@ package org.prx.android.playerhater.service;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.lifecycle.AudioFocusPlugin;
-import org.prx.android.playerhater.lifecycle.LifecycleListener;
-import org.prx.android.playerhater.lifecycle.ListenerCollection;
-import org.prx.android.playerhater.lifecycle.ExpandableNotificationPlugin;
-import org.prx.android.playerhater.lifecycle.LockScreenControlsPlugin;
-import org.prx.android.playerhater.lifecycle.TouchableNotificationPlugin;
+import org.prx.android.playerhater.plugins.AudioFocusPlugin;
+import org.prx.android.playerhater.plugins.ExpandableNotificationPlugin;
+import org.prx.android.playerhater.plugins.PluginCollection;
+import org.prx.android.playerhater.plugins.LockScreenControlsPlugin;
+import org.prx.android.playerhater.plugins.PlayerHaterPluginInterface;
+import org.prx.android.playerhater.plugins.TouchableNotificationPlugin;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.MediaPlayerWrapper;
 import org.prx.android.playerhater.util.PlayerListenerManager;
@@ -38,7 +38,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	protected static final int PROGRESS_UPDATE = 9747244;
 
 	protected BroadcastReceiver mBroadcastReceiver;
-	protected LifecycleListener.RemoteControl mLifecycleListener;
+	protected PlayerHaterPluginInterface mLifecycleListener;
 	protected final PlayerListenerManager mPlayerListenerManager = new PlayerListenerManager();
 	private OnCompletionListener mOnCompletionListener;
 	private PlayerHaterListener mPlayerHaterListener;
@@ -60,7 +60,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	public void onCreate() {
 		mBroadcastReceiver = new BroadcastReceiver(this);
 
-		ListenerCollection collection = new ListenerCollection();
+		PluginCollection collection = new PluginCollection();
 
 		if (PlayerHater.EXPANDING_NOTIFICATIONS) {
 			collection.add(new ExpandableNotificationPlugin(this));
