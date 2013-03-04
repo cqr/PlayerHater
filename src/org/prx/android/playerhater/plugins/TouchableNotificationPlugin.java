@@ -1,6 +1,7 @@
 package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.R;
+import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.service.PlayerHaterService;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 
@@ -18,8 +19,8 @@ import android.widget.RemoteViews;
 public class TouchableNotificationPlugin extends NotificationPlugin {
 
 	private Notification mNotification;
-	private int mNotificationImageResourceId;
-	private Uri mNotificationImageUrl;
+	protected int mNotificationImageResourceId;
+	protected Uri mNotificationImageUrl;
 
 	private RemoteViews mCollapsedView;
 	
@@ -27,6 +28,12 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 		super(service);
 	}
 
+	@Override
+	public void onSongChanged(Song song) { 
+		super.onSongChanged(song); 
+		onAlbumArtChangedToUri(song.getAlbumArt()); 
+	}
+	
 	@Override
 	public void onTitleChanged(String title) {
 		setTextViewText(R.id.title, title);
@@ -45,7 +52,6 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 		if (mNotificationImageResourceId != 0) {
 			mNotificationImageUrl = null;
 			setImageViewResource(R.id.image, mNotificationImageResourceId);
-
 			updateNotification();
 		}
 	}
@@ -110,8 +116,12 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 
 		mCollapsedView.setTextViewText(R.id.title, mNotificationTitle);
 		mCollapsedView.setTextViewText(R.id.text, mNotificationText);
-		mCollapsedView.setImageViewResource(R.id.image,
+		if (mNotificationImageUrl != null) { 
+			setImageViewUri(R.id.image, mNotificationImageUrl);
+		} else if (mNotificationImageResourceId != 0) { 
+			mCollapsedView.setImageViewResource(R.id.image,
 				mNotificationImageResourceId);
+		}
 
 		return mCollapsedView;
 	}

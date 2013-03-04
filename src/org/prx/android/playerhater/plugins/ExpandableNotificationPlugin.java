@@ -40,8 +40,12 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 
 		mExpandedView.setTextViewText(R.id.title, mNotificationTitle);
 		mExpandedView.setTextViewText(R.id.text, mNotificationText);
-		mExpandedView.setImageViewResource(R.id.image, R.drawable.__player_hater_icon);
-
+		if (mNotificationImageUrl != null) { 
+			setImageViewUri(R.id.image, mNotificationImageUrl);
+		} else if (mNotificationImageResourceId != 0) { 
+			mExpandedView.setImageViewResource(R.id.image,
+				mNotificationImageResourceId);
+		}
 		return mExpandedView;
 	}
 	
