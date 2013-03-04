@@ -20,9 +20,9 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 
 	@Override
 	public void onCreate() {
-		if (mMediaPlayer == null) {
-			mMediaPlayer = buildMediaPlayer(true);
-		}
+		super.onCreate(); 
+		mMediaPlayer = buildMediaPlayer(true);
+		this.mLifecycleListener.onNextTrackUnavailable(); 
 	}
 
 	@Override
