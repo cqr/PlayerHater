@@ -86,7 +86,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	public void onDestroy() {
 		stopProgressThread();
 		sendIsStopped();
-		getMediaPlayer().stop();
+		release(); 
 		getBaseContext().unregisterReceiver(mBroadcastReceiver);
 	}
 
@@ -307,7 +307,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	}
 
 	protected void sendIsLoading() {
-		Log.d(TAG, "SENDING IS LOADING");
+		Log.d(TAG, "SENDING IS LOADING " + mLifecycleListener + " " + getNowPlaying());
 		mLifecycleListener.onSongChanged(getNowPlaying());
 		mLifecycleListener.onAudioLoading();
 		if (mPlayerHaterListener != null) {
@@ -460,6 +460,10 @@ public abstract class AbstractPlaybackService extends Service implements
 	@Override
 	public void setOnShutdownRequestListener(OnShutdownRequestListener listener) {
 		mShutdownRequestListener = listener;
+	}
+	
+	protected void release() { 
+		getMediaPlayer().release(); 
 	}
 
 }
