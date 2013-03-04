@@ -20,8 +20,7 @@ import android.net.Uri;
 import android.os.Build;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-public class RemoteControlClientHandler implements
-		LifecycleListener.RemoteControl {
+public class LockScreenControlsPlugin extends PlayerHaterPlugin {
 
 	private Context mContext;
 	private RemoteControlClient mRemoteControlClient;
@@ -29,7 +28,7 @@ public class RemoteControlClientHandler implements
 	private boolean mCanSkipForward = false;
 	private boolean mCanSkipBack;
 
-	public RemoteControlClientHandler(Context context) {
+	public LockScreenControlsPlugin(Context context) {
 		mContext = context;
 	}
 
@@ -153,12 +152,6 @@ public class RemoteControlClientHandler implements
 		if (mCanSkipBack) tcfs = tcfs | RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS;
 		
 		return tcfs;
-	}
-
-	@Override
-	public void setIsLoading(Song forSong) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }
