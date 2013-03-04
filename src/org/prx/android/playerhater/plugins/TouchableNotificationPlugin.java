@@ -32,19 +32,19 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	@Override
-	public void setTitle(String title) {
+	public void onTitleChanged(String title) {
 		setTextViewText(R.id.title, title);
-		super.setTitle(title);
+		super.onTitleChanged(title);
 	}
 
 	@Override
-	public void setArtist(String artist) {
+	public void onArtistChanged(String artist) {
 		setTextViewText(R.id.text, artist);
-		super.setArtist(artist);
+		super.onArtistChanged(artist);
 	}
 
 	@Override
-	public void setAlbumArt(int resourceId) {
+	public void onAlbumArtChanged(int resourceId) {
 		mNotificationImageResourceId = resourceId;
 		if (mNotificationImageResourceId != 0) {
 			mNotificationImageUrl = null;
@@ -55,7 +55,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	@Override
-	public void setAlbumArt(Uri url) {
+	public void onAlbumArtChangedToUri(Uri url) {
 		mNotificationImageUrl = url;
 		if (mNotificationImageUrl != null) {
 			mNotificationImageResourceId = 0;
@@ -111,7 +111,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	@Override
-	public void setIsLoading(Song forSong) {
+	public void onLoading(Song forSong) {
 		// TODO Auto-generated method stub
 
 	}

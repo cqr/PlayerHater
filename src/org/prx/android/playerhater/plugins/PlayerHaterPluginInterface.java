@@ -7,19 +7,19 @@ import android.net.Uri;
 public interface PlayerHaterPluginInterface {
 	void setIsPlaying(boolean isPlaying);
 
-	void setIsLoading(Song forSong);
+	void onLoading(Song forSong);
 
-	void start(Song forSong, int duration);
+	void onPlaybackStarted(Song forSong, int duration);
 
-	void stop();
+	void onStop();
 
-	void setTitle(String title);
+	void onTitleChanged(String title);
 
-	void setArtist(String artist);
+	void onArtistChanged(String artist);
 
-	void setAlbumArt(int resourceId);
+	void onAlbumArtChanged(int resourceId);
 
-	void setAlbumArt(Uri url);
+	void onAlbumArtChangedToUri(Uri url);
 
 	void setCanSkipForward(boolean canSkipForward);
 

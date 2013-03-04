@@ -292,7 +292,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	 */
 	protected void sendStartedPlaying() {
 		Log.d(TAG, "SENDING START PLAY");
-		mLifecycleListener.start(getNowPlaying(), getDuration());
+		mLifecycleListener.onPlaybackStarted(getNowPlaying(), getDuration());
 		sendIsPlaying(getCurrentPosition());
 	}
 
@@ -306,7 +306,7 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	protected void sendIsLoading() {
 		Log.d(TAG, "SENDING IS LOADING");
-		mLifecycleListener.setIsLoading(getNowPlaying());
+		mLifecycleListener.onLoading(getNowPlaying());
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onLoading(getNowPlaying());
 		}
@@ -322,7 +322,7 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	protected void sendIsStopped() {
 		Log.d(TAG, "SENDING IS STOPPED");
-		mLifecycleListener.stop();
+		mLifecycleListener.onStop();
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onStopped();
 		}
@@ -334,22 +334,22 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	@Override
 	public void setTitle(String title) {
-		mLifecycleListener.setTitle(title);
+		mLifecycleListener.onTitleChanged(title);
 	}
 
 	@Override
 	public void setArtist(String artist) {
-		mLifecycleListener.setArtist(artist);
+		mLifecycleListener.onArtistChanged(artist);
 	}
 
 	@Override
 	public void setAlbumArt(int resourceId) {
-		mLifecycleListener.setAlbumArt(resourceId);
+		mLifecycleListener.onAlbumArtChanged(resourceId);
 	}
 
 	@Override
 	public void setAlbumArt(Uri url) {
-		mLifecycleListener.setAlbumArt(url);
+		mLifecycleListener.onAlbumArtChangedToUri(url);
 	}
 
 	@Override

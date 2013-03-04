@@ -46,17 +46,17 @@ public class NotificationPlugin extends PlayerHaterPlugin {
 	}
 
 	@Override
-	public void setIsLoading(Song forSong) {
+	public void onLoading(Song forSong) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void start(Song forSong, int duration) {
+	public void onPlaybackStarted(Song forSong, int duration) {
 		if (forSong != null) {
-			setTitle(forSong.getTitle());
-			setArtist(forSong.getArtist());
-			setAlbumArt(forSong.getAlbumArt());
+			onTitleChanged(forSong.getTitle());
+			onArtistChanged(forSong.getArtist());
+			onAlbumArtChangedToUri(forSong.getAlbumArt());
 			setIsPlaying(true);
 		}
 		mService.startForeground(NOTIFICATION_NU, getNotification());
@@ -74,26 +74,26 @@ public class NotificationPlugin extends PlayerHaterPlugin {
 	}
 	
 	@Override
-	public void setAlbumArt(Uri albumArt) {
+	public void onAlbumArtChangedToUri(Uri albumArt) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void stop() {
+	public void onStop() {
 		mIsVisible = false;
 		mService.stopForeground(true);
 	}
 	
 	@Override
-	public void setTitle(String notificationTitle) {
+	public void onTitleChanged(String notificationTitle) {
 		mNotificationTitle = notificationTitle;
 		updateNotification();
 	}
 	
 	
 	@Override
-	public void setArtist(String notificationText) {
+	public void onArtistChanged(String notificationText) {
 		mNotificationText = notificationText;
 		updateNotification();
 	}

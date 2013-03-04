@@ -44,7 +44,7 @@ public class LockScreenControlsPlugin extends PlayerHaterPlugin {
 	}
 	
 	@Override
-	public void start(Song forSong, int duration) {
+	public void onPlaybackStarted(Song forSong, int duration) {
 		String imageUriScheme = forSong.getUri().getScheme();
 		Bitmap image = null;
 
@@ -79,33 +79,33 @@ public class LockScreenControlsPlugin extends PlayerHaterPlugin {
 	}
 
 	@Override
-	public void stop() {
+	public void onStop() {
 		getAudioManager().unregisterRemoteControlClient(
 				getRemoteControlClient());
 	}
 
 	@Override
-	public void setTitle(String title) {
+	public void onTitleChanged(String title) {
 		getRemoteControlClient().editMetadata(false)
 				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, title)
 				.apply();
 	}
 
 	@Override
-	public void setArtist(String artist) {
+	public void onArtistChanged(String artist) {
 		getRemoteControlClient().editMetadata(false)
 				.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, artist)
 				.apply();
 	}
 
 	@Override
-	public void setAlbumArt(int resourceId) {
+	public void onAlbumArtChanged(int resourceId) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void setAlbumArt(Uri url) {
+	public void onAlbumArtChangedToUri(Uri url) {
 		// TODO Auto-generated method stub
 
 	}

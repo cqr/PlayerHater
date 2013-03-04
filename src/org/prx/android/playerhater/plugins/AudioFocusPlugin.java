@@ -26,15 +26,15 @@ public class AudioFocusPlugin extends PlayerHaterPlugin {
 	}
 
 	@Override
-	public void start(Song forSong, int duration) {
-		super.start(forSong, duration);
+	public void onPlaybackStarted(Song forSong, int duration) {
+		super.onPlaybackStarted(forSong, duration);
 		mAudioService.requestAudioFocus(mAudioFocusChangeListener,
 				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 		mAudioService.registerMediaButtonEventReceiver(getEventReceiver());
 	}
 
 	@Override
-	public void stop() {
+	public void onStop() {
 		mAudioService.abandonAudioFocus(mAudioFocusChangeListener);
 		mAudioService.unregisterMediaButtonEventReceiver(getEventReceiver());
 	}

@@ -26,44 +26,44 @@ public class PluginCollection implements PlayerHaterPluginInterface {
 	}
 
 	@Override
-	public void start(Song forSong, int duration) {
+	public void onPlaybackStarted(Song forSong, int duration) {
 		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.start(forSong, duration);
+			listener.onPlaybackStarted(forSong, duration);
 		}
 	}
 
 	@Override
-	public void stop() {
+	public void onStop() {
 		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.stop();
+			listener.onStop();
 		}
 	}
 
 	@Override
-	public void setTitle(String title) {
+	public void onTitleChanged(String title) {
 		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.setTitle(title);
+			listener.onTitleChanged(title);
 		}
 	}
 
 	@Override
-	public void setArtist(String artist) {
+	public void onArtistChanged(String artist) {
 		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.setArtist(artist);
+			listener.onArtistChanged(artist);
 		}
 	}
 
 	@Override
-	public void setAlbumArt(int resourceId) {
+	public void onAlbumArtChanged(int resourceId) {
 		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.setAlbumArt(resourceId);
+			listener.onAlbumArtChanged(resourceId);
 		}
 	}
 
 	@Override
-	public void setAlbumArt(Uri url) {
+	public void onAlbumArtChangedToUri(Uri url) {
 		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.setAlbumArt(url);
+			listener.onAlbumArtChangedToUri(url);
 		}
 	}
 
@@ -82,9 +82,9 @@ public class PluginCollection implements PlayerHaterPluginInterface {
 	}
 
 	@Override
-	public void setIsLoading(Song forSong) {
+	public void onLoading(Song forSong) {
 		for (PlayerHaterPluginInterface listener : mListeners) {
-			listener.setIsLoading(forSong);
+			listener.onLoading(forSong);
 		}
 	}
 

@@ -12,38 +12,38 @@ public class PlayerHaterPlugin implements PlayerHaterPluginInterface {
 	@Override
 	public void setIsPlaying(boolean isPlaying) {
 		if (isPlaying) {
-			start(mSong, mDuration);
+			onPlaybackStarted(mSong, mDuration);
 		}
 	}
 
 	@Override
-	public void setIsLoading(Song forSong) {
+	public void onLoading(Song forSong) {
 	}
 
 	@Override
-	public void start(Song forSong, int duration) {
+	public void onPlaybackStarted(Song forSong, int duration) {
 		mSong = forSong;
 		mDuration = duration;
 	}
 
 	@Override
-	public void stop() {
+	public void onStop() {
 	}
 
 	@Override
-	public void setTitle(String title) {
+	public void onTitleChanged(String title) {
 	}
 
 	@Override
-	public void setArtist(String artist) {
+	public void onArtistChanged(String artist) {
 	}
 
 	@Override
-	public void setAlbumArt(int resourceId) {
+	public void onAlbumArtChanged(int resourceId) {
 	}
 
 	@Override
-	public void setAlbumArt(Uri url) {
+	public void onAlbumArtChangedToUri(Uri url) {
 	}
 
 	@Override
