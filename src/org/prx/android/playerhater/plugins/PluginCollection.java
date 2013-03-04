@@ -6,93 +6,93 @@ import java.util.List;
 import org.prx.android.playerhater.Song;
 import android.net.Uri;
 
-public class PluginCollection implements PlayerHaterPluginInterface {
+public class PluginCollection implements PlayerHaterPlugin {
 
-	private final List<PlayerHaterPluginInterface> mListeners;
+	private final List<PlayerHaterPlugin> mListeners;
 
 	public PluginCollection() {
-		mListeners = new ArrayList<PlayerHaterPluginInterface>();
+		mListeners = new ArrayList<PlayerHaterPlugin>();
 	}
 
-	public void add(PlayerHaterPluginInterface listener) {
+	public void add(PlayerHaterPlugin listener) {
 		mListeners.add(listener);
 	}
 
 	@Override
-	public void onStop() {
-		for (PlayerHaterPluginInterface listener : mListeners)
-			listener.onStop();
+	public void onPlaybackStopped() {
+		for (PlayerHaterPlugin listener : mListeners)
+			listener.onPlaybackStopped();
 	}
 
 	@Override
 	public void onTitleChanged(String title) {
-		for (PlayerHaterPluginInterface listener : mListeners)
+		for (PlayerHaterPlugin listener : mListeners)
 			listener.onTitleChanged(title);
 	}
 
 	@Override
 	public void onArtistChanged(String artist) {
-		for (PlayerHaterPluginInterface listener : mListeners)
+		for (PlayerHaterPlugin listener : mListeners)
 			listener.onArtistChanged(artist);
 	}
 
 	@Override
 	public void onAlbumArtChanged(int resourceId) {
-		for (PlayerHaterPluginInterface listener : mListeners)
+		for (PlayerHaterPlugin listener : mListeners)
 			listener.onAlbumArtChanged(resourceId);
 	}
 
 	@Override
 	public void onAlbumArtChangedToUri(Uri url) {
-		for (PlayerHaterPluginInterface listener : mListeners)
+		for (PlayerHaterPlugin listener : mListeners)
 			listener.onAlbumArtChangedToUri(url);
 	}
 
 	@Override
 	public void onSongChanged(Song song) {
-		for (PlayerHaterPluginInterface plugin : mListeners)
+		for (PlayerHaterPlugin plugin : mListeners)
 			plugin.onSongChanged(song);
 	}
 
 	@Override
 	public void onDurationChanged(int duration) {
-		for (PlayerHaterPluginInterface plugin : mListeners)
+		for (PlayerHaterPlugin plugin : mListeners)
 			plugin.onDurationChanged(duration);
 	}
 
 	@Override
-	public void onLoading() {
-		for (PlayerHaterPluginInterface plugin : mListeners)
-			plugin.onLoading();
+	public void onAudioLoading() {
+		for (PlayerHaterPlugin plugin : mListeners)
+			plugin.onAudioLoading();
 	}
 
 	@Override
-	public void onPause() {
-		for (PlayerHaterPluginInterface plugin : mListeners)
-			plugin.onPause();
+	public void onPlaybackPaused() {
+		for (PlayerHaterPlugin plugin : mListeners)
+			plugin.onPlaybackPaused();
 	}
 
 	@Override
-	public void onResume() {
-		for (PlayerHaterPluginInterface plugin : mListeners)
-			plugin.onResume();
+	public void onPlaybackResumed() {
+		for (PlayerHaterPlugin plugin : mListeners)
+			plugin.onPlaybackResumed();
 	}
 
 	@Override
-	public void onPlay() {
-		for (PlayerHaterPluginInterface plugin : mListeners)
-			plugin.onPlay();
+	public void onPlaybackStarted() {
+		for (PlayerHaterPlugin plugin : mListeners)
+			plugin.onPlaybackStarted();
 	}
 
 	@Override
 	public void onNextTrackAvailable() {
-		for (PlayerHaterPluginInterface plugin : mListeners)
+		for (PlayerHaterPlugin plugin : mListeners)
 			plugin.onNextTrackAvailable();
 	}
 
 	@Override
 	public void onNextTrackUnavailable() {
-		for (PlayerHaterPluginInterface plugin : mListeners)
+		for (PlayerHaterPlugin plugin : mListeners)
 			plugin.onNextTrackUnavailable();
 	}
 

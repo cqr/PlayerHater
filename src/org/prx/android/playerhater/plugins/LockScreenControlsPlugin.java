@@ -20,7 +20,7 @@ import android.net.Uri;
 import android.os.Build;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-public class LockScreenControlsPlugin extends PlayerHaterPlugin {
+public class LockScreenControlsPlugin extends AbstractPlugin {
 
 	private Context mContext;
 	private RemoteControlClient mRemoteControlClient;
@@ -32,13 +32,13 @@ public class LockScreenControlsPlugin extends PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onResume() {
+	public void onPlaybackResumed() {
 		getRemoteControlClient().setPlaybackState(
 				RemoteControlClient.PLAYSTATE_PLAYING);
 	}
 
 	@Override
-	public void onPause() {
+	public void onPlaybackPaused() {
 		getRemoteControlClient().setPlaybackState(
 				RemoteControlClient.PLAYSTATE_PAUSED);
 	}
@@ -82,7 +82,7 @@ public class LockScreenControlsPlugin extends PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onPlay() {
+	public void onPlaybackStarted() {
 		getRemoteControlClient().setPlaybackState(
 				RemoteControlClient.PLAYSTATE_PLAYING);
 
@@ -90,7 +90,7 @@ public class LockScreenControlsPlugin extends PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onStop() {
+	public void onPlaybackStopped() {
 		getAudioManager().unregisterRemoteControlClient(
 				getRemoteControlClient());
 	}

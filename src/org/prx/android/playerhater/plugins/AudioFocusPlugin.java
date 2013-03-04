@@ -11,7 +11,7 @@ import android.media.AudioManager;
 import android.os.Build;
 
 @TargetApi(Build.VERSION_CODES.FROYO)
-public class AudioFocusPlugin extends PlayerHaterPlugin {
+public class AudioFocusPlugin extends AbstractPlugin {
 	private final AudioManager mAudioService;
 	private final OnAudioFocusChangeListener mAudioFocusChangeListener;
 	private ComponentName mEventReceiver;
@@ -25,25 +25,25 @@ public class AudioFocusPlugin extends PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onPlay() {
+	public void onPlaybackStarted() {
 		mAudioService.requestAudioFocus(mAudioFocusChangeListener,
 				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 		mAudioService.registerMediaButtonEventReceiver(getEventReceiver());
 	}
 
 	@Override
-	public void onStop() {
+	public void onPlaybackStopped() {
 		mAudioService.abandonAudioFocus(mAudioFocusChangeListener);
 		mAudioService.unregisterMediaButtonEventReceiver(getEventReceiver());
 	}
 
 	@Override
-	public void onPause() {
+	public void onPlaybackPaused() {
 		mAudioService.abandonAudioFocus(mAudioFocusChangeListener);
 	}
 
 	@Override
-	public void onResume() {
+	public void onPlaybackResumed() {
 		mAudioService.requestAudioFocus(mAudioFocusChangeListener,
 				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 	}

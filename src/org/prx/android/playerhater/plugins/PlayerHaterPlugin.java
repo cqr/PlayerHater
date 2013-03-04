@@ -1,63 +1,33 @@
 package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.plugins.PlayerHaterPluginInterface;
 
 import android.net.Uri;
 
-public class PlayerHaterPlugin implements PlayerHaterPluginInterface {
-
-	@Override
-	public void onPlay() {
-	}
+public interface PlayerHaterPlugin {
+	void onSongChanged(Song song);
 	
-	@Override
-	public void onResume() {
-		onPlay();
-	}
+	void onDurationChanged(int duration);
 
-	@Override
-	public void onStop() {
-	}
+	void onAudioLoading();
+	
+	void onPlaybackPaused();
+	
+	void onPlaybackResumed();
+	
+	void onPlaybackStarted();
 
-	@Override
-	public void onTitleChanged(String title) {
-	}
+	void onPlaybackStopped();
 
-	@Override
-	public void onArtistChanged(String artist) {
-	}
+	void onTitleChanged(String title);
 
-	@Override
-	public void onAlbumArtChanged(int resourceId) {
-	}
+	void onArtistChanged(String artist);
 
-	@Override
-	public void onAlbumArtChangedToUri(Uri url) {
-	}
+	void onAlbumArtChanged(int resourceId);
 
-	@Override
-	public void onSongChanged(Song song) {
-	}
-
-	@Override
-	public void onDurationChanged(int duration) {
-	}
-
-	@Override
-	public void onLoading() {
-	}
-
-	@Override
-	public void onPause() {
-	}
-
-	@Override
-	public void onNextTrackAvailable() {
-	}
-
-	@Override
-	public void onNextTrackUnavailable() {
-	}
-
+	void onAlbumArtChangedToUri(Uri url);
+	
+	void onNextTrackAvailable();
+	
+	void onNextTrackUnavailable();
 }

@@ -7,7 +7,7 @@ import org.prx.android.playerhater.plugins.AudioFocusPlugin;
 import org.prx.android.playerhater.plugins.ExpandableNotificationPlugin;
 import org.prx.android.playerhater.plugins.PluginCollection;
 import org.prx.android.playerhater.plugins.LockScreenControlsPlugin;
-import org.prx.android.playerhater.plugins.PlayerHaterPluginInterface;
+import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.plugins.TouchableNotificationPlugin;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.MediaPlayerWrapper;
@@ -38,7 +38,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	protected static final int PROGRESS_UPDATE = 9747244;
 
 	protected BroadcastReceiver mBroadcastReceiver;
-	protected PlayerHaterPluginInterface mLifecycleListener;
+	protected PlayerHaterPlugin mLifecycleListener;
 	protected final PlayerListenerManager mPlayerListenerManager = new PlayerListenerManager();
 	private OnCompletionListener mOnCompletionListener;
 	private PlayerHaterListener mPlayerHaterListener;
@@ -294,7 +294,7 @@ public abstract class AbstractPlaybackService extends Service implements
 		Log.d(TAG, "SENDING START PLAY");
 		mLifecycleListener.onSongChanged(getNowPlaying());
 		mLifecycleListener.onDurationChanged(getDuration());
-		mLifecycleListener.onPlay();
+		mLifecycleListener.onPlaybackStarted();
 		sendIsPlaying(getCurrentPosition());
 	}
 
@@ -309,7 +309,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	protected void sendIsLoading() {
 		Log.d(TAG, "SENDING IS LOADING");
 		mLifecycleListener.onSongChanged(getNowPlaying());
-		mLifecycleListener.onLoading();
+		mLifecycleListener.onAudioLoading();
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onLoading(getNowPlaying());
 		}
@@ -317,7 +317,7 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	protected void sendIsPaused() {
 		Log.d(TAG, "SENDING IS PAUSED");
-		mLifecycleListener.onPause();
+		mLifecycleListener.onPlaybackPaused();
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onPaused(getNowPlaying());
 		}
@@ -325,7 +325,7 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	protected void sendIsStopped() {
 		Log.d(TAG, "SENDING IS STOPPED");
-		mLifecycleListener.onStop();
+		mLifecycleListener.onPlaybackStopped();
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onStopped();
 		}

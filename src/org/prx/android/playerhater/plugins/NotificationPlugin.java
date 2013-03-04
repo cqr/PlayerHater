@@ -15,7 +15,7 @@ import android.os.Build;
 import android.util.Log;
 
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
-public class NotificationPlugin extends PlayerHaterPlugin {
+public class NotificationPlugin extends AbstractPlugin {
 	
 	protected static final int NOTIFICATION_NU = 9747245;
 	private static final String TAG = "NotificationPlugin";
@@ -49,7 +49,7 @@ public class NotificationPlugin extends PlayerHaterPlugin {
 	}
 	
 	@Override
-	public void onPlay() {
+	public void onPlaybackStarted() {
 		Log.d(TAG, "Starting up our notification");
 		mService.startForeground(NOTIFICATION_NU, getNotification());
 		mIsVisible  = true;
@@ -66,7 +66,7 @@ public class NotificationPlugin extends PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onStop() {
+	public void onPlaybackStopped() {
 		mIsVisible = false;
 		mService.stopForeground(true);
 	}
