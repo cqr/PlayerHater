@@ -180,7 +180,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	@Override
 	public void seekTo(int pos) {
 		Log.d(TAG, "SEEKING TO " + pos);
-		mPlayAfterSeek = (getState() == MediaPlayerWrapper.STARTED);
+		mPlayAfterSeek = (mPlayAfterSeek || getState() == MediaPlayerWrapper.STARTED);
 
 		try {
 			getMediaPlayer().pause();
@@ -219,6 +219,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	public void onSeekComplete(MediaPlayer mp) {
 		Log.d(TAG, "GOT SEEK COMPLETE");
 		if (mPlayAfterSeek) {
+			mPlayAfterSeek = false; 
 			try {
 				play();
 			} catch (Exception e) {

@@ -10,6 +10,8 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
+import android.os.ParcelFileDescriptor;
+import android.util.Log;
 
 public class LegacyPlaybackService extends AbstractPlaybackService implements
 		OnErrorListener, OnPreparedListener, OnSeekCompleteListener,
@@ -21,7 +23,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 	@Override
 	public void onCreate() {
 		super.onCreate(); 
-		mMediaPlayer = buildMediaPlayer(true);
+		mMediaPlayer = buildMediaPlayer(true); 
 		this.mLifecycleListener.onNextTrackUnavailable(); 
 	}
 

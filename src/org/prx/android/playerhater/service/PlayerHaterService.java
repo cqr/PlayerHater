@@ -25,7 +25,7 @@ public interface PlayerHaterService extends OnCompletionListener {
 
 	public abstract boolean play() throws IllegalStateException;
 
-	public abstract boolean play(int startTime) throws IllegalStateException;
+	public abstract boolean play(int startTime) throws IllegalStateException; 
 
 	public abstract void setTitle(String title);
 

@@ -282,10 +282,19 @@ public class PlayerHater implements AudioPlaybackInterface,
 		}
 	}
 
+	//XXX FIXME TODO -- handle case where it is called when player hater is already playing
+	// compare to seekTo to decide how to handle return vals/vs exceptions
 	@Override
 	public boolean play(int startTime) {
 		if (mPlayerHater == null) {
-			throw new IllegalStateException();
+			if (this.mPlayQueue.size() > 0) { 
+				Song song = this.mPlayQueue.get(0); 
+				schedulePlay(song, startTime);
+				startService();
+				return true; 
+			} else { 
+				throw new IllegalStateException();
+			}
 		} else {
 			return mPlayerHater.play(startTime);
 		}
@@ -315,6 +324,24 @@ public class PlayerHater implements AudioPlaybackInterface,
 			return true;
 		} else {
 			return mPlayerHater.play(song, startTime);
+		}
+	}
+	
+	/// XXX FIXME TODO -- handle when called while binding/illegal states, etc. 
+	@Override
+	public boolean seekTo(int startTime) { 
+		if (mPlayerHater == null) { 
+				if (this.mPlayQueue.size() > 0) { 
+				Song song = this.mPlayQueue.get(0); 
+				schedulePlay(song, startTime);
+				startService();
+				return true; 
+			} else { 
+				return false; 
+			}
+		} else { 
+			mPlayerHater.seekTo(startTime); 
+			return true; 
 		}
 	}
 

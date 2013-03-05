@@ -15,7 +15,7 @@ import android.net.Uri;
 public interface AudioPlaybackInterface {
 	// Controls
 	boolean pause();
-	boolean stop();
+	boolean stop(); 
 
 	// Playback
 	boolean play();
@@ -24,6 +24,7 @@ public interface AudioPlaybackInterface {
 	boolean play(Uri url, int startTime);
 	boolean play(Song song);
 	boolean play(Song song, int startTime);
+	boolean seekTo(int startTime); 
 	
 	// Queuing
 	void enqueue(Song song);

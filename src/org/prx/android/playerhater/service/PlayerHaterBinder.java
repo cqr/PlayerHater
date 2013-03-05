@@ -45,6 +45,10 @@ public class PlayerHaterBinder extends Binder {
 	public boolean play(int startTime) throws IllegalStateException {
 		return mService.play(startTime);
 	}
+	
+	public void seekTo(int startTime) throws IllegalStateException { 
+		mService.seekTo(startTime); 
+	}
 
 	public void setTitle(String title) {
 		mService.setTitle(title);
