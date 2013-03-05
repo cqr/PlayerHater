@@ -11,40 +11,38 @@ import android.widget.RemoteViews;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
-	
+
 	private RemoteViews mExpandedView;
 	private Notification mNotification;
-	
 
 	public ExpandableNotificationPlugin(PlayerHaterService service) {
 		super(service);
 	}
-	
+
 	@Override
 	protected Notification getNotification() {
 		if (mNotification == null) {
 			mNotification = super.getNotification();
 			mNotification.bigContentView = getExpandedView();
 		}
-		
+
 		return mNotification;
 	}
-	
+
 	private RemoteViews getExpandedView() {
 		if (mExpandedView == null) {
 			mExpandedView = new RemoteViews(mService.getBaseContext()
-					.getPackageName(),
-					R.layout.__player_hater_notification_expanded);
+					.getPackageName(), R.layout.zzz_ph_exp_notification);
 			setListeners(mExpandedView);
 		}
 
 		mExpandedView.setTextViewText(R.id.title, mNotificationTitle);
 		mExpandedView.setTextViewText(R.id.text, mNotificationText);
-		if (mNotificationImageUrl != null) { 
+		if (mNotificationImageUrl != null) {
 			setImageViewUri(R.id.image, mNotificationImageUrl);
-		} else if (mNotificationImageResourceId != 0) { 
+		} else if (mNotificationImageResourceId != 0) {
 			mExpandedView.setImageViewResource(R.id.image,
-				mNotificationImageResourceId);
+					mNotificationImageResourceId);
 		}
 		if (mNotificationCanSkip) { 
 			onNextTrackAvailable(); 
@@ -53,7 +51,7 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 		}
 		return mExpandedView;
 	}
-	
+
 	@Override
 	protected void setTextViewText(int viewId, String text) {
 		super.setTextViewText(viewId, text);
@@ -61,7 +59,7 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 			mExpandedView.setTextViewText(viewId, text);
 		}
 	}
-	
+
 	@Override
 	protected void setViewEnabled(int viewId, boolean enabled) {
 		if (mExpandedView != null) {
@@ -69,7 +67,7 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 		}
 		super.setViewEnabled(viewId, enabled);
 	}
-	
+
 	@Override
 	protected void setViewVisibility(int viewId, int visible) {
 		if (mExpandedView != null) {
@@ -85,7 +83,7 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 			mExpandedView.setImageViewResource(viewId, resourceId);
 		}
 	}
-	
+
 	@Override
 	protected void setImageViewUri(int viewId, Uri contentUri) {
 		super.setImageViewUri(viewId, contentUri);
@@ -93,7 +91,7 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 			mExpandedView.setImageViewUri(viewId, contentUri);
 		}
 	}
-	
+
 	@Override
 	protected Notification buildNotification() {
 		return getNotificationBuilder().build();

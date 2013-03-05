@@ -59,15 +59,11 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 
 	@Override
 	public void enqueue(Song song) {
-		// TODO Auto-generated method stub
-
+		throw new IllegalStateException("You can't enqueue when using the legacy service.");
 	}
 
 	@Override
-	public void emptyQueue() {
-		// TODO Auto-generated method stub
-
-	}
+	public void emptyQueue() {}
 
 	@Override
 	protected MediaPlayerWrapper getMediaPlayer() {

@@ -24,20 +24,20 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	private Notification mNotification;
 	protected int mNotificationImageResourceId;
 	protected Uri mNotificationImageUrl;
-	protected boolean mNotificationCanSkip = true; 
+	protected boolean mNotificationCanSkip = true;
+	private RemoteViews mNotificationView;
 
-	private RemoteViews mCollapsedView;
-	
+
 	public TouchableNotificationPlugin(PlayerHaterService service) {
 		super(service);
 	}
 
 	@Override
-	public void onSongChanged(Song song) { 
-		super.onSongChanged(song); 
-		onAlbumArtChangedToUri(song.getAlbumArt()); 
+	public void onSongChanged(Song song) {
+		super.onSongChanged(song);
+		onAlbumArtChangedToUri(song.getAlbumArt());
 	}
-	
+
 	@Override
 	public void onTitleChanged(String title) {
 		setTextViewText(R.id.title, title);
@@ -69,7 +69,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 			updateNotification();
 		}
 	}
-	
+
 	@Override
 	public void onPlaybackStarted() {
 		super.onPlaybackStarted();
@@ -103,7 +103,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 		setViewVisibility(R.id.skip, View.VISIBLE); 
 		updateNotification();
 	}
-	
+
 	@Override
 	public void onNextTrackUnavailable() {
 		this.mNotificationCanSkip = false; 
@@ -111,20 +111,19 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 		updateNotification();
 	}
 
-	private RemoteViews getNotificationView() {
-		if (mCollapsedView == null) {
-			mCollapsedView = new RemoteViews(mService.getBaseContext()
-					.getPackageName(), R.layout.__player_hater_notification);
-			setListeners(mCollapsedView);
+	protected RemoteViews getNotificationView() {
+		if (mNotificationView == null) {
+			mNotificationView = buildNotificationView();
+			setListeners(mNotificationView);
 		}
 
-		mCollapsedView.setTextViewText(R.id.title, mNotificationTitle);
-		mCollapsedView.setTextViewText(R.id.text, mNotificationText);
-		if (mNotificationImageUrl != null) { 
+		mNotificationView.setTextViewText(R.id.title, mNotificationTitle);
+		mNotificationView.setTextViewText(R.id.text, mNotificationText);
+		if (mNotificationImageUrl != null) {
 			setImageViewUri(R.id.image, mNotificationImageUrl);
-		} else if (mNotificationImageResourceId != 0) { 
-			mCollapsedView.setImageViewResource(R.id.image,
-				mNotificationImageResourceId);
+		} else if (mNotificationImageResourceId != 0) {
+			mNotificationView.setImageViewResource(R.id.image,
+					mNotificationImageResourceId);
 		}
 		
 		if (mNotificationCanSkip) { 
@@ -133,7 +132,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 			this.onNextTrackUnavailable(); 
 		}
 
-		return mCollapsedView;
+		return mNotificationView;
 	}
 
 	protected void setListeners(RemoteViews view) {
@@ -146,17 +145,22 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 		view.setOnClickPendingIntent(R.id.back,
 				getMediaButtonPendingIntent(KeyEvent.KEYCODE_MEDIA_PREVIOUS));
 	}
-	
+
+	protected RemoteViews buildNotificationView() {
+		return new RemoteViews(mService.getBaseContext().getPackageName(),
+				R.layout.zzz_ph_hc_notification);
+	}
+
 	private PendingIntent getMediaButtonPendingIntent(int keycode) {
 		Intent intent = new Intent(mService.getBaseContext(),
 				BroadcastReceiver.class);
 		intent.setAction(Intent.ACTION_MEDIA_BUTTON);
 		intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(
 				KeyEvent.ACTION_UP, keycode));
-		return PendingIntent.getBroadcast(mService.getBaseContext(), keycode, intent,
-				0);
+		return PendingIntent.getBroadcast(mService.getBaseContext(), keycode,
+				intent, 0);
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	protected Notification buildNotification() {
 		return getNotificationBuilder().getNotification();
@@ -165,39 +169,39 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	protected Notification.Builder getNotificationBuilder() {
 		return new Notification.Builder(mService.getBaseContext())
 		.setAutoCancel(false)
-		.setSmallIcon(R.drawable.__player_hater_icon)
+		.setSmallIcon(R.drawable.zzz_ph_ic_notification)
 		.setTicker("Playing: " + mNotificationTitle)
 		.setContent(getNotificationView())
 		.setContentIntent(mContentIntent);
 	}
-	
+
 	protected void setTextViewText(int id, String text) {
-		if (mCollapsedView != null) {
-			mCollapsedView.setTextViewText(id, text);
+		if (mNotificationView != null) {
+			mNotificationView.setTextViewText(id, text);
 		}
 	}
-	
+
 	protected void setViewEnabled(int viewId, boolean enabled) {
-		if (mCollapsedView != null) {
-			mCollapsedView.setBoolean(viewId, "setEnabled", enabled);
+		if (mNotificationView != null) {
+			mNotificationView.setBoolean(viewId, "setEnabled", enabled);
 		}
 	}
 	
 	protected void setViewVisibility(int viewId, int visible) {
-		if (mCollapsedView != null) {
-			mCollapsedView.setViewVisibility(viewId, visible);
+		if (mNotificationView != null) {
+			mNotificationView.setViewVisibility(viewId, visible);
 		}
 	}
 	
 	protected void setImageViewResource(int id, int resourceId) {
-		if (mCollapsedView != null) {
-			mCollapsedView.setImageViewResource(id, resourceId);
+		if (mNotificationView != null) {
+			mNotificationView.setImageViewResource(id, resourceId);
 		}
 	}
-	
+
 	protected void setImageViewUri(int id, Uri contentUri) {
-		if (mCollapsedView != null) {
-			mCollapsedView.setImageViewUri(id, contentUri);
+		if (mNotificationView != null) {
+			mNotificationView.setImageViewUri(id, contentUri);
 		}
 	}
 }

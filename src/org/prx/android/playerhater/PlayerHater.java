@@ -14,15 +14,11 @@ import org.prx.android.playerhater.util.ListenerEcho;
 import org.prx.android.playerhater.util.MediaPlayerWrapper;
 import org.prx.android.playerhater.util.TransientPlayer;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -31,7 +27,6 @@ import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
-import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 

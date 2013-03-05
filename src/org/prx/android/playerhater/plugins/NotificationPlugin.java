@@ -58,7 +58,7 @@ public class NotificationPlugin extends AbstractPlugin {
 	@SuppressWarnings("deprecation")
 	protected Notification getNotification() {
 		if (mNotification == null)
-			mNotification = new Notification(R.drawable.__player_hater_icon, "Playing: " + mNotificationTitle, 0);
+			mNotification = new Notification(R.drawable.zzz_ph_ic_notification, "Playing: " + mNotificationTitle, 0);
 		
 		mNotification.setLatestEventInfo(mService.getBaseContext(), mNotificationTitle, mNotificationText, mContentIntent);
 		return mNotification;

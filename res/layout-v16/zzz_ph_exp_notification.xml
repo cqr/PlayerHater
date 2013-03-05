@@ -47,6 +47,7 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:contentDescription="@android:string/cancel"
             android:background="?android:attr/dividerHorizontal" />
 
         <LinearLayout
@@ -67,7 +68,7 @@
                 android:padding="6dp"
                 android:contentDescription="@string/back"
                 android:scaleType="center"
-                android:src="@drawable/__player_hater_back" />
+                android:src="@drawable/zzz_ph_bt_back" />
 
             <ImageView
                 android:id="@+id/button"
@@ -91,7 +92,7 @@
                 android:gravity="center"
                 android:padding="6dp"
                 android:scaleType="center"
-                android:src="@drawable/__player_hater_skip" />
+                android:src="@drawable/zzz_ph_bt_skip" />
         </LinearLayout>
     </LinearLayout>
 
@@ -106,6 +107,6 @@
         android:contentDescription="@string/stop"
         android:padding="10dp"
         android:scaleType="center"
-        android:src="@drawable/__player_hater_stop" />
+        android:src="@drawable/zzz_ph_bt_stop" />
 
 </RelativeLayout>

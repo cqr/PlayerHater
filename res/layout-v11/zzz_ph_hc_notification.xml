@@ -1,0 +1,96 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="?android:style/TextAppearance.StatusBar.EventContent"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="64dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:background="#3333B5E5"
+        android:contentDescription="@string/album_art"
+        android:scaleType="fitCenter" />
+
+    <ImageView
+        android:id="@+id/back"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@id/button"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/back"
+        android:padding="8dp"
+        android:src="@drawable/zzz_ph_bt_skip" />
+
+    <ImageView
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@id/skip"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/play_pause"
+        android:padding="8dp"
+        android:src="@drawable/__player_hater_pause" />
+
+    <ImageView
+        android:id="@+id/skip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@id/stop"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/skip"
+        android:padding="8dp"
+        android:scaleType="center"
+        android:src="@drawable/zzz_ph_bt_skip" />
+
+    <ImageView
+        android:id="@+id/stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:alpha="0.4"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/stop"
+        android:padding="10dp"
+        android:scaleType="center"
+        android:src="@drawable/zzz_ph_bt_stop" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@id/back"
+        android:layout_toRightOf="@id/image"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/title"
+            style="@android:style/TextAppearance.StatusBar.EventContent.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="bottom"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="bottom"
+            android:lines="1"
+            android:paddingLeft="8dp" >
+
+            <requestFocus />
+        </TextView>
+
+        <TextView
+            android:id="@+id/text"
+            style="@android:style/TextAppearance.StatusBar.EventContent"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="top"
+            android:layout_weight="1"
+            android:paddingLeft="8dp" />
+    </LinearLayout>
+
+</RelativeLayout>
