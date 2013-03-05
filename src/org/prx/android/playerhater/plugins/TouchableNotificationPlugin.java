@@ -21,6 +21,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	private Notification mNotification;
 	protected int mNotificationImageResourceId;
 	protected Uri mNotificationImageUrl;
+	protected boolean mNotificationCanSkip = true; 
 
 	private RemoteViews mCollapsedView;
 	
@@ -97,12 +98,14 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 
 	@Override
 	public void onNextTrackAvailable() {
+		this.mNotificationCanSkip = true; 
 		setViewEnabled(R.id.skip, true);
 		updateNotification();
 	}
 	
 	@Override
 	public void onNextTrackUnavailable() {
+		this.mNotificationCanSkip = false; 
 		setViewEnabled(R.id.skip, false);
 		updateNotification();
 	}
@@ -121,6 +124,12 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 		} else if (mNotificationImageResourceId != 0) { 
 			mCollapsedView.setImageViewResource(R.id.image,
 				mNotificationImageResourceId);
+		}
+		
+		if (mNotificationCanSkip) { 
+			this.onNextTrackAvailable(); 
+		} else { 
+			this.onNextTrackUnavailable(); 
 		}
 
 		return mCollapsedView;

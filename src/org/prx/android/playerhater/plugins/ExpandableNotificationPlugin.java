@@ -46,6 +46,11 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 			mExpandedView.setImageViewResource(R.id.image,
 				mNotificationImageResourceId);
 		}
+		if (mNotificationCanSkip) { 
+			onNextTrackAvailable(); 
+		} else { 
+			onNextTrackUnavailable(); 
+		}
 		return mExpandedView;
 	}
 	
