@@ -62,7 +62,7 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 				} else if (mService.isPaused()) {
 					keyCode = KeyEvent.KEYCODE_MEDIA_PLAY;
 				}
-			}
+			} 
 			mService.onRemoteControlButtonPressed(keyCode);
 		}
 	}

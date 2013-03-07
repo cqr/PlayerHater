@@ -455,6 +455,9 @@ public abstract class AbstractPlaybackService extends Service implements
 		case KeyEvent.KEYCODE_MEDIA_STOP:
 			stop();
 			break;
+		case KeyEvent.KEYCODE_MEDIA_PREVIOUS: 
+			seekTo(0); 
+			break; 
 		}
 	}
 	

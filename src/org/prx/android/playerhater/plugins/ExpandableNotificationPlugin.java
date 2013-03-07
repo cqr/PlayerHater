@@ -71,6 +71,14 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 	}
 	
 	@Override
+	protected void setViewVisibility(int viewId, int visible) {
+		if (mExpandedView != null) {
+			mExpandedView.setViewVisibility(viewId, visible);
+		}
+		super.setViewVisibility(viewId, visible);
+	}
+	
+	@Override
 	protected void setImageViewResource(int viewId, int resourceId) {
 		super.setImageViewResource(viewId, resourceId);
 		if (mExpandedView != null) {

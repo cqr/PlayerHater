@@ -67,7 +67,7 @@
                 android:padding="6dp"
                 android:contentDescription="@string/back"
                 android:scaleType="center"
-                android:src="@drawable/__player_hater_skip" />
+                android:src="@drawable/__player_hater_back" />
 
             <ImageView
                 android:id="@+id/button"

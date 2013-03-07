@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.RemoteViews;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -99,14 +100,14 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	@Override
 	public void onNextTrackAvailable() {
 		this.mNotificationCanSkip = true; 
-		setViewEnabled(R.id.skip, true);
+		setViewVisibility(R.id.skip, View.VISIBLE); 
 		updateNotification();
 	}
 	
 	@Override
 	public void onNextTrackUnavailable() {
 		this.mNotificationCanSkip = false; 
-		setViewEnabled(R.id.skip, false);
+		setViewVisibility(R.id.skip, View.GONE); 
 		updateNotification();
 	}
 
@@ -178,6 +179,12 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	protected void setViewEnabled(int viewId, boolean enabled) {
 		if (mCollapsedView != null) {
 			mCollapsedView.setBoolean(viewId, "setEnabled", enabled);
+		}
+	}
+	
+	protected void setViewVisibility(int viewId, int visible) {
+		if (mCollapsedView != null) {
+			mCollapsedView.setViewVisibility(viewId, visible);
 		}
 	}
 	
