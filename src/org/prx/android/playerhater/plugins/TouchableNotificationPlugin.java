@@ -167,7 +167,8 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 		.setAutoCancel(false)
 		.setSmallIcon(R.drawable.__player_hater_icon)
 		.setTicker("Playing: " + mNotificationTitle)
-		.setContent(getNotificationView());
+		.setContent(getNotificationView())
+		.setContentIntent(mContentIntent);
 	}
 	
 	protected void setTextViewText(int id, String text) {

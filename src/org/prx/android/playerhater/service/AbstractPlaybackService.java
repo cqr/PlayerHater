@@ -5,6 +5,7 @@ import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.AudioFocusPlugin;
 import org.prx.android.playerhater.plugins.ExpandableNotificationPlugin;
+import org.prx.android.playerhater.plugins.NotificationPlugin;
 import org.prx.android.playerhater.plugins.PluginCollection;
 import org.prx.android.playerhater.plugins.LockScreenControlsPlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
@@ -14,6 +15,8 @@ import org.prx.android.playerhater.util.MediaPlayerWrapper;
 import org.prx.android.playerhater.util.PlayerListenerManager;
 import org.prx.android.playerhater.util.UpdateProgressRunnable;
 
+import android.app.Activity;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -468,6 +471,20 @@ public abstract class AbstractPlaybackService extends Service implements
 	
 	protected void release() { 
 		getMediaPlayer().release(); 
+	}
+	
+	@Override
+	public void setIntentClass(Class<? extends Activity> klass) {
+		Intent intent = new Intent(getBaseContext(), klass); 
+		intent.addCategory(Intent.CATEGORY_LAUNCHER);
+		PendingIntent pending = PendingIntent.getActivity(getBaseContext(), 456,
+				intent, Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		NotificationPlugin.setContentIntent(pending);
+	}
+
+	@Override
+	public void setIntentActivity(Activity activity) {
+		setIntentClass(activity.getClass());  
 	}
 
 }

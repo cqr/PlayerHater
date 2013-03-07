@@ -3,9 +3,12 @@ package org.prx.android.playerhater.service;
 import java.io.IOException;
 
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.plugins.NotificationPlugin;
 import org.prx.android.playerhater.util.MediaPlayerWrapper;
 
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -52,18 +55,6 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 
 	private void reset() {
 		mMediaPlayer.reset();
-	}
-
-	@Override
-	public void setIntentClass(Class<? extends Activity> klass) {
-		// XXX: TODO FIXME
-		// NOOP FOR NOW;
-	}
-
-	@Override
-	public void setIntentActivity(Activity activity) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
