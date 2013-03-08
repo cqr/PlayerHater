@@ -19,8 +19,6 @@ public class NotificationPlugin extends AbstractPlugin {
 	
 	protected static final int NOTIFICATION_NU = 9747245;
 	private static final String TAG = "NotificationPlugin";
-	private static NotificationPlugin sInstance;
-	private static PendingIntent sContentIntent;
 	protected PlayerHaterService mService;
 	protected NotificationManager mNotificationManager;
 	protected PendingIntent mContentIntent;
@@ -36,34 +34,11 @@ public class NotificationPlugin extends AbstractPlugin {
 		mNotificationManager = (NotificationManager) c
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 
-		if (sContentIntent != null) { 
-			mContentIntent = sContentIntent; 
-		} else { 
 			Intent resumeActivityIntent = packageManager
 				.getLaunchIntentForPackage(c.getPackageName());
 			resumeActivityIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 			mContentIntent = PendingIntent.getActivity(c, NOTIFICATION_NU,
 				resumeActivityIntent, 0);
-		}
-		
-		NotificationPlugin.setInstance(this); 
-	}
-	
-	private static void setInstance(NotificationPlugin instance) { 
-		sInstance = instance; 
-	}
-	
-	public static void setContentIntent(PendingIntent contentIntent) { 
-		sContentIntent = contentIntent; 
-		if (sInstance != null) { 
-			sInstance.setIntent(sContentIntent); 
-		}
-	}
-	
-	private void setIntent(PendingIntent contentIntent) { 
-		mContentIntent = contentIntent; 
-		getNotification().contentIntent = mContentIntent; 
-		updateNotification(); 
 	}
 
 	@Override
@@ -86,7 +61,6 @@ public class NotificationPlugin extends AbstractPlugin {
 			mNotification = new Notification(R.drawable.__player_hater_icon, "Playing: " + mNotificationTitle, 0);
 		
 		mNotification.setLatestEventInfo(mService.getBaseContext(), mNotificationTitle, mNotificationText, mContentIntent);
-		Log.d(TAG, "content intent is " + mContentIntent); 
 		return mNotification;
 	}
 
@@ -100,6 +74,14 @@ public class NotificationPlugin extends AbstractPlugin {
 	public void onTitleChanged(String notificationTitle) {
 		mNotificationTitle = notificationTitle;
 		updateNotification();
+	}
+	
+	public void onIntentActivityChanged(PendingIntent contentIntent) { 
+		mContentIntent = contentIntent; 
+		if (mNotification != null) { 
+			mNotification.contentIntent = mContentIntent; 
+		}
+		updateNotification(); 
 	}
 	
 	@Override

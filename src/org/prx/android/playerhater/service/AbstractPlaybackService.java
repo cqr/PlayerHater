@@ -56,6 +56,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	private Thread mUpdateProgressThread;
 	private boolean mPlayAfterSeek;
 	private OnShutdownRequestListener mShutdownRequestListener;
+	private NotificationPlugin mNotificationPlugin; 
 
 	protected abstract MediaPlayerWrapper getMediaPlayer();
 
@@ -66,10 +67,14 @@ public abstract class AbstractPlaybackService extends Service implements
 		PluginCollection collection = new PluginCollection();
 
 		if (PlayerHater.EXPANDING_NOTIFICATIONS) {
-			collection.add(new ExpandableNotificationPlugin(this));
+			mNotificationPlugin = new ExpandableNotificationPlugin(this); 
 		} else if (PlayerHater.TOUCHABLE_NOTIFICATIONS) {
-			collection.add(new TouchableNotificationPlugin(this));
+			mNotificationPlugin = new TouchableNotificationPlugin(this);
+		} else { 
+			mNotificationPlugin = new NotificationPlugin(this); 
 		}
+		collection.add(mNotificationPlugin);
+		
 		if (PlayerHater.MODERN_AUDIO_FOCUS) {
 			collection.add(new AudioFocusPlugin(this));
 		}
@@ -477,9 +482,10 @@ public abstract class AbstractPlaybackService extends Service implements
 	public void setIntentClass(Class<? extends Activity> klass) {
 		Intent intent = new Intent(getBaseContext(), klass); 
 		intent.addCategory(Intent.CATEGORY_LAUNCHER);
+		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); 
 		PendingIntent pending = PendingIntent.getActivity(getBaseContext(), 456,
-				intent, Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		NotificationPlugin.setContentIntent(pending);
+				intent, PendingIntent.FLAG_CANCEL_CURRENT);
+		mNotificationPlugin.onIntentActivityChanged(pending); 
 	}
 
 	@Override

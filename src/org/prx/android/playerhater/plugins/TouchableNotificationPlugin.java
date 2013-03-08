@@ -12,6 +12,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -19,6 +20,7 @@ import android.widget.RemoteViews;
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class TouchableNotificationPlugin extends NotificationPlugin {
 
+	private static final String TAG = "TouchableNotification";
 	private Notification mNotification;
 	protected int mNotificationImageResourceId;
 	protected Uri mNotificationImageUrl;
@@ -83,9 +85,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 
 	@Override
 	protected Notification getNotification() {
-		if (mNotification == null) {
-			mNotification = buildNotification();
-		}
+		mNotification = buildNotification();
 		return mNotification;
 	}
 

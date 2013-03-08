@@ -29,5 +29,5 @@ public interface PlayerHaterPlugin {
 	
 	void onNextTrackAvailable();
 	
-	void onNextTrackUnavailable();
+	void onNextTrackUnavailable(); 
 }

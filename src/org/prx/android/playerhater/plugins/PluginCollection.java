@@ -2,7 +2,6 @@ package org.prx.android.playerhater.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.prx.android.playerhater.Song;
 import android.net.Uri;
 
