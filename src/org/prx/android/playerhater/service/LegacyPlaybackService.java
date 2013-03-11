@@ -3,7 +3,7 @@ package org.prx.android.playerhater.service;
 import java.io.IOException;
 
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.player.MediaPlayerWrapper;
+import org.prx.android.playerhater.player.IPlayer;
 
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
@@ -15,7 +15,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 		OnCompletionListener, PlayerHaterService {
 
 	private Song mSong;
-	private MediaPlayerWrapper mMediaPlayer;
+	private IPlayer mMediaPlayer;
 
 	@Override
 	public void onCreate() {
@@ -33,7 +33,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 	public boolean play(Song song, int startTime)
 			throws IllegalArgumentException {
 		mSong = song;
-		if (mMediaPlayer.getState() != MediaPlayerWrapper.IDLE)
+		if (mMediaPlayer.getState() != IPlayer.IDLE)
 			reset();
 		try {
 			mMediaPlayer.setDataSource(getApplicationContext(), mSong.getUri());
@@ -60,7 +60,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 	public void emptyQueue() {}
 
 	@Override
-	protected MediaPlayerWrapper getMediaPlayer() {
+	protected IPlayer getMediaPlayer() {
 		return mMediaPlayer;
 	}
 

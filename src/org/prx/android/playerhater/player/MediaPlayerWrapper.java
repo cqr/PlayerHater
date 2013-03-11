@@ -16,20 +16,9 @@ import android.util.Log;
 
 public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		OnCompletionListener, OnErrorListener, OnInfoListener,
-		OnPreparedListener, OnSeekCompleteListener {
+		OnPreparedListener, OnSeekCompleteListener, IPlayer {
 
 	private MediaPlayer mMediaPlayer;
-
-	public static final int IDLE = 0;
-	public static final int END = 1;
-	public static final int ERROR = -1;
-	public static final int INITIALIZED = 2;
-	public static final int PREPARING = 3;
-	public static final int PREPARED = 4;
-	public static final int STARTED = 5;
-	public static final int STOPPED = 6;
-	public static final int PAUSED = 7;
-	public static final int PLAYBACK_COMPLETED = 8;
 
 	private static final String TAG = "MediaPlayerWrapper";
 
@@ -54,20 +43,24 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		this.mMediaPlayer.setOnSeekCompleteListener(this);
 	}
 
+	@Override
 	public int getState() {
 		return this.mState;
 	}
 
+	@Override
 	public void reset() {
 		this.mState = IDLE;
 		this.mMediaPlayer.reset();
 	}
 
+	@Override
 	public void release() {
 		this.mMediaPlayer.release();
 		this.mState = END;
 	}
 
+	@Override
 	public void prepare() throws IOException, IllegalStateException {
 		if (this.mState == INITIALIZED || this.mState == STOPPED) {
 			this.mMediaPlayer.prepare();
@@ -78,6 +71,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		}
 	}
 
+	@Override
 	public void prepareAsync() throws IllegalStateException {
 		if (this.mState == INITIALIZED || this.mState == STOPPED) {
 			this.mMediaPlayer.prepareAsync();
@@ -87,6 +81,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		}
 	}
 
+	@Override
 	public void start() throws IllegalStateException {
 		if (this.mState == PREPARED || this.mState == STARTED
 				|| this.mState == PAUSED || this.mState == PLAYBACK_COMPLETED) {
@@ -97,6 +92,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		}
 	}
 
+	@Override
 	public void pause() throws IllegalStateException {
 		if (this.mState == STARTED || this.mState == PAUSED) {
 			this.mMediaPlayer.pause();
@@ -106,6 +102,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		}
 	}
 
+	@Override
 	public void stop() throws IllegalStateException {
 		if (this.mState == PREPARED || this.mState == STARTED
 				|| this.mState == STOPPED || this.mState == PAUSED
@@ -117,6 +114,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		}
 	}
 
+	@Override
 	public void seekTo(int msec) {
 		if (this.mState == PREPARED || this.mState == STARTED
 				|| this.mState == PAUSED || this.mState == PLAYBACK_COMPLETED) {
@@ -128,10 +126,12 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		}
 	}
 
+	@Override
 	public boolean isPlaying() {
 		return this.mMediaPlayer.isPlaying();
 	}
 
+	@Override
 	public int getCurrentPosition() {
 		if (this.mState == STARTED || this.mState == PAUSED
 				|| this.mState == STOPPED || this.mState == PLAYBACK_COMPLETED) {
@@ -140,6 +140,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		return 0;
 	}
 
+	@Override
 	public int getDuration() {
 		if (this.mState == PREPARED || this.mState == STARTED
 				|| this.mState == PAUSED || this.mState == PLAYBACK_COMPLETED) {
@@ -148,10 +149,12 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		return 0;
 	}
 
+	@Override
 	public void setAudioStreamType(int streamtype) {
 		this.mMediaPlayer.setAudioStreamType(streamtype);
 	}
 
+	@Override
 	public void setDataSource(FileDescriptor fd) throws IllegalStateException,
 			IOException, IllegalArgumentException, SecurityException {
 		try {
@@ -162,12 +165,14 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		}
 	}
 
+	@Override
 	public void setDataSource(String path) throws IllegalStateException,
 			IOException, IllegalArgumentException, SecurityException {
 		this.mMediaPlayer.setDataSource(path);
 		this.mState = INITIALIZED;
 	}
 
+	@Override
 	public void setDataSource(Context context, Uri uri)
 			throws IllegalStateException, IOException,
 			IllegalArgumentException, SecurityException {
@@ -175,32 +180,39 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		this.mState = INITIALIZED;
 	}
 
+	@Override
 	public void setDataSource(FileDescriptor fd, long offset, long length)
 			throws IllegalStateException, IOException, IllegalArgumentException {
 		this.mMediaPlayer.setDataSource(fd, offset, length);
 	}
 
+	@Override
 	public void setOnErrorListener(OnErrorListener errorListener) {
 		this.mErrorListener = errorListener;
 	}
 
+	@Override
 	public void setOnPreparedListener(OnPreparedListener preparedListener) {
 		this.mPreparedListener = preparedListener;
 	}
 
+	@Override
 	public void setOnBufferingUpdateListener(
 			OnBufferingUpdateListener bufferingUpdateListener) {
 		this.mBufferingUpdateListener = bufferingUpdateListener;
 	}
 
+	@Override
 	public void setOnCompletionListener(OnCompletionListener completionListener) {
 		this.mCompletionListener = completionListener;
 	}
 
+	@Override
 	public void setOnInfoListener(OnInfoListener infoListener) {
 		this.mInfoListener = infoListener;
 	}
 
+	@Override
 	public void setOnSeekCompleteListener(
 			OnSeekCompleteListener seekCompleteListener) {
 		this.mSeekCompleteListener = seekCompleteListener;
@@ -262,10 +274,12 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		}
 	}
 
+	@Override
 	public void setVolume(float leftVolume, float rightVolume) {
 		mMediaPlayer.setVolume(leftVolume, rightVolume);
 	}
 	
+	@Override
 	public boolean equals(MediaPlayer mp) {
 		return mp == mMediaPlayer;
 	}

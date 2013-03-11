@@ -1,6 +1,6 @@
 package org.prx.android.playerhater.util;
 
-import org.prx.android.playerhater.player.MediaPlayerWrapper;
+import org.prx.android.playerhater.player.IPlayer;
 
 import android.os.Handler;
 import android.os.Message;
@@ -9,7 +9,7 @@ import android.util.Log;
 public class UpdateProgressRunnable implements Runnable {
 	private final static String TAG = "PlayerHater/ProgressUpdate";
 	private final Handler mHandler;
-	private MediaPlayerWrapper mMediaPlayer;
+	private IPlayer mMediaPlayer;
 	private final int mMessage;
 
 	public UpdateProgressRunnable(Handler handler, int message) {
@@ -17,7 +17,7 @@ public class UpdateProgressRunnable implements Runnable {
 		mMessage = message;
 	}
 	
-	public synchronized void setMediaPlayer(MediaPlayerWrapper mediaPlayer) {
+	public synchronized void setMediaPlayer(IPlayer mediaPlayer) {
 		mMediaPlayer = mediaPlayer;
 	}
 

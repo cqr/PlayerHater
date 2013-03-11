@@ -2,6 +2,7 @@ package org.prx.android.playerhater.util;
 
 import java.io.FileDescriptor;
 
+import org.prx.android.playerhater.player.IPlayer;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 
 import android.content.Context;
@@ -26,7 +27,7 @@ public class TransientPlayer {
 	}
 
 	private final Context c;
-	private final MediaPlayerWrapper wrapper;
+	private final IPlayer wrapper;
 	private final boolean isDuckable;
 	private final String url;
 	private final Uri uri;
@@ -99,10 +100,10 @@ public class TransientPlayer {
 	}
 	
 	public boolean isPlaying() { 
-		return (wrapper.getState() == MediaPlayerWrapper.STARTED ||
-				wrapper.getState() == MediaPlayerWrapper.INITIALIZED ||
-				wrapper.getState() == MediaPlayerWrapper.PREPARED ||
-				wrapper.getState() == MediaPlayerWrapper.PREPARING); 
+		return (wrapper.getState() == IPlayer.STARTED ||
+				wrapper.getState() == IPlayer.INITIALIZED ||
+				wrapper.getState() == IPlayer.PREPARED ||
+				wrapper.getState() == IPlayer.PREPARING); 
 	}
 
 	private int getDurationHint() {

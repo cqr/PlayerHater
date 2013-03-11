@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.player.MediaPlayerWrapper;
+import org.prx.android.playerhater.player.IPlayer;
 
 import android.annotation.SuppressLint;
 import android.hardware.display.DisplayManager;
@@ -19,8 +19,8 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	private final List<Song> mSongs = new ArrayList<Song>();
 	private Song mCurrentlyLoadedSong;
 	private int mCurrentPosition = 0;
-	private MediaPlayerWrapper mCurrentMediaPlayer;
-	private MediaPlayerWrapper mNextMediaPlayer;
+	private IPlayer mCurrentMediaPlayer;
+	private IPlayer mNextMediaPlayer;
 
 	@SuppressLint("NewApi")
 	@Override
@@ -42,7 +42,7 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 			mSongs.add(song);
 			moveCurrentToLast();
 		}
-		if (getMediaPlayer().getState() != MediaPlayerWrapper.IDLE)
+		if (getMediaPlayer().getState() != IPlayer.IDLE)
 			getMediaPlayer().reset();
 		try {
 			mCurrentlyLoadedSong = song;
@@ -80,14 +80,14 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	}
 
 	@Override
-	protected MediaPlayerWrapper getMediaPlayer() {
+	protected IPlayer getMediaPlayer() {
 		if (mCurrentMediaPlayer == null) {
 			mCurrentMediaPlayer = buildMediaPlayer(true);
 		}
 		return mCurrentMediaPlayer;
 	}
 
-	protected MediaPlayerWrapper getNextMediaPlayer() {
+	protected IPlayer getNextMediaPlayer() {
 		if (mNextMediaPlayer == null) {
 			mNextMediaPlayer = buildMediaPlayer();
 		}

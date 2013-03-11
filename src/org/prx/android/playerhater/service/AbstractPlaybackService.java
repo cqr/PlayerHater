@@ -3,6 +3,7 @@ package org.prx.android.playerhater.service;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.player.IPlayer;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 import org.prx.android.playerhater.plugins.AudioFocusPlugin;
 import org.prx.android.playerhater.plugins.ExpandableNotificationPlugin;
@@ -58,7 +59,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	private OnShutdownRequestListener mShutdownRequestListener;
 	private NotificationPlugin mNotificationPlugin; 
 
-	protected abstract MediaPlayerWrapper getMediaPlayer();
+	protected abstract IPlayer getMediaPlayer();
 
 	@Override
 	public void onCreate() {
@@ -105,20 +106,20 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	@Override
 	public boolean isPlaying() {
-		return (getMediaPlayer().getState() == MediaPlayerWrapper.STARTED);
+		return (getMediaPlayer().getState() == IPlayer.STARTED);
 	}
 
 	@Override
 	public boolean isPaused() {
-		return (getMediaPlayer().getState() == MediaPlayerWrapper.PAUSED);
+		return (getMediaPlayer().getState() == IPlayer.PAUSED);
 	}
 
 	@Override
 	public boolean isLoading() {
-		MediaPlayerWrapper mp = getMediaPlayer();
-		return (mp.getState() == MediaPlayerWrapper.INITIALIZED
-				|| mp.getState() == MediaPlayerWrapper.PREPARING || mp
-					.getState() == MediaPlayerWrapper.PREPARED);
+		IPlayer mp = getMediaPlayer();
+		return (mp.getState() == IPlayer.INITIALIZED
+				|| mp.getState() == IPlayer.PREPARING || mp
+					.getState() == IPlayer.PREPARED);
 	}
 
 	@Override
@@ -188,7 +189,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	@Override
 	public void seekTo(int pos) {
 		Log.d(TAG, "SEEKING TO " + pos);
-		mPlayAfterSeek = (mPlayAfterSeek || getState() == MediaPlayerWrapper.STARTED);
+		mPlayAfterSeek = (mPlayAfterSeek || getState() == IPlayer.STARTED);
 
 		try {
 			getMediaPlayer().pause();
@@ -309,7 +310,7 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	protected void sendIsPlaying(int progress) {
 		Log.d(TAG, "SENDING IS PLAYING");
-		if (getState() == MediaPlayerWrapper.STARTED
+		if (getState() == IPlayer.STARTED
 				&& mPlayerHaterListener != null) {
 			mPlayerHaterListener.onPlaying(getNowPlaying(), progress);
 		}
@@ -365,17 +366,17 @@ public abstract class AbstractPlaybackService extends Service implements
 	public boolean play() throws IllegalStateException {
 		Log.d(TAG, "GOT PLAY()");
 		switch (getMediaPlayer().getState()) {
-		case MediaPlayerWrapper.INITIALIZED:
-		case MediaPlayerWrapper.STOPPED:
+		case IPlayer.INITIALIZED:
+		case IPlayer.STOPPED:
 			prepare();
 			break;
-		case MediaPlayerWrapper.PREPARED:
-		case MediaPlayerWrapper.PAUSED:
+		case IPlayer.PREPARED:
+		case IPlayer.PAUSED:
 			resume();
 			startProgressThread(getMediaPlayer());
 			sendStartedPlaying();
 			break;
-		case MediaPlayerWrapper.IDLE:
+		case IPlayer.IDLE:
 			play(getNowPlaying());
 			break;
 		default:
@@ -389,12 +390,12 @@ public abstract class AbstractPlaybackService extends Service implements
 	 * creates a media player (wrapped, of course) and registers the listeners
 	 * for all of the events.
 	 */
-	protected MediaPlayerWrapper buildMediaPlayer() {
+	protected IPlayer buildMediaPlayer() {
 		return buildMediaPlayer(false);
 	}
 
-	protected MediaPlayerWrapper buildMediaPlayer(boolean setAsCurrent) {
-		MediaPlayerWrapper mp = new MediaPlayerWrapper();
+	protected IPlayer buildMediaPlayer(boolean setAsCurrent) {
+		IPlayer mp = new MediaPlayerWrapper();
 		mPlayerListenerManager.setMediaPlayer(mp);
 		return mp;
 	}
@@ -410,7 +411,7 @@ public abstract class AbstractPlaybackService extends Service implements
 		}
 	}
 
-	protected void startProgressThread(MediaPlayerWrapper mp) {
+	protected void startProgressThread(IPlayer mp) {
 		Log.d(TAG, "STARTING PROGRESS THREAD");
 		stopProgressThread();
 		mUpdateProgressRunner.setMediaPlayer(mp);
