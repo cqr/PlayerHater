@@ -2,6 +2,7 @@ package org.prx.android.playerhater.service;
 
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.util.RemoteControlButtonReceiver;
 
 import android.app.Activity;
 import android.app.Notification;
@@ -14,7 +15,7 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
-public interface PlayerHaterService extends OnCompletionListener {
+public interface PlayerHaterService extends RemoteControlButtonReceiver {
 
 	public abstract boolean play(Song song, int position)
 			throws IllegalArgumentException;
@@ -37,17 +38,17 @@ public interface PlayerHaterService extends OnCompletionListener {
 
 	public abstract int getDuration();
 
-
 	public abstract void setOnCompletionListener(OnCompletionListener listener);
-	
+
 	public abstract void setOnSeekCompleteListener(
 			OnSeekCompleteListener listener);
 
 	public abstract void setOnErrorListener(OnErrorListener listener);
 
 	public abstract void setOnPreparedListener(OnPreparedListener listener);
-	
-	public abstract void setOnShutdownRequestListener(OnShutdownRequestListener listener);
+
+	public abstract void setOnShutdownRequestListener(
+			OnShutdownRequestListener listener);
 
 	public abstract void setListener(PlayerHaterListener listener);
 
@@ -79,7 +80,7 @@ public interface PlayerHaterService extends OnCompletionListener {
 	public abstract void stopForeground(boolean b);
 
 	public abstract void duck();
-	
+
 	public abstract void unduck();
 
 	public abstract void seekTo(int max);

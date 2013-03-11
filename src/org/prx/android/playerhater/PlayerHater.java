@@ -131,7 +131,10 @@ public class PlayerHater implements AudioPlaybackInterface,
 			mContext = context;
 			
 			mServiceIntent = new Intent("org.prx.android.playerhater.SERVICE");
-			mServiceIntent.setPackage(mContext.getPackageName()); 
+			mServiceIntent.setPackage(mContext.getPackageName());
+			if (mContext.getPackageManager().queryIntentServices(mServiceIntent, 0).size() == 0) {
+				mServiceIntent = new Intent(mContext, PlaybackService.class);
+			}
 
 			// If we're already bound, we need to rebind with the new context.
 			// the way this works, the service will never become "disconnected"

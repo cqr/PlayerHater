@@ -7,8 +7,12 @@ import java.util.List;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.util.MediaPlayerWrapper;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.hardware.display.DisplayManager;
 import android.media.MediaPlayer;
+import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 
 public class QueuedPlaybackService extends AbstractPlaybackService {
@@ -19,10 +23,17 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	private MediaPlayerWrapper mCurrentMediaPlayer;
 	private MediaPlayerWrapper mNextMediaPlayer;
 
+	@SuppressLint("NewApi")
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		mLifecycleListener.onNextTrackAvailable();
+		DisplayManager mgr = (DisplayManager) getSystemService(DISPLAY_SERVICE);
+		Log.d(TAG, "DISPLAYS");
+		for (Display display : mgr.getDisplays()) {
+			Log.d(TAG, display.getName());
+		}
+		Log.d(TAG, "DISPLAYS");
 	}
 
 	@Override

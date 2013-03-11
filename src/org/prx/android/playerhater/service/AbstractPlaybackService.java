@@ -89,12 +89,12 @@ public abstract class AbstractPlaybackService extends Service implements
 		mPlayerListenerManager.setOnPreparedListener(this);
 		mPlayerListenerManager.setOnSeekCompleteListener(this);
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		stopProgressThread();
 		sendIsStopped();
-		release(); 
+		release();
 		getBaseContext().unregisterReceiver(mBroadcastReceiver);
 	}
 
@@ -316,7 +316,8 @@ public abstract class AbstractPlaybackService extends Service implements
 	}
 
 	protected void sendIsLoading() {
-		Log.d(TAG, "SENDING IS LOADING " + mLifecycleListener + " " + getNowPlaying());
+		Log.d(TAG, "SENDING IS LOADING " + mLifecycleListener + " "
+				+ getNowPlaying());
 		mLifecycleListener.onSongChanged(getNowPlaying());
 		mLifecycleListener.onAudioLoading();
 		if (mPlayerHaterListener != null) {
@@ -454,6 +455,13 @@ public abstract class AbstractPlaybackService extends Service implements
 	@Override
 	public void onRemoteControlButtonPressed(int button) {
 		switch (button) {
+		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+			if (isPlaying()) {
+				pause();
+			} else {
+				play();
+			}
+			break;
 		case KeyEvent.KEYCODE_MEDIA_PLAY:
 			play();
 			break;
@@ -468,14 +476,14 @@ public abstract class AbstractPlaybackService extends Service implements
 			break; 
 		}
 	}
-	
+
 	@Override
 	public void setOnShutdownRequestListener(OnShutdownRequestListener listener) {
 		mShutdownRequestListener = listener;
 	}
-	
-	protected void release() { 
-		getMediaPlayer().release(); 
+
+	protected void release() {
+		getMediaPlayer().release();
 	}
 	
 	@Override

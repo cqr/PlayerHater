@@ -7,10 +7,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
+import android.util.Log;
 import android.view.KeyEvent;
 
 public class BroadcastReceiver extends android.content.BroadcastReceiver {
 
+	private static final String TAG = "Broadcast Receiver";
+	private static final HeadphoneButtonGestureHelper sGestureHelper = new HeadphoneButtonGestureHelper();
 	private static PlayerHaterService mService;
 
 	public BroadcastReceiver() {
@@ -20,6 +23,7 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 	public BroadcastReceiver(PlayerHaterService playbackService) {
 		super();
 		mService = playbackService;
+		sGestureHelper.setReceiver(mService);
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Intent.ACTION_HEADSET_PLUG);
 		filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -53,16 +57,11 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver {
 			}
 
 			int keyCode = event.getKeyCode();
-			if (KeyEvent.KEYCODE_MEDIA_PLAY == keyCode
-					|| KeyEvent.KEYCODE_MEDIA_PAUSE == keyCode
-					|| KeyEvent.KEYCODE_HEADSETHOOK == keyCode
-					|| KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE == keyCode) {
-				if (mService.isPlaying()) {
-					keyCode = KeyEvent.KEYCODE_MEDIA_PAUSE;
-				} else if (mService.isPaused()) {
-					keyCode = KeyEvent.KEYCODE_MEDIA_PLAY;
-				}
-			} 
+			
+			if (KeyEvent.KEYCODE_HEADSETHOOK == keyCode) {
+				sGestureHelper.onHeadsetButtonPressed(event.getEventTime());
+			}
+			
 			mService.onRemoteControlButtonPressed(keyCode);
 		}
 	}
