@@ -1,5 +1,7 @@
 package org.prx.android.playerhater.player;
 
+import org.prx.android.playerhater.player.IPlayer.StateManager;
+
 import android.annotation.TargetApi;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -8,11 +10,11 @@ import android.os.Handler;
 
 public interface MediaPlayerNexter {
 	public class Compat implements MediaPlayerNexter, OnCompletionListener, Runnable {
-		private IPlayer mNextMediaPlayer;
+		private StateManager mNextMediaPlayer;
 		private final Handler mHandler = new Handler();
 
 		@Override
-		public void setNextMediaPlayer(IPlayer next) {
+		public void setNextMediaPlayer(StateManager next) {
 			mNextMediaPlayer = next;
 			if (mNextMediaPlayer != null) {
 				switch (mNextMediaPlayer.getState()) {
@@ -54,11 +56,11 @@ public interface MediaPlayerNexter {
 		}
 
 		@Override
-		public void setNextMediaPlayer(IPlayer next) {
+		public void setNextMediaPlayer(StateManager next) {
 			mMediaPlayer.setNextMediaPlayer(next.getBarePlayer());
 		}
 
 	}
 
-	public void setNextMediaPlayer(IPlayer next);
+	public void setNextMediaPlayer(StateManager mediaPlayer);
 }

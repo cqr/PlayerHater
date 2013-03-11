@@ -5,11 +5,14 @@ import java.io.FileDescriptor;
 import org.prx.android.playerhater.player.IPlayer;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
+import android.os.Build;
 
 public class TransientPlayer {
 	
@@ -27,7 +30,7 @@ public class TransientPlayer {
 	}
 
 	private final Context c;
-	private final IPlayer wrapper;
+	private final MediaPlayerWrapper wrapper;
 	private final boolean isDuckable;
 	private final String url;
 	private final Uri uri;
@@ -89,6 +92,7 @@ public class TransientPlayer {
 		return this; 
 	}
 	
+	@SuppressLint("NewApi")
 	public void stop() { 
 		try { 
 			wrapper.stop(); 
@@ -116,6 +120,7 @@ public class TransientPlayer {
 
 	private class TransientPlayerTask implements Runnable {
 
+		@TargetApi(Build.VERSION_CODES.FROYO)
 		@Override
 		public void run() {
 

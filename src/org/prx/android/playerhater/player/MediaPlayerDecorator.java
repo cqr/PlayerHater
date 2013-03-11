@@ -3,6 +3,8 @@ package org.prx.android.playerhater.player;
 import java.io.FileDescriptor;
 import java.io.IOException;
 
+import org.prx.android.playerhater.player.IPlayer.Player;
+
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -13,11 +15,11 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
-public abstract class MediaPlayerDecorator implements IPlayer {
+public abstract class MediaPlayerDecorator implements Player {
 	
-	private final IPlayer mPlayer;
+	private final StateManager mPlayer;
 	
-	public MediaPlayerDecorator(IPlayer player) {
+	public MediaPlayerDecorator(StateManager player) {
 		mPlayer = player;
 	}
 
@@ -159,8 +161,32 @@ public abstract class MediaPlayerDecorator implements IPlayer {
 	}
 
 	@Override
-	public void setNextMediaPlayer(IPlayer mediaPlayer) {
+	public void setNextMediaPlayer(StateManager mediaPlayer) {
 		throw new UnsupportedOperationException("This Player doesn't know how to do set the next media player."); 
+	}
+
+	@Override
+	public boolean prepare(Context context, Uri uri) {
+		switch(mPlayer.getState()) {
+		case IDLE:
+			try {
+				mPlayer.setDataSource(context, uri);
+			} catch (Exception e) {
+				return false;
+			}
+		case INITIALIZED:
+			mPlayer.prepareAsync();
+			break;
+		default:
+			reset();
+			try {
+				setDataSource(context, uri);
+			} catch (Exception e) {
+				return false;
+			}
+			prepareAsync();
+		}
+		return true;
 	}
 
 }

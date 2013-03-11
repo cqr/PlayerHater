@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.IPlayer;
+import org.prx.android.playerhater.player.IPlayer.StateManager;
 
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
@@ -15,7 +16,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 		OnCompletionListener, PlayerHaterService {
 
 	private Song mSong;
-	private IPlayer mMediaPlayer;
+	private StateManager mMediaPlayer;
 
 	@Override
 	public void onCreate() {
@@ -60,7 +61,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 	public void emptyQueue() {}
 
 	@Override
-	protected IPlayer getMediaPlayer() {
+	protected StateManager getMediaPlayer() {
 		return mMediaPlayer;
 	}
 

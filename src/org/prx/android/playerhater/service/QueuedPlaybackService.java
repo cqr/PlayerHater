@@ -6,33 +6,25 @@ import java.util.List;
 
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.IPlayer;
+import org.prx.android.playerhater.player.IPlayer.Player;
+import org.prx.android.playerhater.player.NextableMediaPlayer;
 
-import android.annotation.SuppressLint;
-import android.hardware.display.DisplayManager;
 import android.media.MediaPlayer;
-import android.util.Log;
-import android.view.Display;
 import android.view.KeyEvent;
 
 public class QueuedPlaybackService extends AbstractPlaybackService {
 
 	private final List<Song> mSongs = new ArrayList<Song>();
 	private Song mCurrentlyLoadedSong;
+	private Song mNextLoadedSong;
 	private int mCurrentPosition = 0;
-	private IPlayer mCurrentMediaPlayer;
-	private IPlayer mNextMediaPlayer;
+	private Player mCurrentMediaPlayer;
+	private Player mNextMediaPlayer;
 
-	@SuppressLint("NewApi")
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		mLifecycleListener.onNextTrackAvailable();
-		DisplayManager mgr = (DisplayManager) getSystemService(DISPLAY_SERVICE);
-		Log.d(TAG, "DISPLAYS");
-		for (Display display : mgr.getDisplays()) {
-			Log.d(TAG, display.getName());
-		}
-		Log.d(TAG, "DISPLAYS");
 	}
 
 	@Override
@@ -68,6 +60,7 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	@Override
 	public void enqueue(Song song) {
 		mSongs.add(song);
+		setNextSong();
 	}
 
 	@Override
@@ -80,16 +73,16 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	}
 
 	@Override
-	protected IPlayer getMediaPlayer() {
+	protected Player getMediaPlayer() {
 		if (mCurrentMediaPlayer == null) {
 			mCurrentMediaPlayer = buildMediaPlayer(true);
 		}
 		return mCurrentMediaPlayer;
 	}
 
-	protected IPlayer getNextMediaPlayer() {
+	private Player getNextMediaPlayer() {
 		if (mNextMediaPlayer == null) {
-			mNextMediaPlayer = buildMediaPlayer();
+			mNextMediaPlayer = buildMediaPlayer(false);
 		}
 		return mNextMediaPlayer;
 	}
@@ -97,7 +90,12 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		if (!isLast()) {
-			skipForward();
+			Player tmp = mNextMediaPlayer;
+			mNextMediaPlayer = mCurrentMediaPlayer;
+			mCurrentMediaPlayer = tmp;
+			tmp = null;
+			mCurrentPosition += 1;
+			
 		} else {
 			super.onCompletion(mp);
 		}
@@ -109,21 +107,35 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 		case KeyEvent.KEYCODE_MEDIA_NEXT:
 			skipForward();
 			break;
+		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+			if (getCurrentPosition() < 2000) {
+				skipBackward();
+			} else {
+				super.onRemoteControlButtonPressed(button);
+			}
 		default:
 			super.onRemoteControlButtonPressed(button);
 		}
 	}
 
 	private void skipForward() {
-		if (!isLast()) {
-			mCurrentPosition +=1;
-			skipWasPressed();
-		} else {
-			mCurrentPosition = 1;
-			mLifecycleListener.onSongChanged(getNowPlaying());
-			pause();
-			seekTo(0);
+		seekTo(getDuration() - 5000);
+//		if (!isLast()) {
+//			mCurrentPosition +=1;
+//			skipWasPressed();
+//		} else {
+//			mCurrentPosition = 1;
+//			mLifecycleListener.onSongChanged(getNowPlaying());
+//			pause();
+//			seekTo(0);
+//		}
+	}
+	
+	private void skipBackward() {
+		if (!isFirst()) {
+			mCurrentPosition -=1;
 		}
+		skipWasPressed();
 	}
 
 	private void skipWasPressed() {
@@ -138,9 +150,27 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 		return mSongs.size() <= mCurrentPosition;
 	}
 	
+	private boolean isFirst() {
+		return mCurrentPosition == 1;
+	}
+	
 	private void moveCurrentToLast() {
 		if (!isLast()) {
 			mCurrentPosition = mSongs.size();
 		}
+	}
+	
+	private void setNextSong() {
+		if (!isLast()) {
+			Song nextSong = mSongs.get(mCurrentPosition);
+			if (!nextSong.equals(mNextLoadedSong)) {
+				getNextMediaPlayer().prepare(getApplicationContext(), nextSong.getUri());
+			}
+		}
+	}
+	
+	@Override
+	protected Player buildMediaPlayer(boolean setAsCurrent) {
+		return new NextableMediaPlayer(super.buildMediaPlayer(setAsCurrent));
 	}
 }

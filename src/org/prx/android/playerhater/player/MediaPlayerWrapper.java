@@ -3,6 +3,8 @@ package org.prx.android.playerhater.player;
 import java.io.FileDescriptor;
 import java.io.IOException;
 
+import org.prx.android.playerhater.player.IPlayer.StateManager;
+
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -16,7 +18,7 @@ import android.util.Log;
 
 public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		OnCompletionListener, OnErrorListener, OnInfoListener,
-		OnPreparedListener, OnSeekCompleteListener, IPlayer {
+		OnPreparedListener, OnSeekCompleteListener, StateManager {
 
 	private MediaPlayer mMediaPlayer;
 
@@ -287,8 +289,5 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	@Override
 	public MediaPlayer getBarePlayer() {
 		return mMediaPlayer;
-	}
-
-	public void setNextMediaPlayer(IPlayer mediaPlayer) {
 	}
 }

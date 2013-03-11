@@ -9,8 +9,8 @@ public class NextableMediaPlayer extends MediaPlayerDecorator implements
 	private final MediaPlayerNexter mMediaPlayerNexter;
 	private OnCompletionListener mOnCompletionListener;
 
-	public NextableMediaPlayer(IPlayer player) {
-		super(player);
+	public NextableMediaPlayer(StateManager stateManager) {
+		super(stateManager);
 		if (android.os.Build.VERSION.SDK_INT >= 16) {
 			mMediaPlayerNexter = new MediaPlayerNexter.Modern(getBarePlayer());
 		} else {
@@ -20,7 +20,7 @@ public class NextableMediaPlayer extends MediaPlayerDecorator implements
 	}
 
 	@Override
-	public void setNextMediaPlayer(IPlayer mediaPlayer) {
+	public void setNextMediaPlayer(StateManager mediaPlayer) {
 		mMediaPlayerNexter.setNextMediaPlayer(mediaPlayer);
 	}
 

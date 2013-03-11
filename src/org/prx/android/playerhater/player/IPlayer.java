@@ -26,70 +26,79 @@ public interface IPlayer {
 	public static final int PAUSED = 7;
 	public static final int PLAYBACK_COMPLETED = 8;
 
-	public abstract int getState();
+	public interface StateManager extends IPlayer {
 
-	public abstract void reset();
+		public abstract int getState();
 
-	public abstract void release();
+		public abstract void reset();
 
-	public abstract void prepare() throws IOException, IllegalStateException;
+		public abstract void release();
 
-	public abstract void prepareAsync() throws IllegalStateException;
+		public abstract void prepare() throws IOException,
+				IllegalStateException;
 
-	public abstract void start() throws IllegalStateException;
+		public abstract void prepareAsync() throws IllegalStateException;
 
-	public abstract void pause() throws IllegalStateException;
+		public abstract void start() throws IllegalStateException;
 
-	public abstract void stop() throws IllegalStateException;
+		public abstract void pause() throws IllegalStateException;
 
-	public abstract void seekTo(int msec);
+		public abstract void stop() throws IllegalStateException;
 
-	public abstract boolean isPlaying();
+		public abstract void seekTo(int msec);
 
-	public abstract int getCurrentPosition();
+		public abstract boolean isPlaying();
 
-	public abstract int getDuration();
+		public abstract int getCurrentPosition();
 
-	public abstract void setAudioStreamType(int streamtype);
+		public abstract int getDuration();
 
-	public abstract void setDataSource(FileDescriptor fd)
-			throws IllegalStateException, IOException,
-			IllegalArgumentException, SecurityException;
+		public abstract void setAudioStreamType(int streamtype);
 
-	public abstract void setDataSource(String path)
-			throws IllegalStateException, IOException,
-			IllegalArgumentException, SecurityException;
+		public abstract void setDataSource(FileDescriptor fd)
+				throws IllegalStateException, IOException,
+				IllegalArgumentException, SecurityException;
 
-	public abstract void setDataSource(Context context, Uri uri)
-			throws IllegalStateException, IOException,
-			IllegalArgumentException, SecurityException;
+		public abstract void setDataSource(String path)
+				throws IllegalStateException, IOException,
+				IllegalArgumentException, SecurityException;
 
-	public abstract void setDataSource(FileDescriptor fd, long offset,
-			long length) throws IllegalStateException, IOException,
-			IllegalArgumentException;
+		public abstract void setDataSource(Context context, Uri uri)
+				throws IllegalStateException, IOException,
+				IllegalArgumentException, SecurityException;
 
-	public abstract void setOnErrorListener(OnErrorListener errorListener);
+		public abstract void setDataSource(FileDescriptor fd, long offset,
+				long length) throws IllegalStateException, IOException,
+				IllegalArgumentException;
 
-	public abstract void setOnPreparedListener(
-			OnPreparedListener preparedListener);
+		public abstract void setOnErrorListener(OnErrorListener errorListener);
 
-	public abstract void setOnBufferingUpdateListener(
-			OnBufferingUpdateListener bufferingUpdateListener);
+		public abstract void setOnPreparedListener(
+				OnPreparedListener preparedListener);
 
-	public abstract void setOnCompletionListener(
-			OnCompletionListener completionListener);
+		public abstract void setOnBufferingUpdateListener(
+				OnBufferingUpdateListener bufferingUpdateListener);
 
-	public abstract void setOnInfoListener(OnInfoListener infoListener);
+		public abstract void setOnCompletionListener(
+				OnCompletionListener completionListener);
 
-	public abstract void setOnSeekCompleteListener(
-			OnSeekCompleteListener seekCompleteListener);
+		public abstract void setOnInfoListener(OnInfoListener infoListener);
 
-	public abstract void setVolume(float leftVolume, float rightVolume);
+		public abstract void setOnSeekCompleteListener(
+				OnSeekCompleteListener seekCompleteListener);
 
-	public abstract boolean equals(MediaPlayer mp);
+		public abstract void setVolume(float leftVolume, float rightVolume);
 
-	public abstract MediaPlayer getBarePlayer();
+		public abstract boolean equals(MediaPlayer mp);
 
-	public abstract void setNextMediaPlayer(IPlayer mediaPlayer);
+		public abstract MediaPlayer getBarePlayer();
+	}
+
+	public interface Player extends StateManager {
+		
+		public abstract boolean prepare(Context context, Uri uri);
+		public abstract void setNextMediaPlayer(StateManager mediaPlayer);
+		
+	}
 
 }

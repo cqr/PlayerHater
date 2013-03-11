@@ -4,6 +4,7 @@ import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.IPlayer;
+import org.prx.android.playerhater.player.IPlayer.StateManager;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 import org.prx.android.playerhater.plugins.AudioFocusPlugin;
 import org.prx.android.playerhater.plugins.ExpandableNotificationPlugin;
@@ -59,7 +60,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	private OnShutdownRequestListener mShutdownRequestListener;
 	private NotificationPlugin mNotificationPlugin; 
 
-	protected abstract IPlayer getMediaPlayer();
+	protected abstract StateManager getMediaPlayer();
 
 	@Override
 	public void onCreate() {
@@ -116,7 +117,7 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	@Override
 	public boolean isLoading() {
-		IPlayer mp = getMediaPlayer();
+		StateManager mp = getMediaPlayer();
 		return (mp.getState() == IPlayer.INITIALIZED
 				|| mp.getState() == IPlayer.PREPARING || mp
 					.getState() == IPlayer.PREPARED);
@@ -390,12 +391,12 @@ public abstract class AbstractPlaybackService extends Service implements
 	 * creates a media player (wrapped, of course) and registers the listeners
 	 * for all of the events.
 	 */
-	protected IPlayer buildMediaPlayer() {
+	protected StateManager buildMediaPlayer() {
 		return buildMediaPlayer(false);
 	}
 
-	protected IPlayer buildMediaPlayer(boolean setAsCurrent) {
-		IPlayer mp = new MediaPlayerWrapper();
+	protected StateManager buildMediaPlayer(boolean setAsCurrent) {
+		StateManager mp = new MediaPlayerWrapper();
 		mPlayerListenerManager.setMediaPlayer(mp);
 		return mp;
 	}
@@ -411,7 +412,7 @@ public abstract class AbstractPlaybackService extends Service implements
 		}
 	}
 
-	protected void startProgressThread(IPlayer mp) {
+	protected void startProgressThread(StateManager mp) {
 		Log.d(TAG, "STARTING PROGRESS THREAD");
 		stopProgressThread();
 		mUpdateProgressRunner.setMediaPlayer(mp);
