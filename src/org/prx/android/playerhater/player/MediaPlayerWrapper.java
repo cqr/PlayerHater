@@ -283,4 +283,12 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	public boolean equals(MediaPlayer mp) {
 		return mp == mMediaPlayer;
 	}
+	
+	@Override
+	public MediaPlayer getBarePlayer() {
+		return mMediaPlayer;
+	}
+
+	public void setNextMediaPlayer(IPlayer mediaPlayer) {
+	}
 }

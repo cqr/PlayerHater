@@ -88,4 +88,8 @@ public interface IPlayer {
 
 	public abstract boolean equals(MediaPlayer mp);
 
+	public abstract MediaPlayer getBarePlayer();
+
+	public abstract void setNextMediaPlayer(IPlayer mediaPlayer);
+
 }

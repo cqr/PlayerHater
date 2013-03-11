@@ -153,4 +153,14 @@ public abstract class MediaPlayerDecorator implements IPlayer {
 		return mPlayer.equals(mp);
 	}
 
+	@Override
+	public MediaPlayer getBarePlayer() {
+		return mPlayer.getBarePlayer();
+	}
+
+	@Override
+	public void setNextMediaPlayer(IPlayer mediaPlayer) {
+		throw new UnsupportedOperationException("This Player doesn't know how to do set the next media player."); 
+	}
+
 }
