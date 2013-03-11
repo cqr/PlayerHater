@@ -1,6 +1,9 @@
 package org.prx.android.playerhater.util;
 
 import java.io.FileDescriptor;
+
+import org.prx.android.playerhater.player.MediaPlayerWrapper;
+
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;

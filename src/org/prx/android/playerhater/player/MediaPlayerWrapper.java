@@ -1,4 +1,4 @@
-package org.prx.android.playerhater.util;
+package org.prx.android.playerhater.player;
 
 import java.io.FileDescriptor;
 import java.io.IOException;

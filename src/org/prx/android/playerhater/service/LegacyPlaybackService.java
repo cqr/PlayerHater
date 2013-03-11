@@ -3,7 +3,7 @@ package org.prx.android.playerhater.service;
 import java.io.IOException;
 
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.util.MediaPlayerWrapper;
+import org.prx.android.playerhater.player.MediaPlayerWrapper;
 
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;

@@ -5,10 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.util.MediaPlayerWrapper;
+import org.prx.android.playerhater.player.MediaPlayerWrapper;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.hardware.display.DisplayManager;
 import android.media.MediaPlayer;
 import android.util.Log;
@@ -60,12 +59,6 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	}
 
 	@Override
-	public void setIntentActivity(Activity activity) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public Song getNowPlaying() {
 		if (mCurrentPosition > 0)
 			return mSongs.get(mCurrentPosition - 1);
@@ -84,12 +77,6 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 			mSongs.add(mCurrentlyLoadedSong);
 			mCurrentPosition = 1;
 		}
-	}
-
-	@Override
-	public void setIntentClass(Class<? extends Activity> klass) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

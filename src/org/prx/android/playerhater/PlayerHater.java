@@ -5,13 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.prx.android.playerhater.player.MediaPlayerWrapper;
 import org.prx.android.playerhater.service.OnShutdownRequestListener;
 import org.prx.android.playerhater.service.PlayerHaterBinder;
 import org.prx.android.playerhater.util.AudioPlaybackInterface;
 import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.ConfigurationManager;
 import org.prx.android.playerhater.util.ListenerEcho;
-import org.prx.android.playerhater.util.MediaPlayerWrapper;
 import org.prx.android.playerhater.util.TransientPlayer;
 
 import android.app.Activity;

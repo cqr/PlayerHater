@@ -1,5 +1,7 @@
 package org.prx.android.playerhater.util;
 
+import org.prx.android.playerhater.player.MediaPlayerWrapper;
+
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;

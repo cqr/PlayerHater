@@ -3,6 +3,7 @@ package org.prx.android.playerhater.service;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.player.MediaPlayerWrapper;
 import org.prx.android.playerhater.plugins.AudioFocusPlugin;
 import org.prx.android.playerhater.plugins.ExpandableNotificationPlugin;
 import org.prx.android.playerhater.plugins.NotificationPlugin;
@@ -11,7 +12,6 @@ import org.prx.android.playerhater.plugins.LockScreenControlsPlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.plugins.TouchableNotificationPlugin;
 import org.prx.android.playerhater.util.BroadcastReceiver;
-import org.prx.android.playerhater.util.MediaPlayerWrapper;
 import org.prx.android.playerhater.util.PlayerListenerManager;
 import org.prx.android.playerhater.util.UpdateProgressRunnable;
 

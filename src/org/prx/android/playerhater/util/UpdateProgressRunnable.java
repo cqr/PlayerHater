@@ -1,5 +1,7 @@
 package org.prx.android.playerhater.util;
 
+import org.prx.android.playerhater.player.MediaPlayerWrapper;
+
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
