@@ -392,12 +392,14 @@ public abstract class AbstractPlaybackService extends Service implements
 	 * for all of the events.
 	 */
 	protected StateManager buildMediaPlayer() {
-		return buildMediaPlayer(false);
+		return new MediaPlayerWrapper();
 	}
 
 	protected StateManager buildMediaPlayer(boolean setAsCurrent) {
-		StateManager mp = new MediaPlayerWrapper();
-		mPlayerListenerManager.setMediaPlayer(mp);
+		StateManager mp = buildMediaPlayer();
+		if (setAsCurrent) {
+			mPlayerListenerManager.setMediaPlayer(mp);
+		}
 		return mp;
 	}
 

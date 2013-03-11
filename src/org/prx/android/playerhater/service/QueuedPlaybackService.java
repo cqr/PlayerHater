@@ -170,7 +170,12 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	}
 	
 	@Override
+	protected Player buildMediaPlayer() {
+		return new NextableMediaPlayer(super.buildMediaPlayer());
+	}
+	
+	@Override
 	protected Player buildMediaPlayer(boolean setAsCurrent) {
-		return new NextableMediaPlayer(super.buildMediaPlayer(setAsCurrent));
+		return (Player) super.buildMediaPlayer(setAsCurrent);
 	}
 }
