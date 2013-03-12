@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.prx.android.playerhater.player.IPlayer;
+import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.service.OnShutdownRequestListener;
 import org.prx.android.playerhater.service.PlayerHaterBinder;
 import org.prx.android.playerhater.util.AudioPlaybackInterface;
@@ -472,7 +472,7 @@ public class PlayerHater implements AudioPlaybackInterface,
 	@Override
 	public int getState() {
 		if (mPlayerHater == null) {
-			return IPlayer.IDLE;
+			return Player.IDLE;
 		}
 		return mPlayerHater.getState();
 	}

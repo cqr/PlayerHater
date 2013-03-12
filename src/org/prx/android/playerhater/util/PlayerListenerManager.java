@@ -1,6 +1,6 @@
 package org.prx.android.playerhater.util;
 
-import org.prx.android.playerhater.player.IPlayer.StateManager;
+import org.prx.android.playerhater.player.MediaPlayerWithState;
 
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -19,9 +19,9 @@ public class PlayerListenerManager {
 	private OnPreparedListener mOnPreparedListener;
 	private OnSeekCompleteListener mOnSeekCompleteListener;
 
-	private StateManager mMediaPlayer;
+	private MediaPlayerWithState mMediaPlayer;
 
-	public void setMediaPlayer(StateManager mediaPlayer) {
+	public void setMediaPlayer(MediaPlayerWithState mediaPlayer) {
 		mMediaPlayer = mediaPlayer;
 		setOnBufferingUpdateListener();
 		setOnCompletionListener();

@@ -1,8 +1,5 @@
 package org.prx.android.playerhater.player;
 
-import org.prx.android.playerhater.player.IPlayer.Player;
-import org.prx.android.playerhater.player.IPlayer.StateManager;
-
 import android.annotation.TargetApi;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -13,28 +10,28 @@ public interface MediaPlayerNexter {
 
 	public class Compat implements MediaPlayerNexter, OnCompletionListener,
 			Runnable {
-		private StateManager mNextMediaPlayer;
+		private MediaPlayerWithState mNextMediaPlayer;
 		private final Handler mHandler = new Handler();
-		private final StateManager mStateManager;
+		private final MediaPlayerWithState mStateManager;
 		private OnCompletionListener mOnCompletionListener;
 		private MediaPlayer mPlayer;
 
-		public Compat(StateManager stateManager) {
+		public Compat(MediaPlayerWithState stateManager) {
 			mStateManager = stateManager;
 			stateManager.setOnCompletionListener(this);
 		}
 
 		@Override
-		public void setNextMediaPlayer(StateManager next) {
+		public void setNextMediaPlayer(MediaPlayerWithState next) {
 			mNextMediaPlayer = next;
 			if (mNextMediaPlayer != null) {
 				switch (mNextMediaPlayer.getState()) {
-				case IPlayer.STARTED:
-				case IPlayer.PAUSED:
-				case IPlayer.PLAYBACK_COMPLETED:
+				case Player.STARTED:
+				case Player.PAUSED:
+				case Player.PLAYBACK_COMPLETED:
 					mNextMediaPlayer.stop();
-				case IPlayer.STOPPED:
-				case IPlayer.INITIALIZED:
+				case Player.STOPPED:
+				case Player.INITIALIZED:
 					mNextMediaPlayer.prepareAsync();
 					break;
 				}
@@ -70,18 +67,18 @@ public interface MediaPlayerNexter {
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 	public class Modern implements MediaPlayerNexter, OnCompletionListener {
-		private final StateManager mMediaPlayer;
-		private StateManager mNextMediaPlayer;
+		private final MediaPlayerWithState mMediaPlayer;
+		private MediaPlayerWithState mNextMediaPlayer;
 		private OnCompletionListener mOnComplete;
 
-		public Modern(StateManager stateManager) {
+		public Modern(MediaPlayerWithState stateManager) {
 			stateManager.setOnCompletionListener(this);
 			mMediaPlayer = stateManager;
 		}
 
 		@Override
-		public void setNextMediaPlayer(StateManager next) {
-			StateManager was = mNextMediaPlayer;
+		public void setNextMediaPlayer(MediaPlayerWithState next) {
+			MediaPlayerWithState was = mNextMediaPlayer;
 			mNextMediaPlayer = next;
 			MediaPlayer tmp = null;
 			if (next != null) {
@@ -108,7 +105,7 @@ public interface MediaPlayerNexter {
 
 	}
 
-	public void setNextMediaPlayer(StateManager mediaPlayer);
+	public void setNextMediaPlayer(MediaPlayerWithState mediaPlayer);
 
 	public void setOnCompletionListener(OnCompletionListener onCompletion);
 }

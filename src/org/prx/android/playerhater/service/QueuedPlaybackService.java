@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.AutoStartMediaPlayer;
-import org.prx.android.playerhater.player.IPlayer.Player;
+import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
-import org.prx.android.playerhater.player.NextableMediaPlayer;
+import org.prx.android.playerhater.player.GaplessPlayback;
 
 import android.media.MediaPlayer;
 import android.view.KeyEvent;
@@ -197,7 +197,7 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 
 	@Override
 	protected Player buildMediaPlayer() {
-		return new AutoStartMediaPlayer(new NextableMediaPlayer(
+		return new AutoStartMediaPlayer(new GaplessPlayback(
 				super.buildMediaPlayer()));
 	}
 }

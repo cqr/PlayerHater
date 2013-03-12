@@ -2,7 +2,7 @@ package org.prx.android.playerhater.util;
 
 import java.io.FileDescriptor;
 
-import org.prx.android.playerhater.player.IPlayer;
+import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 
 import android.annotation.SuppressLint;
@@ -104,10 +104,10 @@ public class TransientPlayer {
 	}
 	
 	public boolean isPlaying() { 
-		return (wrapper.getState() == IPlayer.STARTED ||
-				wrapper.getState() == IPlayer.INITIALIZED ||
-				wrapper.getState() == IPlayer.PREPARED ||
-				wrapper.getState() == IPlayer.PREPARING); 
+		return (wrapper.getState() == Player.STARTED ||
+				wrapper.getState() == Player.INITIALIZED ||
+				wrapper.getState() == Player.PREPARED ||
+				wrapper.getState() == Player.PREPARING); 
 	}
 
 	private int getDurationHint() {

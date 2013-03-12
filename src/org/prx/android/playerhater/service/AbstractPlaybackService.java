@@ -3,10 +3,9 @@ package org.prx.android.playerhater.service;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.player.IPlayer;
-import org.prx.android.playerhater.player.IPlayer.Player;
-import org.prx.android.playerhater.player.IPlayer.StateManager;
+import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
+import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.plugins.AudioFocusPlugin;
 import org.prx.android.playerhater.plugins.ExpandableNotificationPlugin;
 import org.prx.android.playerhater.plugins.NotificationPlugin;
@@ -61,7 +60,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	private OnShutdownRequestListener mShutdownRequestListener;
 	private NotificationPlugin mNotificationPlugin;
 
-	protected abstract StateManager getMediaPlayer();
+	protected abstract MediaPlayerWithState getMediaPlayer();
 
 	@Override
 	public void onCreate() {
@@ -108,19 +107,19 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	@Override
 	public boolean isPlaying() {
-		return (getMediaPlayer().getState() == IPlayer.STARTED);
+		return (getMediaPlayer().getState() == Player.STARTED);
 	}
 
 	@Override
 	public boolean isPaused() {
-		return (getMediaPlayer().getState() == IPlayer.PAUSED);
+		return (getMediaPlayer().getState() == Player.PAUSED);
 	}
 
 	@Override
 	public boolean isLoading() {
-		StateManager mp = getMediaPlayer();
-		return (mp.getState() == IPlayer.INITIALIZED
-				|| mp.getState() == IPlayer.PREPARING || mp.getState() == IPlayer.PREPARED);
+		MediaPlayerWithState mp = getMediaPlayer();
+		return (mp.getState() == Player.INITIALIZED
+				|| mp.getState() == Player.PREPARING || mp.getState() == Player.PREPARED);
 	}
 
 	@Override
@@ -190,7 +189,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	@Override
 	public void seekTo(int pos) {
 		Log.d(TAG, "SEEKING TO " + pos);
-		mPlayAfterSeek = (mPlayAfterSeek || getState() == IPlayer.STARTED);
+		mPlayAfterSeek = (mPlayAfterSeek || getState() == Player.STARTED);
 
 		try {
 			getMediaPlayer().pause();
@@ -365,16 +364,16 @@ public abstract class AbstractPlaybackService extends Service implements
 	public boolean play() throws IllegalStateException {
 		Log.d(TAG, "GOT PLAY()");
 		switch (getMediaPlayer().getState()) {
-		case IPlayer.INITIALIZED:
-		case IPlayer.STOPPED:
+		case Player.INITIALIZED:
+		case Player.STOPPED:
 			prepare();
 			break;
-		case IPlayer.PREPARED:
-		case IPlayer.PAUSED:
+		case Player.PREPARED:
+		case Player.PAUSED:
 			resume();
 			startProgressThread(getMediaPlayer());
 			break;
-		case IPlayer.IDLE:
+		case Player.IDLE:
 			play(getNowPlaying());
 			break;
 		default:
@@ -388,19 +387,19 @@ public abstract class AbstractPlaybackService extends Service implements
 	 * creates a media player (wrapped, of course) and registers the listeners
 	 * for all of the events.
 	 */
-	protected StateManager buildMediaPlayer() {
+	protected MediaPlayerWithState buildMediaPlayer() {
 		return new MediaPlayerWrapper();
 	}
 
-	protected StateManager buildMediaPlayer(boolean setAsCurrent) {
-		StateManager mp = buildMediaPlayer();
+	protected MediaPlayerWithState buildMediaPlayer(boolean setAsCurrent) {
+		MediaPlayerWithState mp = buildMediaPlayer();
 		if (setAsCurrent) {
 			setCurrentMediaPlayer(mp);
 		}
 		return mp;
 	}
 
-	protected void setCurrentMediaPlayer(StateManager player) {
+	protected void setCurrentMediaPlayer(MediaPlayerWithState player) {
 		mPlayerListenerManager.setMediaPlayer(player);
 	}
 
@@ -415,7 +414,7 @@ public abstract class AbstractPlaybackService extends Service implements
 		}
 	}
 
-	protected void startProgressThread(StateManager mp) {
+	protected void startProgressThread(MediaPlayerWithState mp) {
 		stopProgressThread();
 		mUpdateProgressRunner.setMediaPlayer(mp);
 		mUpdateProgressThread = new Thread(mUpdateProgressRunner);

@@ -2,11 +2,11 @@ package org.prx.android.playerhater.player;
 
 import android.media.MediaPlayer.OnCompletionListener;
 
-public class NextableMediaPlayer extends MediaPlayerDecorator {
+public class GaplessPlayback extends MediaPlayerDecorator {
 
 	private final MediaPlayerNexter mMediaPlayerNexter;
 
-	public NextableMediaPlayer(StateManager stateManager) {
+	public GaplessPlayback(MediaPlayerWithState stateManager) {
 		super(stateManager);
 
 		if (android.os.Build.VERSION.SDK_INT >= 16) {
@@ -17,7 +17,7 @@ public class NextableMediaPlayer extends MediaPlayerDecorator {
 	}
 
 	@Override
-	public void setNextMediaPlayer(StateManager mediaPlayer) {
+	public void setNextMediaPlayer(MediaPlayerWithState mediaPlayer) {
 		mMediaPlayerNexter.setNextMediaPlayer(mediaPlayer);
 	}
 

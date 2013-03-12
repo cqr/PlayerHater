@@ -15,7 +15,7 @@ public class AutoStartMediaPlayer extends MediaPlayerDecorator implements OnPrep
 	private OnPreparedListener mOnPreparedListener;
 	private OnSeekCompleteListener mOnSeekCompleteListener;
 
-	public AutoStartMediaPlayer(StateManager player) {
+	public AutoStartMediaPlayer(MediaPlayerWithState player) {
 		super(player);
 		super.setOnPreparedListener(this);
 		super.setOnSeekCompleteListener(this);

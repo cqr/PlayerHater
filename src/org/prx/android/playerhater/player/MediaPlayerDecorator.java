@@ -3,8 +3,6 @@ package org.prx.android.playerhater.player;
 import java.io.FileDescriptor;
 import java.io.IOException;
 
-import org.prx.android.playerhater.player.IPlayer.Player;
-
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -17,8 +15,8 @@ import android.net.Uri;
 
 public abstract class MediaPlayerDecorator implements Player {
 	
-	protected final StateManager mPlayer;
-	public MediaPlayerDecorator(StateManager player) {
+	protected final MediaPlayerWithState mPlayer;
+	public MediaPlayerDecorator(MediaPlayerWithState player) {
 		mPlayer = player;
 	}
 
@@ -149,7 +147,7 @@ public abstract class MediaPlayerDecorator implements Player {
 	}
 
 	@Override
-	public void setNextMediaPlayer(StateManager mediaPlayer) {
+	public void setNextMediaPlayer(MediaPlayerWithState mediaPlayer) {
 		if (mPlayer instanceof Player) {
 			((Player)mPlayer).setNextMediaPlayer(mediaPlayer);
 			return;
@@ -175,7 +173,7 @@ public abstract class MediaPlayerDecorator implements Player {
 	}
 	
 	@Override
-	public void swap(StateManager player) {
+	public void swap(MediaPlayerWithState player) {
 		mPlayer.swap(player);
 	}
 
