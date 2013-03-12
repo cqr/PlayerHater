@@ -286,7 +286,10 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	}
 
 	private void startClockThread() {
-		getClockThread().start();
+		// We send a tick immediately because it takes some time to start the thread;
+		mHandler.sendEmptyMessage(0);
+		if (!getClockThread().isAlive())
+			getClockThread().start();
 	}
 
 	private void stopClockThread() {
