@@ -206,9 +206,9 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 
 	@Override
 	protected Player buildMediaPlayer() {
-		Player newPlayer = (Player) super.buildMediaPlayer();
+		Player newPlayer;
+		newPlayer = syncronous(super.buildMediaPlayer());
 		newPlayer = wakeLocked(newPlayer, getApplicationContext());
-		newPlayer = syncronous(newPlayer);
 		newPlayer = gapless(newPlayer);
 		return newPlayer;
 	}
