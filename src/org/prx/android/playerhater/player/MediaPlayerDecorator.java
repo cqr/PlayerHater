@@ -17,8 +17,7 @@ import android.net.Uri;
 
 public abstract class MediaPlayerDecorator implements Player {
 	
-	private final StateManager mPlayer;
-	
+	protected final StateManager mPlayer;
 	public MediaPlayerDecorator(StateManager player) {
 		mPlayer = player;
 	}
@@ -119,11 +118,6 @@ public abstract class MediaPlayerDecorator implements Player {
 	}
 
 	@Override
-	public void setOnPreparedListener(OnPreparedListener preparedListener) {
-		mPlayer.setOnPreparedListener(preparedListener);
-	}
-
-	@Override
 	public void setOnBufferingUpdateListener(
 			OnBufferingUpdateListener bufferingUpdateListener) {
 		mPlayer.setOnBufferingUpdateListener(bufferingUpdateListener);
@@ -137,12 +131,6 @@ public abstract class MediaPlayerDecorator implements Player {
 	@Override
 	public void setOnInfoListener(OnInfoListener infoListener) {
 		mPlayer.setOnInfoListener(infoListener);
-	}
-
-	@Override
-	public void setOnSeekCompleteListener(
-			OnSeekCompleteListener seekCompleteListener) {
-		mPlayer.setOnSeekCompleteListener(seekCompleteListener);
 	}
 
 	@Override
@@ -162,31 +150,55 @@ public abstract class MediaPlayerDecorator implements Player {
 
 	@Override
 	public void setNextMediaPlayer(StateManager mediaPlayer) {
+		if (mPlayer instanceof Player) {
+			((Player)mPlayer).setNextMediaPlayer(mediaPlayer);
+			return;
+		}
 		throw new UnsupportedOperationException("This Player doesn't know how to do set the next media player."); 
 	}
 
 	@Override
+	public void setOnPreparedListener(OnPreparedListener preparedListener) {
+		mPlayer.setOnPreparedListener(preparedListener);
+	}
+
+	@Override
+	public void setOnSeekCompleteListener(
+			OnSeekCompleteListener seekCompleteListener) {
+		mPlayer.setOnSeekCompleteListener(seekCompleteListener);
+		
+	}
+	
+	@Override
+	public void swapPlayer(MediaPlayer barePlayer, int state) {
+		mPlayer.swapPlayer(barePlayer, state);
+	}
+	
+	@Override
+	public void swap(StateManager player) {
+		mPlayer.swap(player);
+	}
+
+	@Override
 	public boolean prepare(Context context, Uri uri) {
-		switch(mPlayer.getState()) {
-		case IDLE:
-			try {
-				mPlayer.setDataSource(context, uri);
-			} catch (Exception e) {
-				return false;
-			}
-		case INITIALIZED:
-			mPlayer.prepareAsync();
-			break;
-		default:
-			reset();
-			try {
-				setDataSource(context, uri);
-			} catch (Exception e) {
-				return false;
-			}
-			prepareAsync();
+		if (mPlayer instanceof Player) {
+			return ((Player)mPlayer).prepare(context, uri);
 		}
-		return true;
+		throw new UnsupportedOperationException("This Player doesn't know how to automatically start.");
+	}
+
+	@Override
+	public boolean prepareAndPlay(Context applicationContext, Uri uri,
+			int position) {
+		if (mPlayer instanceof Player) {
+			return ((Player)mPlayer).prepareAndPlay(applicationContext, uri, position);
+		}
+		throw new UnsupportedOperationException("This Player doesn't know how to automatically start.");
+	}
+	
+	@Override
+	public String toString() {
+		return "(" + getClass().getName() + ")::" + mPlayer.toString(); 
 	}
 
 }

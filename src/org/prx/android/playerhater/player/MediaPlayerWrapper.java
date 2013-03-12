@@ -37,12 +37,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	public MediaPlayerWrapper() {
 		this.mMediaPlayer = new MediaPlayer();
 		this.mState = IDLE;
-		this.mMediaPlayer.setOnBufferingUpdateListener(this);
-		this.mMediaPlayer.setOnCompletionListener(this);
-		this.mMediaPlayer.setOnErrorListener(this);
-		this.mMediaPlayer.setOnInfoListener(this);
-		this.mMediaPlayer.setOnPreparedListener(this);
-		this.mMediaPlayer.setOnSeekCompleteListener(this);
+		setListeners();
 	}
 
 	@Override
@@ -235,9 +230,6 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		if (this.mCompletionListener != null) {
 			this.mCompletionListener.onCompletion(mp);
 		}
-		stop(); 
-		reset(); 
-		 
 	}
 
 	@Override
@@ -289,5 +281,27 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	@Override
 	public MediaPlayer getBarePlayer() {
 		return mMediaPlayer;
+	}
+
+	@Override
+	public void swapPlayer(MediaPlayer barePlayer, int state) {
+		mMediaPlayer.release();
+		mMediaPlayer = barePlayer;
+		mState = state;
+		setListeners();
+	}
+	
+	@Override
+	public void swap(StateManager player) {
+		swapPlayer(player.getBarePlayer(), player.getState());
+	}
+	
+	private void setListeners() {
+		mMediaPlayer.setOnBufferingUpdateListener(this);
+		mMediaPlayer.setOnCompletionListener(this);
+		mMediaPlayer.setOnErrorListener(this);
+		mMediaPlayer.setOnInfoListener(this);
+		mMediaPlayer.setOnPreparedListener(this);
+		mMediaPlayer.setOnSeekCompleteListener(this);
 	}
 }

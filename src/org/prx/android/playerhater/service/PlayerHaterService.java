@@ -32,8 +32,6 @@ public interface PlayerHaterService extends RemoteControlButtonReceiver {
 
 	public abstract void setArtist(String artist);
 
-	public abstract void setIntentActivity(Activity activity);
-
 	public abstract int getCurrentPosition();
 
 	public abstract int getDuration();

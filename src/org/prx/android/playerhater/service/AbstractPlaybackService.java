@@ -4,6 +4,7 @@ import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.IPlayer;
+import org.prx.android.playerhater.player.IPlayer.Player;
 import org.prx.android.playerhater.player.IPlayer.StateManager;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 import org.prx.android.playerhater.plugins.AudioFocusPlugin;
@@ -58,7 +59,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	private Thread mUpdateProgressThread;
 	private boolean mPlayAfterSeek;
 	private OnShutdownRequestListener mShutdownRequestListener;
-	private NotificationPlugin mNotificationPlugin; 
+	private NotificationPlugin mNotificationPlugin;
 
 	protected abstract StateManager getMediaPlayer();
 
@@ -69,14 +70,14 @@ public abstract class AbstractPlaybackService extends Service implements
 		PluginCollection collection = new PluginCollection();
 
 		if (PlayerHater.EXPANDING_NOTIFICATIONS) {
-			mNotificationPlugin = new ExpandableNotificationPlugin(this); 
+			mNotificationPlugin = new ExpandableNotificationPlugin(this);
 		} else if (PlayerHater.TOUCHABLE_NOTIFICATIONS) {
 			mNotificationPlugin = new TouchableNotificationPlugin(this);
-		} else { 
-			mNotificationPlugin = new NotificationPlugin(this); 
+		} else {
+			mNotificationPlugin = new NotificationPlugin(this);
 		}
 		collection.add(mNotificationPlugin);
-		
+
 		if (PlayerHater.MODERN_AUDIO_FOCUS) {
 			collection.add(new AudioFocusPlugin(this));
 		}
@@ -119,8 +120,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	public boolean isLoading() {
 		StateManager mp = getMediaPlayer();
 		return (mp.getState() == IPlayer.INITIALIZED
-				|| mp.getState() == IPlayer.PREPARING || mp
-					.getState() == IPlayer.PREPARED);
+				|| mp.getState() == IPlayer.PREPARING || mp.getState() == IPlayer.PREPARED);
 	}
 
 	@Override
@@ -229,7 +229,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	public void onSeekComplete(MediaPlayer mp) {
 		Log.d(TAG, "GOT SEEK COMPLETE");
 		if (mPlayAfterSeek) {
-			mPlayAfterSeek = false; 
+			mPlayAfterSeek = false;
 			try {
 				play();
 			} catch (Exception e) {
@@ -310,9 +310,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	}
 
 	protected void sendIsPlaying(int progress) {
-		Log.d(TAG, "SENDING IS PLAYING");
-		if (getState() == IPlayer.STARTED
-				&& mPlayerHaterListener != null) {
+		if (getState() == Player.STARTED && mPlayerHaterListener != null) {
 			mPlayerHaterListener.onPlaying(getNowPlaying(), progress);
 		}
 	}
@@ -375,7 +373,6 @@ public abstract class AbstractPlaybackService extends Service implements
 		case IPlayer.PAUSED:
 			resume();
 			startProgressThread(getMediaPlayer());
-			sendStartedPlaying();
 			break;
 		case IPlayer.IDLE:
 			play(getNowPlaying());
@@ -398,9 +395,13 @@ public abstract class AbstractPlaybackService extends Service implements
 	protected StateManager buildMediaPlayer(boolean setAsCurrent) {
 		StateManager mp = buildMediaPlayer();
 		if (setAsCurrent) {
-			mPlayerListenerManager.setMediaPlayer(mp);
+			setCurrentMediaPlayer(mp);
 		}
 		return mp;
+	}
+
+	protected void setCurrentMediaPlayer(StateManager player) {
+		mPlayerListenerManager.setMediaPlayer(player);
 	}
 
 	// PROTECTED STUFF
@@ -415,7 +416,6 @@ public abstract class AbstractPlaybackService extends Service implements
 	}
 
 	protected void startProgressThread(StateManager mp) {
-		Log.d(TAG, "STARTING PROGRESS THREAD");
 		stopProgressThread();
 		mUpdateProgressRunner.setMediaPlayer(mp);
 		mUpdateProgressThread = new Thread(mUpdateProgressRunner);
@@ -427,14 +427,6 @@ public abstract class AbstractPlaybackService extends Service implements
 		sendIsLoading();
 		getMediaPlayer().prepareAsync();
 		startProgressThread(getMediaPlayer());
-	}
-
-	/*
-	 * This should be overridden by subclasses which wish to handle messages
-	 * sent to mHandler without re-implementing the handler. It is a noop by
-	 * default.
-	 */
-	protected void onHandlerMessage(Message m) { /* noop */
 	}
 
 	private static class UpdateHandler extends Handler {
@@ -450,8 +442,6 @@ public abstract class AbstractPlaybackService extends Service implements
 			case PROGRESS_UPDATE:
 				mService.sendIsPlaying(m.arg1);
 				break;
-			default:
-				mService.onHandlerMessage(m);
 			}
 		}
 	}
@@ -475,9 +465,9 @@ public abstract class AbstractPlaybackService extends Service implements
 		case KeyEvent.KEYCODE_MEDIA_STOP:
 			stop();
 			break;
-		case KeyEvent.KEYCODE_MEDIA_PREVIOUS: 
-			seekTo(0); 
-			break; 
+		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+			seekTo(0);
+			break;
 		}
 	}
 
@@ -489,20 +479,16 @@ public abstract class AbstractPlaybackService extends Service implements
 	protected void release() {
 		getMediaPlayer().release();
 	}
-	
-	@Override
-	public void setIntentClass(Class<? extends Activity> klass) {
-		Intent intent = new Intent(getBaseContext(), klass); 
-		intent.addCategory(Intent.CATEGORY_LAUNCHER);
-		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); 
-		PendingIntent pending = PendingIntent.getActivity(getBaseContext(), 456,
-				intent, PendingIntent.FLAG_CANCEL_CURRENT);
-		mNotificationPlugin.onIntentActivityChanged(pending); 
-	}
 
 	@Override
-	public void setIntentActivity(Activity activity) {
-		setIntentClass(activity.getClass());  
+	public void setIntentClass(Class<? extends Activity> klass) {
+		Intent intent = new Intent(getBaseContext(), klass);
+		intent.addCategory(Intent.CATEGORY_LAUNCHER);
+		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		PendingIntent pending = PendingIntent.getActivity(getBaseContext(),
+				456, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+		mNotificationPlugin.onIntentActivityChanged(pending);
 	}
 
 }

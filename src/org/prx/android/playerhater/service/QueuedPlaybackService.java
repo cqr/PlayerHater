@@ -1,12 +1,12 @@
 package org.prx.android.playerhater.service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.player.IPlayer;
+import org.prx.android.playerhater.player.AutoStartMediaPlayer;
 import org.prx.android.playerhater.player.IPlayer.Player;
+import org.prx.android.playerhater.player.MediaPlayerWrapper;
 import org.prx.android.playerhater.player.NextableMediaPlayer;
 
 import android.media.MediaPlayer;
@@ -19,7 +19,7 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	private Song mNextLoadedSong;
 	private int mCurrentPosition = 0;
 	private Player mCurrentMediaPlayer;
-	private Player mNextMediaPlayer;
+	private Player mNextPlayer;
 
 	@Override
 	public void onCreate() {
@@ -28,26 +28,24 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	}
 
 	@Override
-	public boolean play(Song song, int position)
-			throws IllegalArgumentException {
+	public boolean play(Song song, int position) {
+
+		// If the song we are being asked to play isn't currently loaded,
+		// add it to the end of the playlist and skip there.
 		if (getNowPlaying() != song) {
-			mSongs.add(song);
-			moveCurrentToLast();
+			enqueue(song);
+			skipToLastSong();
 		}
-		if (getMediaPlayer().getState() != IPlayer.IDLE)
-			getMediaPlayer().reset();
-		try {
-			mCurrentlyLoadedSong = song;
-			getMediaPlayer().setDataSource(getApplicationContext(),
-					song.getUri());
-		} catch (IllegalStateException e) {
+
+		if (getMediaPlayer().prepareAndPlay(getApplicationContext(),
+				getNowPlaying().getUri(), position)) {
+			sendIsLoading();
+			mCurrentlyLoadedSong = getNowPlaying();
+			startProgressThread(getMediaPlayer());
+			return true;
+		} else {
 			return false;
-		} catch (SecurityException e) {
-			throw new IllegalArgumentException("Illegal :" + song);
-		} catch (IOException e) {
-			throw new IllegalArgumentException("Illegal :" + song);
 		}
-		return play(position);
 	}
 
 	@Override
@@ -60,6 +58,9 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	@Override
 	public void enqueue(Song song) {
 		mSongs.add(song);
+		if (mCurrentPosition < 1) {
+			mCurrentPosition = 1;
+		}
 		setNextSong();
 	}
 
@@ -70,40 +71,44 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 			mSongs.add(mCurrentlyLoadedSong);
 			mCurrentPosition = 1;
 		}
+		setNextSong();
 	}
 
 	@Override
 	protected Player getMediaPlayer() {
 		if (mCurrentMediaPlayer == null) {
-			mCurrentMediaPlayer = buildMediaPlayer(true);
+			mCurrentMediaPlayer = (Player) buildMediaPlayer(true);
 		}
 		return mCurrentMediaPlayer;
 	}
 
-	private Player getNextMediaPlayer() {
-		if (mNextMediaPlayer == null) {
-			mNextMediaPlayer = buildMediaPlayer(false);
+	protected Player getNextPlayer() {
+		if (mNextPlayer == null) {
+			mNextPlayer = new AutoStartMediaPlayer(new MediaPlayerWrapper());
 		}
-		return mNextMediaPlayer;
+		return mNextPlayer;
 	}
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		if (!isLast()) {
-			Player tmp = mNextMediaPlayer;
-			mNextMediaPlayer = mCurrentMediaPlayer;
-			mCurrentMediaPlayer = tmp;
-			tmp = null;
-			mCurrentPosition += 1;
-			
+		if (getMediaPlayer().isPlaying()) {
+			nextSongIsStarted();
 		} else {
 			super.onCompletion(mp);
 		}
 	}
-	
+
+	private void nextSongIsStarted() {
+		mCurrentPosition += 1;
+		mCurrentlyLoadedSong = mNextLoadedSong;
+		mNextLoadedSong = null;
+		mLifecycleListener.onSongChanged(getNowPlaying());
+		setNextSong();
+	}
+
 	@Override
 	public void onRemoteControlButtonPressed(int button) {
-		switch(button) {
+		switch (button) {
 		case KeyEvent.KEYCODE_MEDIA_NEXT:
 			skipForward();
 			break;
@@ -119,63 +124,80 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	}
 
 	private void skipForward() {
-		seekTo(getDuration() - 5000);
-//		if (!isLast()) {
-//			mCurrentPosition +=1;
-//			skipWasPressed();
-//		} else {
-//			mCurrentPosition = 1;
-//			mLifecycleListener.onSongChanged(getNowPlaying());
-//			pause();
-//			seekTo(0);
-//		}
+		if (!isLast()) {
+			mCurrentPosition += 1;
+			skipWasPressed();
+		} else {
+			if (mCurrentPosition != 1) {
+				mCurrentPosition = 1;
+				mLifecycleListener.onSongChanged(getNowPlaying());
+				getMediaPlayer().prepare(getApplicationContext(), getNowPlaying().getUri());
+				setNextSong();
+			}
+			pause();
+			seekTo(0);
+		}
 	}
-	
+
 	private void skipBackward() {
 		if (!isFirst()) {
-			mCurrentPosition -=1;
+			mCurrentPosition -= 1;
 		}
 		skipWasPressed();
 	}
 
 	private void skipWasPressed() {
 		if (getNowPlaying() != mCurrentlyLoadedSong) {
-			play(getNowPlaying());
+			if (getNowPlaying() == mNextLoadedSong) {
+				promoteNextPlayer();
+				play();
+			} else {
+				play(getNowPlaying());
+			}
 		} else {
 			seekTo(0);
 		}
 	}
 
+	private void promoteNextPlayer() {
+		getMediaPlayer().swap(getNextPlayer());
+		mNextPlayer = null;
+		mCurrentlyLoadedSong = mNextLoadedSong;
+		mNextLoadedSong = null;
+		mLifecycleListener.onSongChanged(getNowPlaying());
+	}
+
 	private boolean isLast() {
-		return mSongs.size() <= mCurrentPosition;
+		return mCurrentPosition <= 0 || mSongs.size() <= mCurrentPosition;
 	}
-	
+
 	private boolean isFirst() {
-		return mCurrentPosition == 1;
+		return mCurrentPosition <= 1;
 	}
-	
-	private void moveCurrentToLast() {
+
+	private void skipToLastSong() {
 		if (!isLast()) {
 			mCurrentPosition = mSongs.size();
 		}
 	}
-	
+
 	private void setNextSong() {
 		if (!isLast()) {
 			Song nextSong = mSongs.get(mCurrentPosition);
 			if (!nextSong.equals(mNextLoadedSong)) {
-				getNextMediaPlayer().prepare(getApplicationContext(), nextSong.getUri());
+				getNextPlayer().prepare(getApplicationContext(),
+						nextSong.getUri());
+				getMediaPlayer().setNextMediaPlayer(getNextPlayer());
+				mNextLoadedSong = nextSong;
 			}
+		} else {
+			getMediaPlayer().setNextMediaPlayer(null);
 		}
 	}
-	
+
 	@Override
 	protected Player buildMediaPlayer() {
-		return new NextableMediaPlayer(super.buildMediaPlayer());
-	}
-	
-	@Override
-	protected Player buildMediaPlayer(boolean setAsCurrent) {
-		return (Player) super.buildMediaPlayer(setAsCurrent);
+		return new AutoStartMediaPlayer(new NextableMediaPlayer(
+				super.buildMediaPlayer()));
 	}
 }

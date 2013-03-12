@@ -92,12 +92,18 @@ public interface IPlayer {
 		public abstract boolean equals(MediaPlayer mp);
 
 		public abstract MediaPlayer getBarePlayer();
+
+		public abstract void swapPlayer(MediaPlayer barePlayer, int state);
+
+		void swap(StateManager player);
 	}
 
 	public interface Player extends StateManager {
 		
 		public abstract boolean prepare(Context context, Uri uri);
 		public abstract void setNextMediaPlayer(StateManager mediaPlayer);
+		public abstract boolean prepareAndPlay(Context applicationContext,
+				Uri uri, int position);
 		
 	}
 
