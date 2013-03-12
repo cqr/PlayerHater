@@ -2,17 +2,17 @@ package org.prx.android.playerhater.player;
 
 import android.media.MediaPlayer.OnCompletionListener;
 
-public class GaplessPlayback extends MediaPlayerDecorator {
+public class Gapless extends MediaPlayerDecorator {
 
-	private final MediaPlayerNexter mMediaPlayerNexter;
+	private final SetNextMediaPlayerCompat mMediaPlayerNexter;
 
-	public GaplessPlayback(MediaPlayerWithState stateManager) {
+	public Gapless(MediaPlayerWithState stateManager) {
 		super(stateManager);
 
 		if (android.os.Build.VERSION.SDK_INT >= 16) {
-			mMediaPlayerNexter = new MediaPlayerNexter.Modern(stateManager);
+			mMediaPlayerNexter = new SetNextMediaPlayerCompat.Modern(stateManager);
 		} else {
-			mMediaPlayerNexter = new MediaPlayerNexter.Compat(stateManager);
+			mMediaPlayerNexter = new SetNextMediaPlayerCompat.Compat(stateManager);
 		}
 	}
 

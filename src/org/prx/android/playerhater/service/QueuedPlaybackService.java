@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.player.AutoStartMediaPlayer;
+import org.prx.android.playerhater.player.Syncronous;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
-import org.prx.android.playerhater.player.GaplessPlayback;
+import org.prx.android.playerhater.player.Gapless;
 
 import android.media.MediaPlayer;
 import android.view.KeyEvent;
@@ -84,7 +84,7 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 
 	protected Player getNextPlayer() {
 		if (mNextPlayer == null) {
-			mNextPlayer = new AutoStartMediaPlayer(new MediaPlayerWrapper());
+			mNextPlayer = new Syncronous(new MediaPlayerWrapper());
 		}
 		return mNextPlayer;
 	}
@@ -197,7 +197,7 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 
 	@Override
 	protected Player buildMediaPlayer() {
-		return new AutoStartMediaPlayer(new GaplessPlayback(
+		return new Syncronous(new Gapless(
 				super.buildMediaPlayer()));
 	}
 }

@@ -34,9 +34,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	private int mPrevState;
 
 	public MediaPlayerWrapper() {
-		this.mMediaPlayer = new MediaPlayer();
-		this.mState = IDLE;
-		setListeners();
+		swapPlayer(new MediaPlayer(), IDLE);
 	}
 
 	@Override
@@ -284,7 +282,9 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	@Override
 	public void swapPlayer(MediaPlayer barePlayer, int state) {
-		mMediaPlayer.release();
+		if (mMediaPlayer != null) {
+			mMediaPlayer.release();
+		}
 		mMediaPlayer = barePlayer;
 		mState = state;
 		setListeners();

@@ -7,7 +7,7 @@ import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.util.Log;
 
-public class AutoStartMediaPlayer extends MediaPlayerDecorator implements OnPreparedListener, OnSeekCompleteListener {
+public class Syncronous extends MediaPlayerDecorator implements OnPreparedListener, OnSeekCompleteListener {
 
 	private static final String TAG = "PlayerHater/AutoStart";
 	private boolean mShouldPlayWhenPrepared;
@@ -15,7 +15,7 @@ public class AutoStartMediaPlayer extends MediaPlayerDecorator implements OnPrep
 	private OnPreparedListener mOnPreparedListener;
 	private OnSeekCompleteListener mOnSeekCompleteListener;
 
-	public AutoStartMediaPlayer(MediaPlayerWithState player) {
+	public Syncronous(MediaPlayerWithState player) {
 		super(player);
 		super.setOnPreparedListener(this);
 		super.setOnSeekCompleteListener(this);
