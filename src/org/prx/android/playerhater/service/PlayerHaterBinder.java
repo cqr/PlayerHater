@@ -130,4 +130,8 @@ public class PlayerHaterBinder extends Binder {
 		mService.emptyQueue();
 	}
 
+	public void onRemoteControlButtonPressed(int keyCode) {
+		mService.onRemoteControlButtonPressed(keyCode);
+	}
+
 }

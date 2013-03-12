@@ -35,6 +35,8 @@ public class PlayerHater implements AudioPlaybackInterface,
 	protected static final String TAG = "PLAYERHATER";
 
 	private static PlayerHater sPlayerHater;
+	
+	public static Intent SERVICE_INTENT;
 
 	public static boolean LOCK_SCREEN_CONTROLS = false;
 	public static boolean MODERN_AUDIO_FOCUS = false;
@@ -95,7 +97,6 @@ public class PlayerHater implements AudioPlaybackInterface,
 	private static final String URL = "url";
 
 	private Context mContext;
-	private Intent mServiceIntent;
 	private PlayerHaterBinder mPlayerHater;
 	private final List<Song> mPlayQueue;
 	private final Map<Song, Integer> mStartPositions;
@@ -130,11 +131,13 @@ public class PlayerHater implements AudioPlaybackInterface,
 		if (contextWas != context) {
 			mContext = context;
 			
-			mServiceIntent = new Intent("org.prx.android.playerhater.SERVICE");
-			mServiceIntent.setPackage(mContext.getPackageName());
-			if (mContext.getPackageManager().queryIntentServices(mServiceIntent, 0).size() == 0) {
-				mServiceIntent = new Intent(mContext, PlaybackService.class);
+			SERVICE_INTENT = new Intent("org.prx.android.playerhater.SERVICE");
+			SERVICE_INTENT.setPackage(mContext.getPackageName());
+			if (mContext.getPackageManager().queryIntentServices(SERVICE_INTENT, 0).size() == 0) {
+				SERVICE_INTENT = new Intent(mContext, PlaybackService.class);
 			}
+			
+			
 
 			// If we're already bound, we need to rebind with the new context.
 			// the way this works, the service will never become "disconnected"
@@ -239,10 +242,10 @@ public class PlayerHater implements AudioPlaybackInterface,
 	private void startService() {
 		if (mPlayerHater == null) {
 			Log.d(TAG, "Starting a new service up");
-			mContext.startService(mServiceIntent);
+			mContext.startService(SERVICE_INTENT);
 		}
 		Log.d(TAG, "Binding to our new context");
-		mContext.bindService(mServiceIntent, sServiceConnection,
+		mContext.bindService(SERVICE_INTENT, sServiceConnection,
 				Context.BIND_AUTO_CREATE);
 	}
 

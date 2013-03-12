@@ -54,7 +54,8 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	@Override
 	public void onCreate() {
-		mBroadcastReceiver = new BroadcastReceiver(this);
+		
+		mBroadcastReceiver = new BroadcastReceiver(this, new PlayerHaterBinder(this));
 
 		PluginCollection collection = new PluginCollection();
 
@@ -79,6 +80,25 @@ public abstract class AbstractPlaybackService extends Service implements
 		mPlayerListenerManager.setOnCompletionListener(this);
 		mPlayerListenerManager.setOnErrorListener(this);
 		mPlayerListenerManager.setOnSeekCompleteListener(this);
+	}
+	
+	@Override
+	public void onStart(Intent intent, int requestId) {
+		onStartCommand(intent, 0, requestId);
+	}
+	
+	@Override
+	public int onStartCommand(Intent intent, int flags, int requestId) {
+		int keyCode = intent.getIntExtra(BroadcastReceiver.REMOTE_CONTROL_BUTTON, -1);
+		if (keyCode != -1) {
+			try {
+			onRemoteControlButtonPressed(keyCode);
+			} catch (Exception e) {
+				Log.e(TAG, "Trying to start service with button code " + keyCode + " failed. ", e);
+			}
+			stopSelfResult(requestId);
+		}
+		return START_NOT_STICKY;
 	}
 
 	@Override
