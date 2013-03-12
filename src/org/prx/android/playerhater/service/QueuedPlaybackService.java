@@ -301,14 +301,14 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	private static final class StateTransitionHandler extends Handler {
 
 		private final QueuedPlaybackService mService;
-		private int currentState = -1;
+		private int currentState = Player.INVALID_STATE;
 
 		private StateTransitionHandler(QueuedPlaybackService service) {
 			mService = service;
 		}
 
 		private void reset() {
-			currentState = -1;
+			currentState = Player.INVALID_STATE;
 		}
 
 		@Override
