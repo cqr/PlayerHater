@@ -1,8 +1,8 @@
 package org.prx.android.playerhater.util;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 
 public class HeadphoneButtonGestureHelper {
@@ -17,11 +17,12 @@ public class HeadphoneButtonGestureHelper {
 	
 	private long mLastEventTime = 0;
 	private int mCurrentAction = 1;
+	private static Context lastContext;
 
 	private final Handler mHandler = new ButtonHandler(this);
 	private RemoteControlButtonReceiver mMediaButtonReceiver;
 
-	public void onHeadsetButtonPressed(long eventTime) {
+	public void onHeadsetButtonPressed(long eventTime, Context context) {
 		if (eventTime - mLastEventTime <= MILISECONDS_DELAY + 100) {
 			mCurrentAction += 1;
 			if (mCurrentAction > 3) {
@@ -29,6 +30,7 @@ public class HeadphoneButtonGestureHelper {
 			}
 			mHandler.removeMessages(BUTTON_PRESSED);
 		}
+		lastContext = context;
 		mLastEventTime = eventTime;
 		mHandler.sendEmptyMessageDelayed(BUTTON_PRESSED, MILISECONDS_DELAY);
 	}
@@ -47,20 +49,19 @@ public class HeadphoneButtonGestureHelper {
 
 		@Override
 		public void dispatchMessage(Message message) {
-			Log.d(TAG, "DOING A THING");
 			switch (mButtonGestureHelper.mCurrentAction) {
 
 			case PLAY_PAUSE:
 				mButtonGestureHelper.mMediaButtonReceiver
-						.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
+						.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, lastContext);
 				break;
 			case NEXT:
 				mButtonGestureHelper.mMediaButtonReceiver
-						.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_NEXT);
+						.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_NEXT, lastContext);
 				break;
 			case PREV:
 				mButtonGestureHelper.mMediaButtonReceiver
-						.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_PREVIOUS);
+						.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_PREVIOUS, lastContext);
 				break;
 			}
 			mButtonGestureHelper.mLastEventTime = 0;

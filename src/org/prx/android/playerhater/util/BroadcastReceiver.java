@@ -37,8 +37,8 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver impleme
 	
 	@Override
 	@SuppressLint("InlinedApi")
-	public void onRemoteControlButtonPressed(int keyCode) {
-		sendKeyCode(null, keyCode, keyCode != KeyEvent.KEYCODE_MEDIA_PAUSE);
+	public void onRemoteControlButtonPressed(int keyCode, Context context) {
+		sendKeyCode(context, keyCode, keyCode != KeyEvent.KEYCODE_MEDIA_PAUSE);
 	}
 
 	@Override
@@ -65,19 +65,20 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver impleme
 				keyCode = event.getKeyCode();
 
 				if (KeyEvent.KEYCODE_HEADSETHOOK == keyCode) {
-					sGestureHelper.onHeadsetButtonPressed(event.getEventTime());
+					sGestureHelper.onHeadsetButtonPressed(event.getEventTime(), context);
 				}
 			}
 		
 			if (keyCode != -1) {
-				sendKeyCode(context, keyCode, keyCode != KeyEvent.KEYCODE_MEDIA_PAUSE);
+				boolean autoStart = keyCode != KeyEvent.KEYCODE_MEDIA_PAUSE && keyCode != KeyEvent.KEYCODE_MEDIA_STOP;
+				sendKeyCode(context, keyCode, autoStart);
 			}
 		}
 	}
 	
 	private PlayerHaterBinder getService(Context context) {
 		if (mService == null && context != null) {
-			Intent intent = new Intent(PlayerHater.SERVICE_INTENT);
+			Intent intent = PlayerHater.buildServiceIntent(context);
 			mService = (PlayerHaterBinder) peekService(context, intent);
 		}
 		return mService;
@@ -85,9 +86,18 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver impleme
 	
 	private void sendKeyCode(Context context, int keyCode, boolean startIfNecessary) {
 		if (getService(context) != null) {
-			getService(context).onRemoteControlButtonPressed(keyCode);
+			try {
+				getService(context).onRemoteControlButtonPressed(keyCode);
+			} catch (Exception e) {
+				if (startIfNecessary && context != null) {
+					Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+					intent.putExtra(REMOTE_CONTROL_BUTTON, keyCode);
+					context.startActivity(intent);
+				}
+			}
+			
 		} else if (startIfNecessary && context != null) {
-			Intent intent = new Intent(PlayerHater.SERVICE_INTENT);
+			Intent intent = new Intent(PlayerHater.buildServiceIntent(context));
 			intent.putExtra(REMOTE_CONTROL_BUTTON, keyCode);
 			context.startService(intent);
 		}

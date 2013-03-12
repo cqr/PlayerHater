@@ -2,8 +2,6 @@ package org.prx.android.playerhater.service;
 
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.util.RemoteControlButtonReceiver;
-
 import android.app.Activity;
 import android.app.Notification;
 import android.content.Context;
@@ -15,7 +13,7 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
-public interface PlayerHaterService extends RemoteControlButtonReceiver {
+public interface PlayerHaterService {
 
 	public abstract boolean play(Song song, int position)
 			throws IllegalArgumentException;

@@ -58,6 +58,10 @@ public abstract class AbstractPlaybackService extends Service implements
 		mBroadcastReceiver = new BroadcastReceiver(this, new PlayerHaterBinder(this));
 
 		PluginCollection collection = new PluginCollection();
+		
+		if (PlayerHater.MODERN_AUDIO_FOCUS) {
+			collection.add(new AudioFocusPlugin(this));
+		}
 
 		if (PlayerHater.EXPANDING_NOTIFICATIONS) {
 			mNotificationPlugin = new ExpandableNotificationPlugin(this);
@@ -68,9 +72,6 @@ public abstract class AbstractPlaybackService extends Service implements
 		}
 		collection.add(mNotificationPlugin);
 
-		if (PlayerHater.MODERN_AUDIO_FOCUS) {
-			collection.add(new AudioFocusPlugin(this));
-		}
 		if (PlayerHater.LOCK_SCREEN_CONTROLS) {
 			collection.add(new LockScreenControlsPlugin(this));
 		}
@@ -384,10 +385,10 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	@Override
 	public void setIntentClass(Class<? extends Activity> klass) {
-		Intent intent = new Intent(getBaseContext(), klass);
+		Intent intent = new Intent(getApplicationContext(), klass);
 		intent.addCategory(Intent.CATEGORY_LAUNCHER);
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+				| Intent.FLAG_ACTIVITY_SINGLE_TOP );
 		PendingIntent pending = PendingIntent.getActivity(getBaseContext(),
 				456, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 		mNotificationPlugin.onIntentActivityChanged(pending);

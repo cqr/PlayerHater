@@ -10,6 +10,7 @@ import org.prx.android.playerhater.service.OnShutdownRequestListener;
 import org.prx.android.playerhater.service.PlayerHaterBinder;
 import org.prx.android.playerhater.util.AudioPlaybackInterface;
 import org.prx.android.playerhater.util.BasicSong;
+import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.ConfigurationManager;
 import org.prx.android.playerhater.util.ListenerEcho;
 import org.prx.android.playerhater.util.TransientPlayer;
@@ -35,18 +36,39 @@ public class PlayerHater implements AudioPlaybackInterface,
 	protected static final String TAG = "PLAYERHATER";
 
 	private static PlayerHater sPlayerHater;
-	
-	public static Intent SERVICE_INTENT;
+
+	private Intent mServiceIntent;
 
 	public static boolean LOCK_SCREEN_CONTROLS = false;
 	public static boolean MODERN_AUDIO_FOCUS = false;
 	public static boolean TOUCHABLE_NOTIFICATIONS = false;
 	public static boolean EXPANDING_NOTIFICATIONS = false;
-	
+
+	public static Intent buildServiceIntent(Context context) {
+		Intent intent = new Intent("org.prx.android.playerhater.SERVICE");
+		intent.setPackage(context.getPackageName());
+		if (context.getPackageManager().queryIntentServices(intent, 0).size() == 0) {
+			intent = new Intent(context, PlaybackService.class);
+		}
+		return intent;
+	}
 
 	public static PlayerHater get(Context context) {
 		if (sPlayerHater == null) {
 			sPlayerHater = new PlayerHater(context);
+
+			if (context instanceof Activity) {
+				Activity activity = (Activity) context;
+				int button = activity.getIntent().getIntExtra(
+						BroadcastReceiver.REMOTE_CONTROL_BUTTON, -1);
+				if (button != -1) {
+					// we have resumed the application because the media button
+					// was pressed. Not sure what that means we should do here
+					// for the sake of the most obvious thing, but it seems like
+					// we should somehow ask the activity for the most
+					// appropriate song to play.
+				}
+			}
 
 			Resources resources = context.getResources();
 			String applicationName = context.getPackageName();
@@ -55,10 +77,12 @@ public class PlayerHater implements AudioPlaybackInterface,
 					applicationName, resources, "playerhater_lockscreen");
 			MODERN_AUDIO_FOCUS = ConfigurationManager.getFlag(applicationName,
 					resources, "playerhater_audiofocus");
-			TOUCHABLE_NOTIFICATIONS = ConfigurationManager.getFlag(applicationName,
-					resources, "playerhater_touchable_notification");
-			EXPANDING_NOTIFICATIONS = ConfigurationManager.getFlag(applicationName,
-					resources, "playerhater_expanding_notification");
+			TOUCHABLE_NOTIFICATIONS = ConfigurationManager.getFlag(
+					applicationName, resources,
+					"playerhater_touchable_notification");
+			EXPANDING_NOTIFICATIONS = ConfigurationManager.getFlag(
+					applicationName, resources,
+					"playerhater_expanding_notification");
 
 		} else if (!sPlayerHater.usingContext(context)) {
 			sPlayerHater.setContext(context);
@@ -130,14 +154,8 @@ public class PlayerHater implements AudioPlaybackInterface,
 		Context contextWas = mContext;
 		if (contextWas != context) {
 			mContext = context;
-			
-			SERVICE_INTENT = new Intent("org.prx.android.playerhater.SERVICE");
-			SERVICE_INTENT.setPackage(mContext.getPackageName());
-			if (mContext.getPackageManager().queryIntentServices(SERVICE_INTENT, 0).size() == 0) {
-				SERVICE_INTENT = new Intent(mContext, PlaybackService.class);
-			}
-			
-			
+
+			mServiceIntent = PlayerHater.buildServiceIntent(mContext);
 
 			// If we're already bound, we need to rebind with the new context.
 			// the way this works, the service will never become "disconnected"
@@ -242,10 +260,10 @@ public class PlayerHater implements AudioPlaybackInterface,
 	private void startService() {
 		if (mPlayerHater == null) {
 			Log.d(TAG, "Starting a new service up");
-			mContext.startService(SERVICE_INTENT);
+			mContext.startService(mServiceIntent);
 		}
 		Log.d(TAG, "Binding to our new context");
-		mContext.bindService(SERVICE_INTENT, sServiceConnection,
+		mContext.bindService(mServiceIntent, sServiceConnection,
 				Context.BIND_AUTO_CREATE);
 	}
 
@@ -283,17 +301,18 @@ public class PlayerHater implements AudioPlaybackInterface,
 		}
 	}
 
-	//XXX FIXME TODO -- handle case where it is called when player hater is already playing
+	// XXX FIXME TODO -- handle case where it is called when player hater is
+	// already playing
 	// compare to seekTo to decide how to handle return vals/vs exceptions
 	@Override
 	public boolean play(int startTime) {
 		if (mPlayerHater == null) {
-			if (this.mPlayQueue.size() > 0) { 
-				Song song = this.mPlayQueue.get(0); 
+			if (this.mPlayQueue.size() > 0) {
+				Song song = this.mPlayQueue.get(0);
 				schedulePlay(song, startTime);
 				startService();
-				return true; 
-			} else { 
+				return true;
+			} else {
 				throw new IllegalStateException();
 			}
 		} else {
@@ -327,22 +346,22 @@ public class PlayerHater implements AudioPlaybackInterface,
 			return mPlayerHater.play(song, startTime);
 		}
 	}
-	
-	/// XXX FIXME TODO -- handle when called while binding/illegal states, etc. 
+
+	// / XXX FIXME TODO -- handle when called while binding/illegal states, etc.
 	@Override
-	public boolean seekTo(int startTime) { 
-		if (mPlayerHater == null) { 
-				if (this.mPlayQueue.size() > 0) { 
-				Song song = this.mPlayQueue.get(0); 
+	public boolean seekTo(int startTime) {
+		if (mPlayerHater == null) {
+			if (this.mPlayQueue.size() > 0) {
+				Song song = this.mPlayQueue.get(0);
 				schedulePlay(song, startTime);
 				startService();
-				return true; 
-			} else { 
-				return false; 
+				return true;
+			} else {
+				return false;
 			}
-		} else { 
-			mPlayerHater.seekTo(startTime); 
-			return true; 
+		} else {
+			mPlayerHater.seekTo(startTime);
+			return true;
 		}
 	}
 
@@ -448,8 +467,8 @@ public class PlayerHater implements AudioPlaybackInterface,
 	public Song nowPlaying() {
 		if (mPlayerHater == null && mPlayQueue.size() > 0) {
 			return mPlayQueue.get(0);
-		} else if (mPlayerHater == null) { 
-			return null; 
+		} else if (mPlayerHater == null) {
+			return null;
 		}
 		return mPlayerHater.getNowPlaying();
 	}
