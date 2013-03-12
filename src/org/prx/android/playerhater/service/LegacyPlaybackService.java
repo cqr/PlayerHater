@@ -48,6 +48,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 	public boolean pause() {
 		if (super.pause()) {
 			stopProgressThread();
+			sendIsPaused();
 			return true;
 		} else {
 			return false;
@@ -58,6 +59,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 	public boolean stop() {
 		if (super.stop()) {
 			stopProgressThread();
+			sendIsStopped();
 			return true;
 		}
 		return false;
@@ -74,6 +76,12 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 		return mSong;
 	}
 
+	@Override
+	protected void release() {
+		sendIsStopped();
+		super.release();
+	}
+	
 	@Override
 	public boolean play(Song song, int startTime)
 			throws IllegalArgumentException {
@@ -119,6 +127,18 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 		mStartTime = startTime;
 		return play();
 	}
+	
+	@Override
+	protected void prepare() {
+		sendIsLoading();
+		super.prepare();
+	}
+	
+	@Override
+	public void seekTo(int position) {
+		sendIsLoading();
+		super.seekTo(position);
+	}
 
 
 	@Override
@@ -140,9 +160,9 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 
 	
 	private static class UpdateHandler extends Handler {
-		private AbstractPlaybackService mService;
+		private LegacyPlaybackService mService;
 
-		private UpdateHandler(AbstractPlaybackService playbackService) {
+		private UpdateHandler(LegacyPlaybackService playbackService) {
 			mService = playbackService;
 		}
 
@@ -170,5 +190,45 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 		mUpdateProgressRunner.setMediaPlayer(mp);
 		mUpdateProgressThread = new Thread(mUpdateProgressRunner);
 		mUpdateProgressThread.start();
+	}
+	
+	protected void sendStartedPlaying() {
+		Log.d(TAG, "SENDING START PLAY");
+		mLifecycleListener.onSongChanged(getNowPlaying());
+		mLifecycleListener.onDurationChanged(getDuration());
+		mLifecycleListener.onPlaybackStarted();
+		sendIsPlaying(getCurrentPosition());
+	}
+
+	protected void sendIsPlaying(int progress) {
+		if (getState() == Player.STARTED && mPlayerHaterListener != null) {
+			mPlayerHaterListener.onPlaying(getNowPlaying(), progress);
+		}
+	}
+
+	protected void sendIsLoading() {
+		Log.d(TAG, "SENDING IS LOADING " + mLifecycleListener + " "
+				+ getNowPlaying());
+		mLifecycleListener.onSongChanged(getNowPlaying());
+		mLifecycleListener.onAudioLoading();
+		if (mPlayerHaterListener != null) {
+			mPlayerHaterListener.onLoading(getNowPlaying());
+		}
+	}
+
+	protected void sendIsPaused() {
+		Log.d(TAG, "SENDING IS PAUSED");
+		mLifecycleListener.onPlaybackPaused();
+		if (mPlayerHaterListener != null) {
+			mPlayerHaterListener.onPaused(getNowPlaying());
+		}
+	}
+
+	protected void sendIsStopped() {
+		Log.d(TAG, "SENDING IS STOPPED");
+		mLifecycleListener.onPlaybackStopped();
+		if (mPlayerHaterListener != null) {
+			mPlayerHaterListener.onStopped();
+		}
 	}
 }

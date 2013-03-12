@@ -83,7 +83,6 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	@Override
 	public void onDestroy() {
-		sendIsStopped();
 		release();
 		getBaseContext().unregisterReceiver(mBroadcastReceiver);
 	}
@@ -147,7 +146,6 @@ public abstract class AbstractPlaybackService extends Service implements
 		Log.d(TAG, "GOT PAUSE()");
 		try {
 			getMediaPlayer().pause();
-			sendIsPaused();
 			return true;
 		} catch (IllegalStateException e) {
 			return false;
@@ -179,7 +177,6 @@ public abstract class AbstractPlaybackService extends Service implements
 
 		try {
 			getMediaPlayer().pause();
-			sendIsLoading();
 			getMediaPlayer().seekTo(pos);
 		} catch (java.lang.IllegalStateException e) {
 			// do nothing
@@ -195,7 +192,6 @@ public abstract class AbstractPlaybackService extends Service implements
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.d(TAG, "GOT ON COMPLETION");
-		sendIsStopped();
 		if (mOnCompletionListener != null) {
 			mOnCompletionListener.onCompletion(mp);
 		}
@@ -266,45 +262,6 @@ public abstract class AbstractPlaybackService extends Service implements
 	/*
 	 * These are the events we send back to PlayerHaterListener;
 	 */
-	protected void sendStartedPlaying() {
-		Log.d(TAG, "SENDING START PLAY");
-		mLifecycleListener.onSongChanged(getNowPlaying());
-		mLifecycleListener.onDurationChanged(getDuration());
-		mLifecycleListener.onPlaybackStarted();
-		sendIsPlaying(getCurrentPosition());
-	}
-
-	protected void sendIsPlaying(int progress) {
-		if (getState() == Player.STARTED && mPlayerHaterListener != null) {
-			mPlayerHaterListener.onPlaying(getNowPlaying(), progress);
-		}
-	}
-
-	protected void sendIsLoading() {
-		Log.d(TAG, "SENDING IS LOADING " + mLifecycleListener + " "
-				+ getNowPlaying());
-		mLifecycleListener.onSongChanged(getNowPlaying());
-		mLifecycleListener.onAudioLoading();
-		if (mPlayerHaterListener != null) {
-			mPlayerHaterListener.onLoading(getNowPlaying());
-		}
-	}
-
-	protected void sendIsPaused() {
-		Log.d(TAG, "SENDING IS PAUSED");
-		mLifecycleListener.onPlaybackPaused();
-		if (mPlayerHaterListener != null) {
-			mPlayerHaterListener.onPaused(getNowPlaying());
-		}
-	}
-
-	protected void sendIsStopped() {
-		Log.d(TAG, "SENDING IS STOPPED");
-		mLifecycleListener.onPlaybackStopped();
-		if (mPlayerHaterListener != null) {
-			mPlayerHaterListener.onStopped();
-		}
-	}
 
 	@Override
 	public void setTitle(String title) {
@@ -368,7 +325,6 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	protected void prepare() {
 		Log.d(TAG, "PREPARING");
-		sendIsLoading();
 		getMediaPlayer().prepareAsync();
 	}
 
