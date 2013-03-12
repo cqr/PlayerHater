@@ -15,8 +15,6 @@ import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.plugins.TouchableNotificationPlugin;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.PlayerListenerManager;
-import org.prx.android.playerhater.util.UpdateProgressRunnable;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -29,14 +27,12 @@ import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 
 public abstract class AbstractPlaybackService extends Service implements
-		OnErrorListener, OnPreparedListener, OnSeekCompleteListener,
+		OnErrorListener, OnSeekCompleteListener,
 		OnCompletionListener, PlayerHaterService {
 
 	protected static final String TAG = "PlayerHater/Service";
@@ -46,16 +42,10 @@ public abstract class AbstractPlaybackService extends Service implements
 	protected PlayerHaterPlugin mLifecycleListener;
 	protected final PlayerListenerManager mPlayerListenerManager = new PlayerListenerManager();
 	private OnCompletionListener mOnCompletionListener;
-	private PlayerHaterListener mPlayerHaterListener;
+	protected PlayerHaterListener mPlayerHaterListener;
 	private OnErrorListener mOnErrorListener;
-	private int mStartTime;
-	private OnPreparedListener mOnPreparedListener;
 	private OnSeekCompleteListener mOnSeekCompleteListener;
-	private final Handler mHandler = new UpdateHandler(this);
-	private final UpdateProgressRunnable mUpdateProgressRunner = new UpdateProgressRunnable(
-			mHandler, PROGRESS_UPDATE);
 
-	private Thread mUpdateProgressThread;
 	private boolean mPlayAfterSeek;
 	private OnShutdownRequestListener mShutdownRequestListener;
 	private NotificationPlugin mNotificationPlugin;
@@ -88,13 +78,11 @@ public abstract class AbstractPlaybackService extends Service implements
 
 		mPlayerListenerManager.setOnCompletionListener(this);
 		mPlayerListenerManager.setOnErrorListener(this);
-		mPlayerListenerManager.setOnPreparedListener(this);
 		mPlayerListenerManager.setOnSeekCompleteListener(this);
 	}
 
 	@Override
 	public void onDestroy() {
-		stopProgressThread();
 		sendIsStopped();
 		release();
 		getBaseContext().unregisterReceiver(mBroadcastReceiver);
@@ -160,7 +148,6 @@ public abstract class AbstractPlaybackService extends Service implements
 		try {
 			getMediaPlayer().pause();
 			sendIsPaused();
-			stopProgressThread();
 			return true;
 		} catch (IllegalStateException e) {
 			return false;
@@ -174,7 +161,6 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	@Override
 	public boolean play(int startTime) throws IllegalStateException {
-		mStartTime = startTime * 1000;
 		return play();
 	}
 
@@ -209,7 +195,6 @@ public abstract class AbstractPlaybackService extends Service implements
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.d(TAG, "GOT ON COMPLETION");
-		stopProgressThread();
 		sendIsStopped();
 		if (mOnCompletionListener != null) {
 			mOnCompletionListener.onCompletion(mp);
@@ -258,27 +243,8 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	@Override
 	public void setOnPreparedListener(OnPreparedListener listener) {
-		mOnPreparedListener = listener;
+		mPlayerListenerManager.setOnPreparedListener(listener);
 	}
-
-	@Override
-	public void onPrepared(MediaPlayer mp) {
-		Log.d(TAG, "GOT ON PREPARED");
-		if (mStartTime > 0) {
-			int seekTo = mStartTime;
-			mStartTime = 0;
-			seekTo(seekTo);
-		}
-		if (getMediaPlayer().equals(mp)) {
-			getMediaPlayer().start();
-			sendStartedPlaying();
-		}
-		if (mOnPreparedListener != null) {
-			mOnPreparedListener.onPrepared(mp);
-		}
-	}
-
-	// NON-PROXIED
 
 	@Override
 	public void setOnInfoListener(OnInfoListener listener) {
@@ -368,17 +334,12 @@ public abstract class AbstractPlaybackService extends Service implements
 		case Player.STOPPED:
 			prepare();
 			break;
-		case Player.PREPARED:
-		case Player.PAUSED:
-			resume();
-			startProgressThread(getMediaPlayer());
-			break;
 		case Player.IDLE:
 			play(getNowPlaying());
 			break;
 		default:
-			throw new IllegalStateException("State is "
-					+ getMediaPlayer().getState());
+			resume();
+			break;
 		}
 		return true;
 	}
@@ -405,44 +366,10 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	// PROTECTED STUFF
 
-	protected void stopProgressThread() {
-		Log.d(TAG, "STOPPING PROGRESS THREAD");
-		if (mUpdateProgressThread != null && mUpdateProgressThread.isAlive()) {
-			mHandler.removeCallbacks(mUpdateProgressRunner);
-			mUpdateProgressThread.interrupt();
-			mUpdateProgressThread = null;
-		}
-	}
-
-	protected void startProgressThread(MediaPlayerWithState mp) {
-		stopProgressThread();
-		mUpdateProgressRunner.setMediaPlayer(mp);
-		mUpdateProgressThread = new Thread(mUpdateProgressRunner);
-		mUpdateProgressThread.start();
-	}
-
 	protected void prepare() {
 		Log.d(TAG, "PREPARING");
 		sendIsLoading();
 		getMediaPlayer().prepareAsync();
-		startProgressThread(getMediaPlayer());
-	}
-
-	private static class UpdateHandler extends Handler {
-		private AbstractPlaybackService mService;
-
-		private UpdateHandler(AbstractPlaybackService playbackService) {
-			mService = playbackService;
-		}
-
-		@Override
-		public void handleMessage(Message m) {
-			switch (m.what) {
-			case PROGRESS_UPDATE:
-				mService.sendIsPlaying(m.arg1);
-				break;
-			}
-		}
 	}
 
 	@Override

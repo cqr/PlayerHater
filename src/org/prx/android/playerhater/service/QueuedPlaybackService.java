@@ -11,11 +11,17 @@ import static org.prx.android.playerhater.player.Gapless.gapless;
 import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
+import org.prx.android.playerhater.plugins.BackgroundedPlugin;
+
 import android.media.MediaPlayer;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 
 public class QueuedPlaybackService extends AbstractPlaybackService {
+
+	private static final int TICK_DURATION = 500;
 
 	private final List<Song> mSongs = new ArrayList<Song>();
 	private Song mCurrentlyLoadedSong;
@@ -23,10 +29,14 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	private int mCurrentPosition = 0;
 	private Player mCurrentMediaPlayer;
 	private MediaPlayerWithState mNextPlayer;
+	private final StateTransitionHandler mHandler = new StateTransitionHandler(
+			this);
+	private ClockThread mClockThread;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		mLifecycleListener = new BackgroundedPlugin(mLifecycleListener);
 		mLifecycleListener.onNextTrackAvailable();
 	}
 
@@ -42,13 +52,36 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 
 		if (getMediaPlayer().prepareAndPlay(getApplicationContext(),
 				getNowPlaying().getUri(), position)) {
-			sendIsLoading();
+			startClockThread();
 			mCurrentlyLoadedSong = getNowPlaying();
-			startProgressThread(getMediaPlayer());
 			return true;
 		} else {
 			return false;
 		}
+	}
+
+	@Override
+	public boolean pause() {
+		if (super.pause()) {
+			stopClockThread();
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public void resume() {
+		super.resume();
+		startClockThread();
+	}
+
+	@Override
+	public boolean stop() {
+		if (super.stop()) {
+			stopClockThread();
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -94,10 +127,10 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		if (getMediaPlayer().isPlaying()) {
-			nextSongIsStarted();
+		if (isLast()) {
+			skipForward();
 		} else {
-			super.onCompletion(mp);
+			nextSongIsStarted();
 		}
 	}
 
@@ -211,5 +244,80 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 		newPlayer = wakeLocked(newPlayer, getApplicationContext());
 		newPlayer = gapless(newPlayer);
 		return newPlayer;
+	}
+
+	public void onStateChanged(int from, int to) {
+		if (to == Player.STARTED
+				&& (from == Player.INVALID_STATE || from == Player.PAUSED)) {
+			mLifecycleListener.onPlaybackResumed();
+		} else if (to == Player.STARTED) {
+			mLifecycleListener.onSongChanged(getNowPlaying());
+			mLifecycleListener.onDurationChanged(getDuration());
+			mLifecycleListener.onPlaybackStarted();
+		}
+
+		if (to == Player.PAUSED) {
+			mPlayerHaterListener.onPaused(getNowPlaying());
+			mLifecycleListener.onPlaybackPaused();
+		}
+
+		if (to == Player.PREPARING || to == Player.PREPARED) {
+			mPlayerHaterListener.onLoading(getNowPlaying());
+			mLifecycleListener.onAudioLoading();
+		}
+
+		if (to == Player.STOPPED) {
+			mPlayerHaterListener.onStopped();
+		}
+	}
+
+	public void onTick() {
+		if (isPlaying() && mPlayerHaterListener != null) {
+			mPlayerHaterListener.onPlaying(getNowPlaying(),
+					getCurrentPosition());
+		}
+	}
+	
+	private Thread getClockThread() {
+		if (mClockThread == null) {
+			mClockThread = new ClockThread(mHandler, TICK_DURATION);
+		}
+		return mClockThread;
+	}
+
+	private void startClockThread() {
+		getClockThread().start();
+	}
+
+	private void stopClockThread() {
+		mClockThread.interrupt();
+		mClockThread = null;
+		mHandler.reset();
+	}
+
+	private static final class StateTransitionHandler extends Handler {
+
+		private final QueuedPlaybackService mService;
+		private int currentState = -1;
+
+		private StateTransitionHandler(QueuedPlaybackService service) {
+			mService = service;
+		}
+
+		private void reset() {
+			currentState = -1;
+		}
+
+		@Override
+		public void handleMessage(Message msg) {
+			Log.d(TAG, "Got a message with state: "
+					+ mService.getMediaPlayer().getStateName());
+
+			if (mService.getState() != currentState) {
+				mService.onStateChanged(currentState, mService.getState());
+				currentState = mService.getState();
+			}
+			mService.onTick();
+		}
 	}
 }

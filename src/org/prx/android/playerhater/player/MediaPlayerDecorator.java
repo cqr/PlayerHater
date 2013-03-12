@@ -24,6 +24,11 @@ public abstract class MediaPlayerDecorator implements Player {
 	public int getState() {
 		return mPlayer.getState();
 	}
+	
+	@Override
+	public String getStateName() {
+		return mPlayer.getStateName();
+	}
 
 	@Override
 	public void reset() {

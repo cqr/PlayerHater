@@ -5,7 +5,7 @@ import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 
 import android.net.Uri;
 
-public class AbstractPlugin implements PlayerHaterPlugin {
+public abstract class AbstractPlugin implements PlayerHaterPlugin {
 
 	@Override
 	public void onPlaybackStarted() {

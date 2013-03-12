@@ -15,9 +15,10 @@ import android.net.Uri;
 
 public interface MediaPlayerWithState {
 	
+	public static final int INVALID_STATE = -1;
+	
 	public static final int IDLE = 0;
 	public static final int END = 1;
-	public static final int ERROR = -1;
 	public static final int INITIALIZED = 2;
 	public static final int PREPARING = 3;
 	public static final int PREPARED = 4;
@@ -25,8 +26,11 @@ public interface MediaPlayerWithState {
 	public static final int STOPPED = 6;
 	public static final int PAUSED = 7;
 	public static final int PLAYBACK_COMPLETED = 8;
+	public static final int ERROR = 9;
 
 	public abstract int getState();
+	
+	public abstract String getStateName();
 
 	public abstract void reset();
 

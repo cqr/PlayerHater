@@ -41,6 +41,33 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	public int getState() {
 		return this.mState;
 	}
+	
+	@Override
+	public String getStateName() {
+		switch(getState()) {
+		case END:
+			return "end";
+		case ERROR:
+			return "error";
+		case IDLE:
+			return "idle";
+		case INITIALIZED:
+			return "initialized";
+		case PAUSED:
+			return "paused";
+		case PLAYBACK_COMPLETED:
+			return "playback completed";
+		case PREPARED:
+			return "prepared";
+		case PREPARING:
+			return "preparing";
+		case STARTED:
+			return "started";
+		case STOPPED:
+			return "stopped";
+		}
+		throw new IllegalStateException("Impossible state index: " + getState());
+	}
 
 	@Override
 	public void reset() {
