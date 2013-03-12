@@ -6,9 +6,9 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Build;
 import android.os.Handler;
 
-public interface SetNextMediaPlayerCompat {
+public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 
-	public class Compat implements SetNextMediaPlayerCompat, OnCompletionListener,
+	public class Compat implements SetNextMediaPlayerCompat,
 			Runnable {
 		private MediaPlayerWithState mNextMediaPlayer;
 		private final Handler mHandler = new Handler();
@@ -66,7 +66,7 @@ public interface SetNextMediaPlayerCompat {
 	}
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-	public class Modern implements SetNextMediaPlayerCompat, OnCompletionListener {
+	public class Modern implements SetNextMediaPlayerCompat {
 		private final MediaPlayerWithState mMediaPlayer;
 		private MediaPlayerWithState mNextMediaPlayer;
 		private OnCompletionListener mOnComplete;

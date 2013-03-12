@@ -12,4 +12,6 @@ public interface Player extends MediaPlayerWithState {
 	public abstract boolean prepareAndPlay(Context applicationContext, Uri uri,
 			int position);
 
+	public abstract void skip();
+
 }

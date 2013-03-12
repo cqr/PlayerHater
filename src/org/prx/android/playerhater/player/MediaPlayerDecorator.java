@@ -200,6 +200,14 @@ public abstract class MediaPlayerDecorator implements Player {
 	}
 	
 	@Override
+	public void skip() {
+		if (mPlayer instanceof Player) {
+			((Player)mPlayer).skip();
+		}
+		throw new UnsupportedOperationException("This player doesn't support gapless features.");
+	}
+	
+	@Override
 	public String toString() {
 		return "(" + getClass().getName() + ")::" + mPlayer.toString(); 
 	}

@@ -1,8 +1,5 @@
 package org.prx.android.playerhater.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.prx.android.playerhater.Song;
 import static org.prx.android.playerhater.player.Syncronous.syncronous;
 import static org.prx.android.playerhater.player.WakeLocked.wakeLocked;
@@ -12,6 +9,8 @@ import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 import org.prx.android.playerhater.plugins.BackgroundedPlugin;
+import org.prx.android.playerhater.util.SongQueue;
+import org.prx.android.playerhater.util.SongQueue.OnQeueuedSongsChangedListener;
 
 import android.media.MediaPlayer;
 import android.os.Handler;
@@ -19,14 +18,12 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 
-public class QueuedPlaybackService extends AbstractPlaybackService {
+public class QueuedPlaybackService extends AbstractPlaybackService implements
+		OnQeueuedSongsChangedListener {
 
 	private static final int TICK_DURATION = 500;
 
-	private final List<Song> mSongs = new ArrayList<Song>();
-	private Song mCurrentlyLoadedSong;
-	private Song mNextLoadedSong;
-	private int mCurrentPosition = 0;
+	private final SongQueue mSongQueue = new SongQueue();
 	private Player mCurrentMediaPlayer;
 	private MediaPlayerWithState mNextPlayer;
 	private final StateTransitionHandler mHandler = new StateTransitionHandler(
@@ -36,6 +33,7 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		mSongQueue.setQueuedSongsChangedListener(this);
 		mLifecycleListener = new BackgroundedPlugin(mLifecycleListener);
 		mLifecycleListener.onNextTrackAvailable();
 	}
@@ -46,14 +44,13 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 		// If the song we are being asked to play isn't currently loaded,
 		// add it to the end of the playlist and skip there.
 		if (getNowPlaying() != song) {
-			enqueue(song);
-			skipToLastSong();
+			mSongQueue.appendSong(song);
+			mSongQueue.skipToEnd();
 		}
 
 		if (getMediaPlayer().prepareAndPlay(getApplicationContext(),
 				getNowPlaying().getUri(), position)) {
 			startClockThread();
-			mCurrentlyLoadedSong = getNowPlaying();
 			return true;
 		} else {
 			return false;
@@ -86,28 +83,23 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 
 	@Override
 	public Song getNowPlaying() {
-		if (mCurrentPosition > 0)
-			return mSongs.get(mCurrentPosition - 1);
-		return null;
+		return mSongQueue.getNowPlaying();
 	}
 
 	@Override
 	public void enqueue(Song song) {
-		mSongs.add(song);
-		if (mCurrentPosition < 1) {
-			mCurrentPosition = 1;
-		}
-		setNextSong();
+		mSongQueue.appendSong(song);
 	}
 
 	@Override
 	public void emptyQueue() {
-		mSongs.clear();
 		if (isPlaying() || isPaused()) {
-			mSongs.add(mCurrentlyLoadedSong);
-			mCurrentPosition = 1;
+			Song nowPlayingSong = mSongQueue.getNowPlaying();
+			mSongQueue.empty();
+			mSongQueue.appendSong(nowPlayingSong);
+		} else {
+			mSongQueue.empty();
 		}
-		setNextSong();
 	}
 
 	@Override
@@ -127,113 +119,27 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		if (isLast()) {
-			skipForward();
-		} else {
-			nextSongIsStarted();
+		if (mSongQueue.isAtLastSong()) {
+			getMediaPlayer().pause();
 		}
-	}
-
-	private void nextSongIsStarted() {
-		mCurrentPosition += 1;
-		mCurrentlyLoadedSong = mNextLoadedSong;
-		mNextLoadedSong = null;
-		mLifecycleListener.onSongChanged(getNowPlaying());
-		setNextSong();
+		mSongQueue.next();
 	}
 
 	@Override
 	public void onRemoteControlButtonPressed(int button) {
 		switch (button) {
 		case KeyEvent.KEYCODE_MEDIA_NEXT:
-			skipForward();
+			getMediaPlayer().skip();
 			break;
 		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-			if (getCurrentPosition() < 2000) {
-				skipBackward();
-			} else {
+			if (getCurrentPosition() > 2000
+					|| getNowPlaying() == mSongQueue.back()) {
 				super.onRemoteControlButtonPressed(button);
+			} else {
+				// the value of getNowPlaying() has changed;
 			}
 		default:
 			super.onRemoteControlButtonPressed(button);
-		}
-	}
-
-	private void skipForward() {
-		if (!isLast()) {
-			mCurrentPosition += 1;
-			skipWasPressed();
-		} else {
-			if (mCurrentPosition != 1) {
-				mCurrentPosition = 1;
-				mLifecycleListener.onSongChanged(getNowPlaying());
-				getMediaPlayer().prepare(getApplicationContext(),
-						getNowPlaying().getUri());
-				setNextSong();
-			}
-			pause();
-			seekTo(0);
-		}
-	}
-
-	private void skipBackward() {
-		if (!isFirst()) {
-			mCurrentPosition -= 1;
-		}
-		skipWasPressed();
-	}
-
-	private void skipWasPressed() {
-		if (getNowPlaying() != mCurrentlyLoadedSong) {
-			if (getNowPlaying() == mNextLoadedSong) {
-				promoteNextPlayer();
-				play();
-			} else {
-				play(getNowPlaying());
-			}
-		} else {
-			seekTo(0);
-		}
-	}
-
-	private void promoteNextPlayer() {
-		getMediaPlayer().swap(getNextPlayer());
-		mNextPlayer = null;
-		mCurrentlyLoadedSong = mNextLoadedSong;
-		mNextLoadedSong = null;
-		mLifecycleListener.onSongChanged(getNowPlaying());
-	}
-
-	private boolean isLast() {
-		return mCurrentPosition <= 0 || mSongs.size() <= mCurrentPosition;
-	}
-
-	private boolean isFirst() {
-		return mCurrentPosition <= 1;
-	}
-
-	private void skipToLastSong() {
-		if (!isLast()) {
-			mCurrentPosition = mSongs.size();
-		}
-	}
-
-	private void setNextSong() {
-		if (!isLast()) {
-			Song nextSong = mSongs.get(mCurrentPosition);
-			if (!nextSong.equals(mNextLoadedSong)) {
-				try {
-					getNextPlayer().setDataSource(getApplicationContext(),
-							nextSong.getUri());
-				} catch (Exception e) {
-					Log.e(TAG, "Problem preparing next player.", e);
-				}
-				getNextPlayer().prepareAsync();
-				getMediaPlayer().setNextMediaPlayer(getNextPlayer());
-				mNextLoadedSong = nextSong;
-			}
-		} else {
-			getMediaPlayer().setNextMediaPlayer(null);
 		}
 	}
 
@@ -267,6 +173,7 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 		}
 
 		if (to == Player.STOPPED) {
+			mLifecycleListener.onPlaybackStopped();
 			mPlayerHaterListener.onStopped();
 		}
 	}
@@ -277,7 +184,7 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 					getCurrentPosition());
 		}
 	}
-	
+
 	private Thread getClockThread() {
 		if (mClockThread == null) {
 			mClockThread = new ClockThread(mHandler, TICK_DURATION);
@@ -286,7 +193,8 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	}
 
 	private void startClockThread() {
-		// We send a tick immediately because it takes some time to start the thread;
+		// We send a tick immediately because it takes some time to start the
+		// thread;
 		mHandler.sendEmptyMessage(0);
 		if (!getClockThread().isAlive())
 			getClockThread().start();
@@ -321,6 +229,28 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 				currentState = mService.getState();
 			}
 			mService.onTick();
+		}
+	}
+
+	@Override
+	public void onNowPlayingChanged(Song nowPlaying) {
+		// XXX TODO SHOULD PROBABLY PLAY HERE.
+		mLifecycleListener.onSongChanged(nowPlaying);
+	}
+
+	@Override
+	public void onNextSongChanged(Song nextSong) {
+		if (nextSong != null) {
+			mLifecycleListener.onNextTrackAvailable();
+			try {
+				getNextPlayer().reset();
+				getNextPlayer().setDataSource(getApplicationContext(),
+						nextSong.getUri());
+			} catch (Exception e) {
+				Log.e(TAG, "Problem preparing next player.", e);
+			}
+			getNextPlayer().prepareAsync();
+			getMediaPlayer().setNextMediaPlayer(getNextPlayer());
 		}
 	}
 }
