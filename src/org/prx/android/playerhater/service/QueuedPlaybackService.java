@@ -7,11 +7,12 @@ import org.prx.android.playerhater.Song;
 import static org.prx.android.playerhater.player.Syncronous.syncronous;
 import static org.prx.android.playerhater.player.WakeLocked.wakeLocked;
 import static org.prx.android.playerhater.player.Gapless.gapless;
+
+import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
-import org.prx.android.playerhater.player.Gapless;
-
 import android.media.MediaPlayer;
+import android.util.Log;
 import android.view.KeyEvent;
 
 public class QueuedPlaybackService extends AbstractPlaybackService {
@@ -21,7 +22,7 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 	private Song mNextLoadedSong;
 	private int mCurrentPosition = 0;
 	private Player mCurrentMediaPlayer;
-	private Player mNextPlayer;
+	private MediaPlayerWithState mNextPlayer;
 
 	@Override
 	public void onCreate() {
@@ -84,9 +85,9 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 		return mCurrentMediaPlayer;
 	}
 
-	protected Player getNextPlayer() {
+	protected MediaPlayerWithState getNextPlayer() {
 		if (mNextPlayer == null) {
-			mNextPlayer = new Syncronous(new MediaPlayerWrapper());
+			mNextPlayer = new MediaPlayerWrapper();
 		}
 		return mNextPlayer;
 	}
@@ -188,8 +189,13 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 		if (!isLast()) {
 			Song nextSong = mSongs.get(mCurrentPosition);
 			if (!nextSong.equals(mNextLoadedSong)) {
-				getNextPlayer().prepare(getApplicationContext(),
-						nextSong.getUri());
+				try {
+					getNextPlayer().setDataSource(getApplicationContext(),
+							nextSong.getUri());
+				} catch (Exception e) {
+					Log.e(TAG, "Problem preparing next player.", e);
+				}
+				getNextPlayer().prepareAsync();
 				getMediaPlayer().setNextMediaPlayer(getNextPlayer());
 				mNextLoadedSong = nextSong;
 			}
