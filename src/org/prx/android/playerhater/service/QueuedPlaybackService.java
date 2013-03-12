@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.player.Syncronous;
+import static org.prx.android.playerhater.player.Syncronous.syncronous;
+import static org.prx.android.playerhater.player.WakeLocked.wakeLocked;
+import static org.prx.android.playerhater.player.Gapless.gapless;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 import org.prx.android.playerhater.player.Gapless;
@@ -131,7 +133,8 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 			if (mCurrentPosition != 1) {
 				mCurrentPosition = 1;
 				mLifecycleListener.onSongChanged(getNowPlaying());
-				getMediaPlayer().prepare(getApplicationContext(), getNowPlaying().getUri());
+				getMediaPlayer().prepare(getApplicationContext(),
+						getNowPlaying().getUri());
 				setNextSong();
 			}
 			pause();
@@ -197,7 +200,10 @@ public class QueuedPlaybackService extends AbstractPlaybackService {
 
 	@Override
 	protected Player buildMediaPlayer() {
-		return new Syncronous(new Gapless(
-				super.buildMediaPlayer()));
+		Player newPlayer = (Player) super.buildMediaPlayer();
+		newPlayer = wakeLocked(newPlayer, getApplicationContext());
+		newPlayer = syncronous(newPlayer);
+		newPlayer = gapless(newPlayer);
+		return newPlayer;
 	}
 }

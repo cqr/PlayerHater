@@ -9,6 +9,10 @@ import android.util.Log;
 
 public class Syncronous extends MediaPlayerDecorator implements OnPreparedListener, OnSeekCompleteListener {
 
+	public static final Syncronous syncronous(MediaPlayerWithState mediaPlayer) {
+		return new Syncronous(mediaPlayer);
+	}
+	
 	private static final String TAG = "PlayerHater/AutoStart";
 	private boolean mShouldPlayWhenPrepared;
 	private int mShouldSkipWhenPrepared;

@@ -3,6 +3,10 @@ package org.prx.android.playerhater.player;
 import android.media.MediaPlayer.OnCompletionListener;
 
 public class Gapless extends MediaPlayerDecorator {
+	
+	public static final Gapless gapless(MediaPlayerWithState mediaPlayer) {
+		return new Gapless(mediaPlayer);
+	}
 
 	private final SetNextMediaPlayerCompat mMediaPlayerNexter;
 

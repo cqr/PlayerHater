@@ -7,6 +7,10 @@ import android.os.PowerManager;
 import android.util.Log;
 
 public class WakeLocked extends MediaPlayerDecorator {
+	
+	public static final WakeLocked wakeLocked(MediaPlayerWithState player, Context context) {
+		return new WakeLocked(player, context);
+	}
 
 	private static final String PERMISSION = "android.permission.WAKE_LOCK";
 	private static final int GRANTED = PackageManager.PERMISSION_GRANTED;
@@ -15,7 +19,7 @@ public class WakeLocked extends MediaPlayerDecorator {
 	private final Context mContext;
 	private final boolean mEnabled;
 
-	public WakeLocked(Context context, MediaPlayerWithState player) {
+	public WakeLocked(MediaPlayerWithState player, Context context) {
 		super(player);
 		mContext = context;
 
