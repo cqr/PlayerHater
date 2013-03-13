@@ -36,10 +36,11 @@ public class WakeLocked extends MediaPlayerDecorator {
 	}
 
 	@Override
-	public void swapPlayer(MediaPlayer mediaPlayer, int state) {
-		super.swapPlayer(mediaPlayer, state);
+	public MediaPlayer swapPlayer(MediaPlayer mediaPlayer, int state) {
+		MediaPlayer mp = super.swapPlayer(mediaPlayer, state);
 		if (mEnabled) {
 			mediaPlayer.setWakeMode(mContext, WAKE_LOCK);
 		}
+		return mp;
 	}
 }

@@ -95,7 +95,7 @@ public interface MediaPlayerWithState {
 
 	public abstract MediaPlayer getBarePlayer();
 
-	public abstract void swapPlayer(MediaPlayer barePlayer, int state);
+	public abstract MediaPlayer swapPlayer(MediaPlayer barePlayer, int state);
 
 	void swap(MediaPlayerWithState player);
 }

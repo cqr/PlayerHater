@@ -32,7 +32,6 @@ public class Gapless extends MediaPlayerDecorator {
 	
 	@Override
 	public void skip() {
-		// XXX TODO FIXME SHOULD PROBABLY CALL ITS OWN METHOD THAT WILL START THE NEXT PLAYER AS WELL.
-		mMediaPlayerNexter.onCompletion(null);
+		mMediaPlayerNexter.skip();
 	}
 }

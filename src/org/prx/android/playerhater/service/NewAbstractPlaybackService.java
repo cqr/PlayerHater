@@ -32,7 +32,7 @@ import android.view.KeyEvent;
 public abstract class NewAbstractPlaybackService extends Service implements
 		PlayerHaterService {
 
-	protected final String TAG = getPackageName() + "/PH/" + getClass().getSimpleName();
+	protected String TAG;
 	protected BroadcastReceiver mBroadcastReceiver;
 	protected PlayerHaterPlugin mPlugin;
 	private NotificationPlugin mNotificationPlugin;
@@ -47,6 +47,8 @@ public abstract class NewAbstractPlaybackService extends Service implements
 
 	@Override
 	public void onCreate() {
+		TAG = getPackageName() + "/PH/" + getClass().getSimpleName();
+		
 		mBroadcastReceiver = new BroadcastReceiver(this, getBinder());
 
 		PluginCollection collection = new PluginCollection();

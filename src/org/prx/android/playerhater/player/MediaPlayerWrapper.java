@@ -308,18 +308,19 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	}
 
 	@Override
-	public void swapPlayer(MediaPlayer barePlayer, int state) {
-		if (mMediaPlayer != null) {
-			mMediaPlayer.release();
-		}
+	public MediaPlayer swapPlayer(MediaPlayer barePlayer, int state) {
+		MediaPlayer tmp = mMediaPlayer;
 		mMediaPlayer = barePlayer;
 		mState = state;
 		setListeners();
+		return tmp;
 	}
 	
 	@Override
 	public void swap(MediaPlayerWithState player) {
-		swapPlayer(player.getBarePlayer(), player.getState());
+		int state = getState();
+		MediaPlayer mediaPlayer = swapPlayer(player.getBarePlayer(), player.getState());
+		player.swapPlayer(mediaPlayer, state);
 	}
 	
 	private void setListeners() {

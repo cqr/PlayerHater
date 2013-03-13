@@ -140,6 +140,7 @@ public class Synchronous extends MediaPlayerDecorator implements
 	public boolean conditionalPlay() {
 		int state = getState();
 		if (state == PREPARED || state == PAUSED || state == PLAYBACK_COMPLETED) {
+			Log.d(TAG, "I think the state is " + getStateName());
 			start();
 			return true;
 		} else if (state == PREPARING) {

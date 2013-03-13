@@ -4,12 +4,13 @@ import android.annotation.TargetApi;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Build;
+import static org.prx.android.playerhater.player.Synchronous.synchronous;
 import android.os.Handler;
+import android.util.Log;
 
 public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 
-	public class Compat implements SetNextMediaPlayerCompat,
-			Runnable {
+	public class Compat implements SetNextMediaPlayerCompat, Runnable {
 		private MediaPlayerWithState mNextMediaPlayer;
 		private final Handler mHandler = new Handler();
 		private final MediaPlayerWithState mStateManager;
@@ -37,16 +38,21 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 				}
 			}
 		}
+		
+		@Override
+		public void skip() {
+			onCompletion(mStateManager.getBarePlayer());
+		}
 
 		@Override
 		public void onCompletion(MediaPlayer mp) {
 			if (mNextMediaPlayer != null) {
 				if (mNextMediaPlayer.getState() == Player.PREPARED) {
 					mStateManager.swap(mNextMediaPlayer);
+					mNextMediaPlayer.reset();
 					if (mOnCompletionListener != null) {
 						mOnCompletionListener.onCompletion(mp);
 					}
-					mPlayer = null;
 				} else {
 					mPlayer = mp;
 					mHandler.postDelayed(this, 200);
@@ -95,9 +101,17 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 		}
 
 		@Override
+		public void skip() {
+			onCompletion(mMediaPlayer.getBarePlayer());
+			synchronous(mMediaPlayer).conditionalPlay();
+		}
+
+		@Override
 		public void onCompletion(MediaPlayer mp) {
-			if (mNextMediaPlayer != null)
+			if (mNextMediaPlayer != null) {
 				mMediaPlayer.swap(mNextMediaPlayer);
+				mNextMediaPlayer.reset();
+			}
 			if (mOnComplete != null) {
 				mOnComplete.onCompletion(mp);
 			}
@@ -106,6 +120,8 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 	}
 
 	public void setNextMediaPlayer(MediaPlayerWithState mediaPlayer);
+
+	public void skip();
 
 	public void setOnCompletionListener(OnCompletionListener onCompletion);
 }

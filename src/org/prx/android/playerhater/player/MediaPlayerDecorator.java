@@ -173,8 +173,8 @@ public abstract class MediaPlayerDecorator implements Player {
 	}
 	
 	@Override
-	public void swapPlayer(MediaPlayer barePlayer, int state) {
-		mPlayer.swapPlayer(barePlayer, state);
+	public MediaPlayer swapPlayer(MediaPlayer barePlayer, int state) {
+		return mPlayer.swapPlayer(barePlayer, state);
 	}
 	
 	@Override
