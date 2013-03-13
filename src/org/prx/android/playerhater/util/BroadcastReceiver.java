@@ -1,8 +1,7 @@
-package org.prx.android.playerhater.remotecontrol;
+package org.prx.android.playerhater.util;
 
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;

@@ -15,7 +15,7 @@ import android.net.Uri;
 public interface IPlayerHaterBinder {
 
 	public abstract void registerShutdownRequestListener(
-			ServiceStopListener listener);
+			OnShutdownRequestListener listener);
 
 	public abstract boolean play(Song song, int position)
 			throws IllegalArgumentException;

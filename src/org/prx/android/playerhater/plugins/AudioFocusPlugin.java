@@ -1,7 +1,7 @@
 package org.prx.android.playerhater.plugins;
 
-import org.prx.android.playerhater.remotecontrol.BroadcastReceiver;
-import org.prx.android.playerhater.service.IPlayerHaterService;
+import org.prx.android.playerhater.service.PlayerHaterService;
+import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.OnAudioFocusChangeListener;
 
 import android.annotation.TargetApi;
@@ -17,7 +17,7 @@ public class AudioFocusPlugin extends AbstractPlugin {
 	private ComponentName mEventReceiver;
 	private Context mContext;
 
-	public AudioFocusPlugin(IPlayerHaterService context) {
+	public AudioFocusPlugin(PlayerHaterService context) {
 		mContext = context.getBaseContext();
 		mAudioFocusChangeListener = new OnAudioFocusChangeListener(context);
 		mAudioService = (AudioManager) mContext

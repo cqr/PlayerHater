@@ -15,17 +15,14 @@ import android.os.Binder;
 
 public class PlayerHaterBinder extends Binder implements IPlayerHaterBinder {
 
-	private final IPlayerHaterService mService;
+	private final PlayerHaterService mService;
 
-	public PlayerHaterBinder(IPlayerHaterService service) {
+	public PlayerHaterBinder(PlayerHaterService service) {
 		mService = service;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.prx.android.playerhater.service.IPlayerHaterBinder#registerShutdownRequestListener(org.prx.android.playerhater.service.ServiceStopListener)
-	 */
-	@Override
-	public void registerShutdownRequestListener(ServiceStopListener listener) {
+
+	public void registerShutdownRequestListener(OnShutdownRequestListener listener) {
 		mService.setOnShutdownRequestListener(listener);
 	}
 

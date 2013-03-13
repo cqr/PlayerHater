@@ -10,7 +10,7 @@
         <service android:name=".PlaybackService" >
         </service>
 
-        <receiver android:name="org.prx.android.playerhater.remotecontrol.BroadcastReceiver" >
+        <receiver android:name="org.prx.android.playerhater.util.BroadcastReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>

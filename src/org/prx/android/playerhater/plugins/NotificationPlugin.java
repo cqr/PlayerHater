@@ -2,7 +2,7 @@ package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.service.IPlayerHaterService;
+import org.prx.android.playerhater.service.PlayerHaterService;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
@@ -19,7 +19,7 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	protected static final int NOTIFICATION_NU = 9747245;
 	private static final String TAG = "NotificationPlugin";
-	protected IPlayerHaterService mService;
+	protected PlayerHaterService mService;
 	protected NotificationManager mNotificationManager;
 	protected PendingIntent mContentIntent;
 	protected String mNotificationTitle = "PlayerHater";
@@ -27,7 +27,7 @@ public class NotificationPlugin extends AbstractPlugin {
 	private boolean mIsVisible = false;
 	private Notification mNotification;
 
-	public NotificationPlugin(IPlayerHaterService service) {
+	public NotificationPlugin(PlayerHaterService service) {
 		mService = service;
 		Context c = mService.getBaseContext().getApplicationContext();
 		PackageManager packageManager = c.getPackageManager();

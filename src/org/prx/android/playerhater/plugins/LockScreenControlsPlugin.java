@@ -3,7 +3,7 @@ package org.prx.android.playerhater.plugins;
 import java.net.URL;
 
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.remotecontrol.BroadcastReceiver;
+import org.prx.android.playerhater.util.BroadcastReceiver;
 
 import android.annotation.TargetApi;
 import android.app.PendingIntent;

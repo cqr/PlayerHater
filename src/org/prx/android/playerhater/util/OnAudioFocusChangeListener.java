@@ -1,6 +1,6 @@
 package org.prx.android.playerhater.util;
 
-import org.prx.android.playerhater.service.IPlayerHaterService;
+import org.prx.android.playerhater.service.PlayerHaterService;
 
 import android.media.AudioManager;
 import android.util.Log;
@@ -16,13 +16,13 @@ public class OnAudioFocusChangeListener implements
 
 	private static final String TAG = "PlayerHater/FocusChange";
 
-	private IPlayerHaterService mService;
+	private PlayerHaterService mService;
 	private long pausedAt;
 	private boolean isBeingDucked;
 
 	private boolean isBeingPaused;
 
-	public OnAudioFocusChangeListener(IPlayerHaterService context) {
+	public OnAudioFocusChangeListener(PlayerHaterService context) {
 		mService = context;
 		isBeingDucked = false;
 	}
