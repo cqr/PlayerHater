@@ -9,7 +9,6 @@ import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 import org.prx.android.playerhater.plugins.BackgroundedPlugin;
-import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.util.SongQueue;
 import org.prx.android.playerhater.util.SongQueue.OnQeueuedSongsChangedListener;
 
@@ -17,7 +16,6 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 
 public class QueuedPlaybackService extends NewAbstractPlaybackService implements
@@ -149,8 +147,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 					|| getNowPlaying() == mSongQueue.back()) {
 				super.onRemoteControlButtonPressed(button);
 			} else {
-				// XXX TODO FIXME
-				// the value of getNowPlaying() has changed;
+				getMediaPlayer().prepareAndPlay(getApplicationContext(), getNowPlaying().getUri(), 0);
 			}
 		default:
 			super.onRemoteControlButtonPressed(button);

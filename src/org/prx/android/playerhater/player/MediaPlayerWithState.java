@@ -1,6 +1,5 @@
 package org.prx.android.playerhater.player;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
 
 import android.content.Context;
@@ -14,9 +13,9 @@ import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
 public interface MediaPlayerWithState {
-	
+
 	public static final int INVALID_STATE = -1;
-	
+
 	public static final int IDLE = 0;
 	public static final int END = 1;
 	public static final int INITIALIZED = 2;
@@ -29,15 +28,14 @@ public interface MediaPlayerWithState {
 	public static final int ERROR = 9;
 
 	public abstract int getState();
-	
+
 	public abstract String getStateName();
 
 	public abstract void reset();
 
 	public abstract void release();
 
-	public abstract void prepare() throws IOException,
-			IllegalStateException;
+	public abstract void prepare() throws IOException, IllegalStateException;
 
 	public abstract void prepareAsync() throws IllegalStateException;
 
@@ -57,21 +55,9 @@ public interface MediaPlayerWithState {
 
 	public abstract void setAudioStreamType(int streamtype);
 
-	public abstract void setDataSource(FileDescriptor fd)
-			throws IllegalStateException, IOException,
-			IllegalArgumentException, SecurityException;
-
-	public abstract void setDataSource(String path)
-			throws IllegalStateException, IOException,
-			IllegalArgumentException, SecurityException;
-
 	public abstract void setDataSource(Context context, Uri uri)
 			throws IllegalStateException, IOException,
 			IllegalArgumentException, SecurityException;
-
-	public abstract void setDataSource(FileDescriptor fd, long offset,
-			long length) throws IllegalStateException, IOException,
-			IllegalArgumentException;
 
 	public abstract void setOnErrorListener(OnErrorListener errorListener);
 

@@ -1,7 +1,5 @@
 package org.prx.android.playerhater.util;
 
-import java.io.FileDescriptor;
-
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 
@@ -21,25 +19,10 @@ public class TransientPlayer {
 		return new TransientPlayer(c, url, isDuckable).play();
 	}
 
-	public static TransientPlayer play(Context c, String url, boolean isDuckable) {
-		return new TransientPlayer(c, url, isDuckable).play();
-	}
-
-	public static TransientPlayer play(Context c, FileDescriptor file, boolean isDuckable) {
-		return new TransientPlayer(c, file, isDuckable).play();
-	}
-
 	private final Context c;
 	private final MediaPlayerWrapper wrapper;
 	private final boolean isDuckable;
-	private final String url;
 	private final Uri uri;
-	private final FileDescriptor file;
-	private final int playType;
-	private static final int FILE = 1;
-	private static final int URL = 2;
-	private static final int URI = 3;
-	
 	final AudioManager audioManager; 
 
 	final AudioManager.OnAudioFocusChangeListener audioFocusListener = new AudioManager.OnAudioFocusChangeListener() {
@@ -52,36 +35,11 @@ public class TransientPlayer {
 		}
 	};
 
-	protected TransientPlayer(Context c, String url, boolean isDuckable) {
-		this.c = c;
-		this.wrapper = new MediaPlayerWrapper();
-		this.file = null;
-		this.uri = null;
-		this.url = url;
-		this.isDuckable = isDuckable;
-		this.playType = URL;
-		this.audioManager = (AudioManager)c.getSystemService(Context.AUDIO_SERVICE);
-	}
-
-	protected TransientPlayer(Context c, FileDescriptor file, boolean isDuckable) {
-		this.c = c;
-		this.wrapper = new MediaPlayerWrapper();
-		this.url = null;
-		this.uri = null;
-		this.file = file;
-		this.isDuckable = isDuckable;
-		this.playType = FILE;
-		this.audioManager = (AudioManager)c.getSystemService(Context.AUDIO_SERVICE);
-	}
-
 	public TransientPlayer(Context c, Uri url, boolean isDuckable) {
 		this.c = c;
 		this.wrapper = new MediaPlayerWrapper();
-		this.url = null;
-		this.file = null;
 		this.uri = url;
 		this.isDuckable = isDuckable;
-		this.playType = URI;
 		this.audioManager = (AudioManager)c.getSystemService(Context.AUDIO_SERVICE);
 	}
 
@@ -110,6 +68,7 @@ public class TransientPlayer {
 				wrapper.getState() == Player.PREPARING); 
 	}
 
+	@SuppressLint("InlinedApi")
 	private int getDurationHint() {
 		if (isDuckable) {
 			return AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK;
@@ -127,17 +86,7 @@ public class TransientPlayer {
 			wrapper.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
 			try {
-				switch (playType) {
-				case FILE:
-					wrapper.setDataSource(file);
-					break;
-				case URL:
-					wrapper.setDataSource(url);
-					break;
-				case URI:
-					wrapper.setDataSource(c, uri);
-					break;
-				}
+				wrapper.setDataSource(c, uri);
 				wrapper.prepare();
 			} catch (Exception e) {
 				e.printStackTrace();

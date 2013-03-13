@@ -1,6 +1,5 @@
 package org.prx.android.playerhater.player;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
 
 
@@ -174,37 +173,13 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	public void setAudioStreamType(int streamtype) {
 		this.mMediaPlayer.setAudioStreamType(streamtype);
 	}
-
-	@Override
-	public void setDataSource(FileDescriptor fd) throws IllegalStateException,
-			IOException, IllegalArgumentException, SecurityException {
-		try {
-			this.mMediaPlayer.setDataSource(fd);
-			this.mState = INITIALIZED;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void setDataSource(String path) throws IllegalStateException,
-			IOException, IllegalArgumentException, SecurityException {
-		this.mMediaPlayer.setDataSource(path);
-		this.mState = INITIALIZED;
-	}
-
+	
 	@Override
 	public void setDataSource(Context context, Uri uri)
 			throws IllegalStateException, IOException,
 			IllegalArgumentException, SecurityException {
 		this.mMediaPlayer.setDataSource(context, uri);
 		this.mState = INITIALIZED;
-	}
-
-	@Override
-	public void setDataSource(FileDescriptor fd, long offset, long length)
-			throws IllegalStateException, IOException, IllegalArgumentException {
-		this.mMediaPlayer.setDataSource(fd, offset, length);
 	}
 
 	@Override

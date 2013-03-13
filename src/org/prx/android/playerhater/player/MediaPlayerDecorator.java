@@ -1,6 +1,5 @@
 package org.prx.android.playerhater.player;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
 
 import android.content.Context;
@@ -91,28 +90,10 @@ public abstract class MediaPlayerDecorator implements Player {
 	}
 
 	@Override
-	public void setDataSource(FileDescriptor fd) throws IllegalStateException,
-			IOException, IllegalArgumentException, SecurityException {
-		mPlayer.setDataSource(fd);
-	}
-
-	@Override
-	public void setDataSource(String path) throws IllegalStateException,
-			IOException, IllegalArgumentException, SecurityException {
-		mPlayer.setDataSource(path);
-	}
-
-	@Override
 	public void setDataSource(Context context, Uri uri)
 			throws IllegalStateException, IOException,
 			IllegalArgumentException, SecurityException {
 		mPlayer.setDataSource(context, uri);
-	}
-
-	@Override
-	public void setDataSource(FileDescriptor fd, long offset, long length)
-			throws IllegalStateException, IOException, IllegalArgumentException {
-		mPlayer.setDataSource(fd, offset, length);
 	}
 
 	@Override
