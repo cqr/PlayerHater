@@ -7,8 +7,8 @@ import java.util.Map;
 
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.remotecontrol.BroadcastReceiver;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.service.ServiceStopListener;
-import org.prx.android.playerhater.service.PlayerHaterBinder;
 import org.prx.android.playerhater.util.AudioPlaybackInterface;
 import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.ConfigurationManager;
@@ -49,7 +49,16 @@ public class PlayerHater implements AudioPlaybackInterface,
 		intent.setPackage(context.getPackageName());
 		if (context.getPackageManager().queryIntentServices(intent, 0).size() == 0) {
 			intent = new Intent(context, PlaybackService.class);
+			
+			if (context.getPackageManager().queryIntentServices(intent, 0).size() == 0) {
+				IllegalArgumentException e = new IllegalArgumentException("No usable service found.");
+				String tag = context.getPackageName()+"/PlayerHater";
+				String message = "Please define your Playback Service. For help, refer to: https://github.com/PRX/PlayerHater/wiki/Setting-Up-Your-Manifest";
+				Log.e(tag, message, e);
+				throw e;
+			}
 		}
+		
 		return intent;
 	}
 
@@ -103,7 +112,7 @@ public class PlayerHater implements AudioPlaybackInterface,
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			Log.d(TAG, "CONNECTED");
 			if (sPlayerHater != null) {
-				sPlayerHater.bind((PlayerHaterBinder) service);
+				sPlayerHater.bind((IPlayerHaterBinder) service);
 			}
 		}
 
@@ -121,7 +130,7 @@ public class PlayerHater implements AudioPlaybackInterface,
 	private static final String URL = "url";
 
 	private Context mContext;
-	private PlayerHaterBinder mPlayerHater;
+	private IPlayerHaterBinder mPlayerHater;
 	private final List<Song> mPlayQueue;
 	private final Map<Song, Integer> mStartPositions;
 
@@ -169,7 +178,7 @@ public class PlayerHater implements AudioPlaybackInterface,
 		}
 	}
 
-	private void bind(PlayerHaterBinder service) {
+	private void bind(IPlayerHaterBinder service) {
 		mPlayerHater = service;
 		mPlayerHater.registerShutdownRequestListener(this);
 
