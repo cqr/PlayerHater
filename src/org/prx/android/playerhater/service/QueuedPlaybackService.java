@@ -28,10 +28,9 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	private final SongQueue mSongQueue = new SongQueue();
 	private Player mCurrentMediaPlayer;
 	private MediaPlayerWithState mNextPlayer;
-	private PlayerHaterPlugin mSlowPlugin;
 	private ClockThread mClockThread;
 	private final PlayerStateHandler mHandler = new PlayerStateHandler(this);
-	private OnCompletionListener mOnCompletionListner;
+	private OnCompletionListener mOnCompletionListener;
 
 	/* The Service Life Cycle */
 
@@ -39,13 +38,12 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	public void onCreate() {
 		super.onCreate();
 		mSongQueue.setQueuedSongsChangedListener(this);
-		mPlugin.onNextTrackAvailable();
-		mSlowPlugin = new BackgroundedPlugin(mPlugin);
+		mPlugin = new BackgroundedPlugin(mPlugin);
 		super.setOnCompletionListener(this);
 	}
-	
+
 	/* END The Service Life Cycle */
-	
+
 	/* Playback Methods */
 
 	@Override
@@ -71,6 +69,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	public boolean pause() {
 		if (getMediaPlayer().conditionalPause()) {
 			stopClockThread();
+			onPaused();
 			return true;
 		}
 		return false;
@@ -86,32 +85,32 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 		stopService();
 		return false;
 	}
-	
+
 	@Override
 	public void seekTo(int msec) {
 		getMediaPlayer().seekTo(msec);
 	}
-	
+
 	@Override
 	public boolean play(int mSec) throws IllegalStateException {
 		pause(); // Might not be the right state, but who cares?
 		seekTo(mSec);
 		return play();
 	}
-	
+
 	@Override
 	public boolean play() throws IllegalStateException {
 		return getMediaPlayer().conditionalPlay();
 	}
 
 	/* END Playback Methods */
-	
+
 	/* State Methods */
 	@Override
 	public Song getNowPlaying() {
 		return mSongQueue.getNowPlaying();
 	}
-	
+
 	/* Queue Methods */
 	@Override
 	public void enqueue(Song song) {
@@ -128,11 +127,11 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 			mSongQueue.empty();
 		}
 	}
-	
+
 	/* END Queue Methods */
-	
+
 	/* Remote Control */
-	
+
 	@Override
 	public void onRemoteControlButtonPressed(int button) {
 		switch (button) {
@@ -151,14 +150,14 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 			super.onRemoteControlButtonPressed(button);
 		}
 	}
-	
+
 	/* END Remote Control */
-	
+
 	/* Listeners */
-	
+
 	@Override
 	public void setOnCompletionListener(OnCompletionListener listener) {
-		mOnCompletionListner = listener;
+		mOnCompletionListener = listener;
 	}
 
 	@Override
@@ -168,7 +167,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 		}
 		return mCurrentMediaPlayer;
 	}
-	
+
 	protected MediaPlayerWithState getNextPlayer() {
 		if (mNextPlayer == null) {
 			mNextPlayer = new MediaPlayerWrapper();
@@ -178,41 +177,40 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
+		Log.d(TAG, "Got a Completion Event. Running through.");
 		mSongQueue.next();
+		if (mOnCompletionListener != null) {
+			mOnCompletionListener.onCompletion(mp);
+		}
 	}
 
-	
 	protected Player buildMediaPlayer() {
 		Player newPlayer;
 		newPlayer = synchronous(new MediaPlayerWrapper());
 		newPlayer = wakeLocked(newPlayer, getApplicationContext());
 		newPlayer = gapless(newPlayer);
+		mPlayerListenerManager.setMediaPlayer(newPlayer);
 		return newPlayer;
 	}
 
 	public void onStateChanged(int from, int to) {
 		if (to == Player.STARTED
 				&& (from == Player.INVALID_STATE || from == Player.PAUSED)) {
-			mPlugin.onPlaybackResumed();
+			onResumed();
 		} else if (to == Player.STARTED) {
-			mSlowPlugin.onSongChanged(getNowPlaying());
-			mSlowPlugin.onDurationChanged(getDuration());
-			mPlugin.onPlaybackStarted();
+			onStarted();
 		}
 
 		if (to == Player.PAUSED || to == Player.PREPARED) {
-			mPlayerHaterListener.onPaused(getNowPlaying());
-			mPlugin.onPlaybackPaused();
+			onPaused();
 		}
 
 		if (to == Player.PREPARING) {
-			mPlayerHaterListener.onLoading(getNowPlaying());
-			mSlowPlugin.onAudioLoading();
+			onLoading();
 		}
 
 		if (to == Player.STOPPED) {
-			mPlugin.onPlaybackStopped();
-			mPlayerHaterListener.onStopped();
+			onStopped();
 		}
 	}
 
@@ -268,8 +266,6 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 			mService.onTick();
 		}
 	}
-	
-	
 
 	@Override
 	public void onNowPlayingChanged(Song nowPlaying) {
@@ -279,24 +275,18 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 
 	@Override
 	public void onNextSongChanged(Song nextSong) {
+		Log.d(TAG, "Being asked to prepare " + nextSong);
 		if (nextSong != null) {
 			mPlugin.onNextTrackAvailable();
-			try {
-				getNextPlayer().reset();
-				getNextPlayer().setDataSource(getApplicationContext(),
-						nextSong.getUri());
-			} catch (Exception e) {
-				Log.e(TAG, "Problem preparing next player.", e);
-			}
-			getNextPlayer().prepareAsync();
+			synchronous(getNextPlayer()).prepare(getApplicationContext(),
+					nextSong.getUri());
 			getMediaPlayer().setNextMediaPlayer(getNextPlayer());
 		}
 	}
-	
+
 	/* Private utility methods */
-	
+
 	private void next() {
 		getMediaPlayer().skip();
 	}
-
 }

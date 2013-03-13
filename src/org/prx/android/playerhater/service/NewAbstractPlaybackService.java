@@ -287,6 +287,35 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	}
 
 	/* END Remote Controls */
+	
+	/* Events for Subclasses */
+	
+	protected void onStopped() {
+		mPlugin.onPlaybackStopped();
+		mPlayerHaterListener.onStopped();
+	}
+	
+	protected void onPaused() {
+		mPlugin.onPlaybackPaused();
+		mPlayerHaterListener.onPaused(getNowPlaying());
+	}
+	
+	protected void onLoading() {
+		mPlayerHaterListener.onLoading(getNowPlaying());
+		mPlugin.onAudioLoading();
+	}
+	
+	protected void onStarted() {
+		mPlugin.onPlaybackStarted();
+		mPlugin.onSongChanged(getNowPlaying());
+		mPlugin.onDurationChanged(getDuration());
+	}
+	
+	protected void onResumed() {
+		mPlugin.onPlaybackResumed();
+	}
+	
+	/* END Events for Subclasses */
 
 	/* Private utility methods */
 

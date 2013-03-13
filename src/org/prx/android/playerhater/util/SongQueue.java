@@ -37,7 +37,7 @@ public class SongQueue {
 	public Song next() {
 		mPlayheadPosition += 1;
 		if (mPlayheadPosition > mSongs.size()) {
-			mPlayheadPosition = 0;
+			mPlayheadPosition = 1;
 		}
 		songOrderChanged();
 		return getNowPlaying();
