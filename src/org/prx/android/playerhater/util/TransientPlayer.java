@@ -4,18 +4,15 @@ import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
-import android.os.Build;
 
 public class TransientPlayer {
-	
-	public static TransientPlayer play(Context c, Uri url,
-			boolean isDuckable) {
+
+	public static TransientPlayer play(Context c, Uri url, boolean isDuckable) {
 		return new TransientPlayer(c, url, isDuckable).play();
 	}
 
@@ -23,7 +20,7 @@ public class TransientPlayer {
 	private final MediaPlayerWrapper wrapper;
 	private final boolean isDuckable;
 	private final Uri uri;
-	final AudioManager audioManager; 
+	final AudioManager audioManager;
 
 	final AudioManager.OnAudioFocusChangeListener audioFocusListener = new AudioManager.OnAudioFocusChangeListener() {
 		@Override
@@ -40,46 +37,48 @@ public class TransientPlayer {
 		this.wrapper = new MediaPlayerWrapper();
 		this.uri = url;
 		this.isDuckable = isDuckable;
-		this.audioManager = (AudioManager)c.getSystemService(Context.AUDIO_SERVICE);
+		this.audioManager = (AudioManager) c
+				.getSystemService(Context.AUDIO_SERVICE);
 	}
 
 	private TransientPlayer play() {
 		TransientPlayerTask task = new TransientPlayerTask();
 		Thread thread = new Thread(task);
 		thread.run();
-		return this; 
+		return this;
 	}
-	
+
 	@SuppressLint("NewApi")
-	public void stop() { 
-		try { 
-			wrapper.stop(); 
-			audioManager.abandonAudioFocus(audioFocusListener);
+	public void stop() {
+		try {
+			wrapper.stop();
+			if (android.os.Build.VERSION.SDK_INT >= 8) {
+				audioManager.abandonAudioFocus(audioFocusListener);
+			}
 			wrapper.release();
-		} catch (Exception e) { 
-			
+		} catch (Exception e) {
+
 		}
 	}
-	
-	public boolean isPlaying() { 
-		return (wrapper.getState() == Player.STARTED ||
-				wrapper.getState() == Player.INITIALIZED ||
-				wrapper.getState() == Player.PREPARED ||
-				wrapper.getState() == Player.PREPARING); 
+
+	public boolean isPlaying() {
+		return (wrapper.getState() == Player.STARTED
+				|| wrapper.getState() == Player.INITIALIZED
+				|| wrapper.getState() == Player.PREPARED || wrapper.getState() == Player.PREPARING);
 	}
 
 	@SuppressLint("InlinedApi")
 	private int getDurationHint() {
 		if (isDuckable) {
 			return AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK;
-		} else  {
+		} else {
 			return AudioManager.AUDIOFOCUS_GAIN_TRANSIENT;
 		}
 	}
 
 	private class TransientPlayerTask implements Runnable {
 
-		@TargetApi(Build.VERSION_CODES.FROYO)
+		@SuppressLint("NewApi")
 		@Override
 		public void run() {
 
@@ -97,16 +96,23 @@ public class TransientPlayer {
 
 				@Override
 				public void onCompletion(MediaPlayer mp) {
-					audioManager.abandonAudioFocus(audioFocusListener);
+					if (android.os.Build.VERSION.SDK_INT >= 8) {
+						audioManager.abandonAudioFocus(audioFocusListener);
+					}
 					wrapper.release();
 				}
 
 			});
 
-			int status = audioManager.requestAudioFocus(audioFocusListener, AudioManager.STREAM_MUSIC, getDurationHint());
+			if (android.os.Build.VERSION.SDK_INT >= 8) {
+				int status = audioManager.requestAudioFocus(audioFocusListener,
+						AudioManager.STREAM_MUSIC, getDurationHint());
 
-			if (status == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
+				if (status == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
+					wrapper.start();
+			} else {
 				wrapper.start();
+			}
 		}
 
 	}
