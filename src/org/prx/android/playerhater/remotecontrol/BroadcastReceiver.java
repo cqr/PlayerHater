@@ -46,6 +46,7 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver impleme
 	@Override
 	@SuppressLint("InlinedApi")
 	public void onReceive(Context context, Intent intent) {
+		Log.d(context.getPackageName() + "/BroadcastReceiver", "Got a button: " + intent.toString());
 		int keyCode = -1;
 		if (intent.getAction() != null) {
 			if (intent.getIntExtra("state", 0) == 0) {
