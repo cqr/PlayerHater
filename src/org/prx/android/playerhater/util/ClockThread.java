@@ -1,4 +1,4 @@
-package org.prx.android.playerhater.service;
+package org.prx.android.playerhater.util;
 
 import android.os.Handler;
 

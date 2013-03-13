@@ -2,8 +2,8 @@ package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.service.PlayerHaterService;
-import org.prx.android.playerhater.util.BroadcastReceiver;
+import org.prx.android.playerhater.remotecontrol.BroadcastReceiver;
+import org.prx.android.playerhater.service.IPlayerHaterService;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -26,7 +26,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	private RemoteViews mNotificationView;
 
 
-	public TouchableNotificationPlugin(PlayerHaterService service) {
+	public TouchableNotificationPlugin(IPlayerHaterService service) {
 		super(service);
 	}
 

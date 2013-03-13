@@ -1,7 +1,7 @@
 package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.R;
-import org.prx.android.playerhater.service.PlayerHaterService;
+import org.prx.android.playerhater.service.IPlayerHaterService;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
@@ -15,7 +15,7 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 	private RemoteViews mExpandedView;
 	private Notification mNotification;
 
-	public ExpandableNotificationPlugin(PlayerHaterService service) {
+	public ExpandableNotificationPlugin(IPlayerHaterService service) {
 		super(service);
 	}
 

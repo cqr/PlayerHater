@@ -12,7 +12,7 @@ import org.prx.android.playerhater.plugins.NotificationPlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.plugins.PluginCollection;
 import org.prx.android.playerhater.plugins.TouchableNotificationPlugin;
-import org.prx.android.playerhater.util.BroadcastReceiver;
+import org.prx.android.playerhater.remotecontrol.BroadcastReceiver;
 import org.prx.android.playerhater.util.PlayerListenerManager;
 
 import android.app.Activity;
@@ -29,8 +29,8 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.view.KeyEvent;
 
-public abstract class NewAbstractPlaybackService extends Service implements
-		PlayerHaterService {
+public abstract class AbstractPlayerHaterService extends Service implements
+		IPlayerHaterService {
 
 	protected String TAG;
 	protected BroadcastReceiver mBroadcastReceiver;
@@ -39,9 +39,9 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	protected final PlayerListenerManager mPlayerListenerManager = new PlayerListenerManager();
 	protected PlayerHaterListener mPlayerHaterListener;
 	private PlayerHaterBinder mBinder;
-	private OnShutdownRequestListener mShutdownRequestListener;
+	private ServiceStopListener mShutdownRequestListener;
 
-	abstract Player getMediaPlayer();
+	protected abstract Player getMediaPlayer();
 
 	/* The Service Life Cycle */
 
@@ -193,7 +193,7 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	/* END The Anointed One */
 	
 	@Override
-	public void setOnShutdownRequestListener(OnShutdownRequestListener listener) {
+	public void setOnShutdownRequestListener(ServiceStopListener listener) {
 		mShutdownRequestListener = listener;
 	}
 

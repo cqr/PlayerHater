@@ -1,4 +1,4 @@
-package org.prx.android.playerhater.util;
+package org.prx.android.playerhater.queue;
 
 import java.util.ArrayList;
 import java.util.List;

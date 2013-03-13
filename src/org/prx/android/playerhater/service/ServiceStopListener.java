@@ -1,5 +1,5 @@
 package org.prx.android.playerhater.service;
 
-public interface OnShutdownRequestListener {
+public interface ServiceStopListener {
 	void onShutdownRequested();
 }

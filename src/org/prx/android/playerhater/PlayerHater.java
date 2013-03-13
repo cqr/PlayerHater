@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.prx.android.playerhater.player.Player;
-import org.prx.android.playerhater.service.OnShutdownRequestListener;
+import org.prx.android.playerhater.remotecontrol.BroadcastReceiver;
+import org.prx.android.playerhater.service.ServiceStopListener;
 import org.prx.android.playerhater.service.PlayerHaterBinder;
 import org.prx.android.playerhater.util.AudioPlaybackInterface;
 import org.prx.android.playerhater.util.BasicSong;
-import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.ConfigurationManager;
 import org.prx.android.playerhater.util.ListenerEcho;
 import org.prx.android.playerhater.util.TransientPlayer;
@@ -32,7 +32,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class PlayerHater implements AudioPlaybackInterface,
-		OnShutdownRequestListener {
+		ServiceStopListener {
 	protected static final String TAG = "PLAYERHATER";
 
 	private static PlayerHater sPlayerHater;

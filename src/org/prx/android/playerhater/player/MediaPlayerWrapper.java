@@ -2,7 +2,6 @@ package org.prx.android.playerhater.player;
 
 import java.io.IOException;
 
-
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -40,10 +39,10 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	public int getState() {
 		return this.mState;
 	}
-	
+
 	@Override
 	public String getStateName() {
-		switch(getState()) {
+		switch (getState()) {
 		case END:
 			return "end";
 		case ERROR:
@@ -86,7 +85,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 			this.mMediaPlayer.prepare();
 			this.mState = PREPARED;
 		} else {
-			Log.d(TAG, "state is " + this.mState); 
+			Log.d(TAG, "state is " + this.mState);
 			throw (new IllegalStateException());
 		}
 	}
@@ -173,7 +172,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	public void setAudioStreamType(int streamtype) {
 		this.mMediaPlayer.setAudioStreamType(streamtype);
 	}
-	
+
 	@Override
 	public void setDataSource(Context context, Uri uri)
 			throws IllegalStateException, IOException,
@@ -216,7 +215,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	@Override
 	public void onBufferingUpdate(MediaPlayer mp, int percent) {
-		//Log.d(TAG, "Buffering Update"); 
+		// Log.d(TAG, "Buffering Update");
 		if (this.mBufferingUpdateListener != null) {
 			this.mBufferingUpdateListener.onBufferingUpdate(mp, percent);
 		}
@@ -224,7 +223,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		Log.d(TAG, "Completion"); 
+		Log.d(TAG, "Completion");
 		this.mState = PLAYBACK_COMPLETED;
 		if (this.mCompletionListener != null) {
 			this.mCompletionListener.onCompletion(mp);
@@ -233,7 +232,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		Log.d(TAG, "Error"); 
+		Log.d(TAG, "Error");
 		this.mState = ERROR;
 		Boolean response = false;
 		if (this.mErrorListener != null) {
@@ -244,7 +243,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 
 	@Override
 	public boolean onInfo(MediaPlayer mp, int what, int extra) {
-		Log.d(TAG, "info"); 
+		Log.d(TAG, "info");
 		if (this.mInfoListener != null) {
 			return this.mInfoListener.onInfo(mp, what, extra);
 		}
@@ -271,12 +270,12 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	public void setVolume(float leftVolume, float rightVolume) {
 		mMediaPlayer.setVolume(leftVolume, rightVolume);
 	}
-	
+
 	@Override
 	public boolean equals(MediaPlayer mp) {
 		return mp == mMediaPlayer;
 	}
-	
+
 	@Override
 	public MediaPlayer getBarePlayer() {
 		return mMediaPlayer;
@@ -290,14 +289,15 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		setListeners();
 		return tmp;
 	}
-	
+
 	@Override
 	public void swap(MediaPlayerWithState player) {
 		int state = getState();
-		MediaPlayer mediaPlayer = swapPlayer(player.getBarePlayer(), player.getState());
+		MediaPlayer mediaPlayer = swapPlayer(player.getBarePlayer(),
+				player.getState());
 		player.swapPlayer(mediaPlayer, state);
 	}
-	
+
 	private void setListeners() {
 		mMediaPlayer.setOnBufferingUpdateListener(this);
 		mMediaPlayer.setOnCompletionListener(this);

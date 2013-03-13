@@ -1,4 +1,5 @@
-package org.prx.android.playerhater.util;
+package org.prx.android.playerhater.remotecontrol;
+
 
 import android.content.Context;
 import android.os.Handler;

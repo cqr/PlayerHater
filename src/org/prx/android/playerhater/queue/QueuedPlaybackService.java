@@ -1,4 +1,4 @@
-package org.prx.android.playerhater.service;
+package org.prx.android.playerhater.queue;
 
 import org.prx.android.playerhater.Song;
 import static org.prx.android.playerhater.player.Synchronous.synchronous;
@@ -9,8 +9,9 @@ import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 import org.prx.android.playerhater.plugins.BackgroundedPlugin;
-import org.prx.android.playerhater.util.SongQueue;
-import org.prx.android.playerhater.util.SongQueue.OnQeueuedSongsChangedListener;
+import org.prx.android.playerhater.queue.SongQueue.OnQeueuedSongsChangedListener;
+import org.prx.android.playerhater.service.AbstractPlayerHaterService;
+import org.prx.android.playerhater.util.ClockThread;
 
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -18,7 +19,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
 
-public class QueuedPlaybackService extends NewAbstractPlaybackService implements
+public class QueuedPlaybackService extends AbstractPlayerHaterService implements
 		OnQeueuedSongsChangedListener, OnCompletionListener {
 
 	private static final int TICK_DURATION = 500;

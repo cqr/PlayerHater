@@ -15,13 +15,13 @@ import android.os.Binder;
 
 public class PlayerHaterBinder extends Binder {
 
-	private final PlayerHaterService mService;
+	private final IPlayerHaterService mService;
 
-	public PlayerHaterBinder(PlayerHaterService service) {
+	public PlayerHaterBinder(IPlayerHaterService service) {
 		mService = service;
 	}
 	
-	public void registerShutdownRequestListener(OnShutdownRequestListener listener) {
+	public void registerShutdownRequestListener(ServiceStopListener listener) {
 		mService.setOnShutdownRequestListener(listener);
 	}
 

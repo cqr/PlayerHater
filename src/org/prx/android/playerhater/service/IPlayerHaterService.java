@@ -13,7 +13,7 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
-public interface PlayerHaterService {
+public interface IPlayerHaterService {
 
 	public abstract boolean play(Song song, int position)
 			throws IllegalArgumentException;
@@ -44,7 +44,7 @@ public interface PlayerHaterService {
 	public abstract void setOnPreparedListener(OnPreparedListener listener);
 
 	public abstract void setOnShutdownRequestListener(
-			OnShutdownRequestListener listener);
+			ServiceStopListener listener);
 
 	public abstract void setListener(PlayerHaterListener listener);
 
