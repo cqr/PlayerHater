@@ -23,5 +23,7 @@ public interface Player extends MediaPlayerWithState {
 	public abstract void setNextMediaPlayer(MediaPlayerWithState mediaPlayer);
 	
 	public abstract void skip();
+	
+	public abstract void skip(boolean autoPlay);
 
 }

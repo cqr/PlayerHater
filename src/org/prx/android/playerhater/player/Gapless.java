@@ -32,6 +32,11 @@ public class Gapless extends MediaPlayerDecorator {
 	
 	@Override
 	public void skip() {
-		mMediaPlayerNexter.skip();
+		skip(true);
+	}
+	
+	@Override
+	public void skip(boolean autoPlay) {
+		mMediaPlayerNexter.skip(autoPlay);
 	}
 }

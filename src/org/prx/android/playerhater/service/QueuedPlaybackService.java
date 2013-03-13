@@ -159,6 +159,18 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	public void setOnCompletionListener(OnCompletionListener listener) {
 		mOnCompletionListener = listener;
 	}
+	
+	@Override
+	public void onCompletion(MediaPlayer mp) {
+		mSongQueue.next();
+		if (mOnCompletionListener != null) {
+			mOnCompletionListener.onCompletion(mp);
+		}
+	}
+	
+	/* END Listeners */
+	
+	/* Required abstract methods */
 
 	@Override
 	protected Player getMediaPlayer() {
@@ -175,14 +187,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 		return mNextPlayer;
 	}
 
-	@Override
-	public void onCompletion(MediaPlayer mp) {
-		Log.d(TAG, "Got a Completion Event. Running through.");
-		mSongQueue.next();
-		if (mOnCompletionListener != null) {
-			mOnCompletionListener.onCompletion(mp);
-		}
-	}
+
 
 	protected Player buildMediaPlayer() {
 		Player newPlayer;
@@ -287,6 +292,6 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	/* Private utility methods */
 
 	private void next() {
-		getMediaPlayer().skip();
+		getMediaPlayer().skip(!mSongQueue.isAtLastSong());
 	}
 }

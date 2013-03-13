@@ -5,17 +5,13 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Build;
 import static org.prx.android.playerhater.player.Synchronous.synchronous;
-import android.os.Handler;
-import android.util.Log;
 
 public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 
-	public class Compat implements SetNextMediaPlayerCompat, Runnable {
+	public class Compat implements SetNextMediaPlayerCompat {
 		private MediaPlayerWithState mNextMediaPlayer;
-		private final Handler mHandler = new Handler();
 		private final MediaPlayerWithState mStateManager;
 		private OnCompletionListener mOnCompletionListener;
-		private MediaPlayer mPlayer;
 
 		public Compat(MediaPlayerWithState stateManager) {
 			mStateManager = stateManager;
@@ -40,29 +36,26 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 		}
 		
 		@Override
-		public void skip() {
-			onCompletion(mStateManager.getBarePlayer());
+		public void skip(boolean autoPlay) {
+			onCompletion(mStateManager.getBarePlayer(), autoPlay);
 		}
 
 		@Override
 		public void onCompletion(MediaPlayer mp) {
+			onCompletion(mp, true);
+		}
+		
+		private void onCompletion(MediaPlayer mp, boolean autoPlay) {
 			if (mNextMediaPlayer != null) {
-				if (mNextMediaPlayer.getState() == Player.PREPARED) {
-					mStateManager.swap(mNextMediaPlayer);
-					mNextMediaPlayer.reset();
-					if (mOnCompletionListener != null) {
-						mOnCompletionListener.onCompletion(mp);
-					}
-				} else {
-					mPlayer = mp;
-					mHandler.postDelayed(this, 200);
+				mStateManager.swap(mNextMediaPlayer);
+				mNextMediaPlayer.reset();
+				if (mOnCompletionListener != null) {
+					mOnCompletionListener.onCompletion(mp);
+				}
+				if (autoPlay) {
+					synchronous(mStateManager).conditionalPlay();
 				}
 			}
-		}
-
-		@Override
-		public void run() {
-			onCompletion(mPlayer);
 		}
 
 		@Override
@@ -101,9 +94,11 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 		}
 
 		@Override
-		public void skip() {
+		public void skip(boolean autoPlay) {
 			onCompletion(mMediaPlayer.getBarePlayer());
-			synchronous(mMediaPlayer).conditionalPlay();
+			if (autoPlay) {
+				synchronous(mMediaPlayer).conditionalPlay();
+			}
 		}
 
 		@Override
@@ -121,7 +116,7 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 
 	public void setNextMediaPlayer(MediaPlayerWithState mediaPlayer);
 
-	public void skip();
+	public void skip(boolean autoPlay);
 
 	public void setOnCompletionListener(OnCompletionListener onCompletion);
 }
