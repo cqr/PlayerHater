@@ -4,8 +4,11 @@ import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 
 import android.net.Uri;
+import android.util.Log;
 
 public abstract class AbstractPlugin implements PlayerHaterPlugin {
+
+	private static final String TAG = "AbstractPlugin";
 
 	@Override
 	public void onPlaybackStarted() {
@@ -13,6 +16,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	
 	@Override
 	public void onPlaybackResumed() {
+		Log.w(TAG, "Forwarding a call to onPlaybackResumed => onPlaybackStarted.");
 		onPlaybackStarted();
 	}
 

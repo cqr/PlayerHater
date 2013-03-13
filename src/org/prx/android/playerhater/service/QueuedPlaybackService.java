@@ -89,6 +89,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	@Override
 	public void seekTo(int msec) {
 		getMediaPlayer().seekTo(msec);
+		startClockThread();
 	}
 
 	@Override
@@ -100,7 +101,12 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 
 	@Override
 	public boolean play() throws IllegalStateException {
-		return getMediaPlayer().conditionalPlay();
+		if (getMediaPlayer().conditionalPlay()) {
+			startClockThread();
+			return true;
+		}
+		return false;
+
 	}
 
 	/* END Playback Methods */
@@ -159,7 +165,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	public void setOnCompletionListener(OnCompletionListener listener) {
 		mOnCompletionListener = listener;
 	}
-	
+
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		mSongQueue.next();
@@ -167,9 +173,9 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 			mOnCompletionListener.onCompletion(mp);
 		}
 	}
-	
+
 	/* END Listeners */
-	
+
 	/* Required abstract methods */
 
 	@Override
@@ -186,8 +192,6 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 		}
 		return mNextPlayer;
 	}
-
-
 
 	protected Player buildMediaPlayer() {
 		Player newPlayer;
@@ -274,13 +278,11 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 
 	@Override
 	public void onNowPlayingChanged(Song nowPlaying) {
-		// XXX TODO SHOULD PROBABLY PLAY HERE.
 		mPlugin.onSongChanged(nowPlaying);
 	}
 
 	@Override
 	public void onNextSongChanged(Song nextSong) {
-		Log.d(TAG, "Being asked to prepare " + nextSong);
 		if (nextSong != null) {
 			mPlugin.onNextTrackAvailable();
 			synchronous(getNextPlayer()).prepare(getApplicationContext(),
@@ -292,6 +294,15 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	/* Private utility methods */
 
 	private void next() {
-		getMediaPlayer().skip(!mSongQueue.isAtLastSong());
+		boolean autoPlay = isPlaying() && !mSongQueue.isAtLastSong();
+		getMediaPlayer().skip(autoPlay);
+		if (!autoPlay) {
+			onPaused();
+		} else {
+			// for UI purposes, make sure that we are clear that we are loading
+			// to play.
+			onResumed();
+			onLoading();
+		}
 	}
 }

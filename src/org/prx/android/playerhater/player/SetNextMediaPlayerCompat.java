@@ -49,12 +49,19 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 			if (mNextMediaPlayer != null) {
 				mStateManager.swap(mNextMediaPlayer);
 				mNextMediaPlayer.reset();
-				if (mOnCompletionListener != null) {
-					mOnCompletionListener.onCompletion(mp);
-				}
 				if (autoPlay) {
 					synchronous(mStateManager).conditionalPlay();
 				}
+			} else {
+				Player tmp = synchronous(mStateManager);
+				tmp.conditionalPause();
+				tmp.seekTo(0);
+				if (autoPlay) {
+					tmp.conditionalPlay();
+				}
+			}
+			if (mOnCompletionListener != null) {
+				mOnCompletionListener.onCompletion(mp);
 			}
 		}
 
@@ -106,6 +113,10 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 			if (mNextMediaPlayer != null) {
 				mMediaPlayer.swap(mNextMediaPlayer);
 				mNextMediaPlayer.reset();
+			} else {
+				Player tmp = synchronous(mMediaPlayer);
+				tmp.conditionalPause();
+				tmp.seekTo(0);
 			}
 			if (mOnComplete != null) {
 				mOnComplete.onCompletion(mp);

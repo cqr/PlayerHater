@@ -71,13 +71,18 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	@Override
 	public void onPlaybackStarted() {
 		super.onPlaybackStarted();
-		setImageViewResource(R.id.button, R.drawable.__player_hater_pause);
-		updateNotification();
+		onPlaybackResumed();
 	}
 
 	@Override
 	public void onPlaybackPaused() {
 		setImageViewResource(R.id.button, R.drawable.__player_hater_play);
+		updateNotification();
+	}
+	
+	@Override
+	public void onPlaybackResumed() {
+		setImageViewResource(R.id.button, R.drawable.__player_hater_pause);
 		updateNotification();
 	}
 
