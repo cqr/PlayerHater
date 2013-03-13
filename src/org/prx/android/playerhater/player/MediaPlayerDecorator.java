@@ -187,7 +187,7 @@ public abstract class MediaPlayerDecorator implements Player {
 		if (mPlayer instanceof Player) {
 			return ((Player)mPlayer).prepare(context, uri);
 		}
-		throw new UnsupportedOperationException("This Player doesn't know how to automatically start.");
+		throw new UnsupportedOperationException("This Player doesn't have a syncronous api.");
 	}
 
 	@Override
@@ -196,7 +196,32 @@ public abstract class MediaPlayerDecorator implements Player {
 		if (mPlayer instanceof Player) {
 			return ((Player)mPlayer).prepareAndPlay(applicationContext, uri, position);
 		}
-		throw new UnsupportedOperationException("This Player doesn't know how to automatically start.");
+		throw new UnsupportedOperationException("This Player doesn't have a syncronous api.");
+	}
+	
+
+	@Override
+	public boolean conditionalPause() {
+		if (mPlayer instanceof Player) {
+			return ((Player)mPlayer).conditionalPause();
+		}
+		throw new UnsupportedOperationException("This Player doesn't have a syncronous api.");
+	}
+	
+	@Override
+	public boolean conditionalStop() {
+		if (mPlayer instanceof Player) {
+			return ((Player)mPlayer).conditionalStop();
+		}
+		throw new UnsupportedOperationException("This Player doesn't have a syncronous api.");
+	}
+	
+	@Override
+	public boolean conditionalPlay() {
+		if (mPlayer instanceof Player) {
+			return ((Player)mPlayer).conditionalPlay();
+		}
+		throw new UnsupportedOperationException("This Player doesn't have a syncronous api.");
 	}
 	
 	@Override

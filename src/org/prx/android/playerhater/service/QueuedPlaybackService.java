@@ -1,7 +1,7 @@
 package org.prx.android.playerhater.service;
 
 import org.prx.android.playerhater.Song;
-import static org.prx.android.playerhater.player.Syncronous.syncronous;
+import static org.prx.android.playerhater.player.Synchronous.synchronous;
 import static org.prx.android.playerhater.player.WakeLocked.wakeLocked;
 import static org.prx.android.playerhater.player.Gapless.gapless;
 
@@ -9,16 +9,16 @@ import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
 import org.prx.android.playerhater.plugins.BackgroundedPlugin;
+import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.util.SongQueue;
 import org.prx.android.playerhater.util.SongQueue.OnQeueuedSongsChangedListener;
 
-import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 
-public class QueuedPlaybackService extends AbstractPlaybackService implements
+public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 		OnQeueuedSongsChangedListener {
 
 	private static final int TICK_DURATION = 500;
@@ -26,17 +26,23 @@ public class QueuedPlaybackService extends AbstractPlaybackService implements
 	private final SongQueue mSongQueue = new SongQueue();
 	private Player mCurrentMediaPlayer;
 	private MediaPlayerWithState mNextPlayer;
-	private final StateTransitionHandler mHandler = new StateTransitionHandler(
-			this);
+	private PlayerHaterPlugin mSlowPlugin;
 	private ClockThread mClockThread;
+	private final PlayerStateHandler mHandler = new PlayerStateHandler(this);
+
+	/* The Service Life Cycle */
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		mSongQueue.setQueuedSongsChangedListener(this);
-		mLifecycleListener = new BackgroundedPlugin(mLifecycleListener);
-		mLifecycleListener.onNextTrackAvailable();
+		mPlugin.onNextTrackAvailable();
+		mSlowPlugin = new BackgroundedPlugin(mPlugin);
 	}
+	
+	/* END The Service Life Cycle */
+	
+	/* Playback Methods */
 
 	@Override
 	public boolean play(Song song, int position) {
@@ -59,33 +65,48 @@ public class QueuedPlaybackService extends AbstractPlaybackService implements
 
 	@Override
 	public boolean pause() {
-		if (super.pause()) {
+		if (getMediaPlayer().conditionalPause()) {
 			stopClockThread();
 			return true;
 		}
 		return false;
-	}
-
-	@Override
-	public void resume() {
-		super.resume();
-		startClockThread();
 	}
 
 	@Override
 	public boolean stop() {
-		if (super.stop()) {
+		if (getMediaPlayer().conditionalStop()) {
 			stopClockThread();
 			return true;
 		}
 		return false;
 	}
+	
+	@Override
+	public void seekTo(int msec) {
+		getMediaPlayer().seekTo(msec);
+	}
+	
+	@Override
+	public boolean play(int mSec) throws IllegalStateException {
+		pause(); // Might not be the right state, but who cares?
+		seekTo(mSec);
+		return play();
+	}
+	
+	@Override
+	public boolean play() throws IllegalStateException {
+		return getMediaPlayer().conditionalPlay();
+	}
 
+	/* END Playback Methods */
+	
+	/* State Methods */
 	@Override
 	public Song getNowPlaying() {
 		return mSongQueue.getNowPlaying();
 	}
-
+	
+	/* Queue Methods */
 	@Override
 	public void enqueue(Song song) {
 		mSongQueue.appendSong(song);
@@ -101,11 +122,36 @@ public class QueuedPlaybackService extends AbstractPlaybackService implements
 			mSongQueue.empty();
 		}
 	}
+	
+	/* END Queue Methods */
+	
+	/* Remote Control */
+	
+	@Override
+	public void onRemoteControlButtonPressed(int button) {
+		switch (button) {
+		case KeyEvent.KEYCODE_MEDIA_NEXT:
+			next();
+			break;
+		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+			if (getCurrentPosition() > 2000
+					|| getNowPlaying() == mSongQueue.back()) {
+				super.onRemoteControlButtonPressed(button);
+			} else {
+				// XXX TODO FIXME
+				// the value of getNowPlaying() has changed;
+			}
+		default:
+			super.onRemoteControlButtonPressed(button);
+		}
+	}
+	
+	/* END Remote Control */
 
 	@Override
 	protected Player getMediaPlayer() {
 		if (mCurrentMediaPlayer == null) {
-			mCurrentMediaPlayer = (Player) buildMediaPlayer(true);
+			mCurrentMediaPlayer = (Player) buildMediaPlayer();
 		}
 		return mCurrentMediaPlayer;
 	}
@@ -117,36 +163,18 @@ public class QueuedPlaybackService extends AbstractPlaybackService implements
 		return mNextPlayer;
 	}
 
-	@Override
-	public void onCompletion(MediaPlayer mp) {
-		if (mSongQueue.isAtLastSong()) {
-			getMediaPlayer().pause();
-		}
-		mSongQueue.next();
-	}
+//	@Override
+//	public void onCompletion(MediaPlayer mp) {
+//		if (mSongQueue.isAtLastSong()) {
+//			getMediaPlayer().pause();
+//		}
+//		mSongQueue.next();
+//	}
 
-	@Override
-	public void onRemoteControlButtonPressed(int button) {
-		switch (button) {
-		case KeyEvent.KEYCODE_MEDIA_NEXT:
-			getMediaPlayer().skip();
-			break;
-		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-			if (getCurrentPosition() > 2000
-					|| getNowPlaying() == mSongQueue.back()) {
-				super.onRemoteControlButtonPressed(button);
-			} else {
-				// the value of getNowPlaying() has changed;
-			}
-		default:
-			super.onRemoteControlButtonPressed(button);
-		}
-	}
-
-	@Override
+	
 	protected Player buildMediaPlayer() {
 		Player newPlayer;
-		newPlayer = syncronous(super.buildMediaPlayer());
+		newPlayer = synchronous(new MediaPlayerWrapper());
 		newPlayer = wakeLocked(newPlayer, getApplicationContext());
 		newPlayer = gapless(newPlayer);
 		return newPlayer;
@@ -155,25 +183,25 @@ public class QueuedPlaybackService extends AbstractPlaybackService implements
 	public void onStateChanged(int from, int to) {
 		if (to == Player.STARTED
 				&& (from == Player.INVALID_STATE || from == Player.PAUSED)) {
-			mLifecycleListener.onPlaybackResumed();
+			mPlugin.onPlaybackResumed();
 		} else if (to == Player.STARTED) {
-			mLifecycleListener.onSongChanged(getNowPlaying());
-			mLifecycleListener.onDurationChanged(getDuration());
-			mLifecycleListener.onPlaybackStarted();
+			mSlowPlugin.onSongChanged(getNowPlaying());
+			mSlowPlugin.onDurationChanged(getDuration());
+			mPlugin.onPlaybackStarted();
 		}
 
 		if (to == Player.PAUSED) {
 			mPlayerHaterListener.onPaused(getNowPlaying());
-			mLifecycleListener.onPlaybackPaused();
+			mPlugin.onPlaybackPaused();
 		}
 
 		if (to == Player.PREPARING || to == Player.PREPARED) {
 			mPlayerHaterListener.onLoading(getNowPlaying());
-			mLifecycleListener.onAudioLoading();
+			mSlowPlugin.onAudioLoading();
 		}
 
 		if (to == Player.STOPPED) {
-			mLifecycleListener.onPlaybackStopped();
+			mPlugin.onPlaybackStopped();
 			mPlayerHaterListener.onStopped();
 		}
 	}
@@ -206,12 +234,12 @@ public class QueuedPlaybackService extends AbstractPlaybackService implements
 		mHandler.reset();
 	}
 
-	private static final class StateTransitionHandler extends Handler {
+	private static final class PlayerStateHandler extends Handler {
 
 		private final QueuedPlaybackService mService;
 		private int currentState = Player.INVALID_STATE;
 
-		private StateTransitionHandler(QueuedPlaybackService service) {
+		private PlayerStateHandler(QueuedPlaybackService service) {
 			mService = service;
 		}
 
@@ -221,9 +249,6 @@ public class QueuedPlaybackService extends AbstractPlaybackService implements
 
 		@Override
 		public void handleMessage(Message msg) {
-			Log.d(TAG, "Got a message with state: "
-					+ mService.getMediaPlayer().getStateName());
-
 			if (mService.getState() != currentState) {
 				mService.onStateChanged(currentState, mService.getState());
 				currentState = mService.getState();
@@ -231,17 +256,19 @@ public class QueuedPlaybackService extends AbstractPlaybackService implements
 			mService.onTick();
 		}
 	}
+	
+	
 
 	@Override
 	public void onNowPlayingChanged(Song nowPlaying) {
 		// XXX TODO SHOULD PROBABLY PLAY HERE.
-		mLifecycleListener.onSongChanged(nowPlaying);
+		mPlugin.onSongChanged(nowPlaying);
 	}
 
 	@Override
 	public void onNextSongChanged(Song nextSong) {
 		if (nextSong != null) {
-			mLifecycleListener.onNextTrackAvailable();
+			mPlugin.onNextTrackAvailable();
 			try {
 				getNextPlayer().reset();
 				getNextPlayer().setDataSource(getApplicationContext(),
@@ -253,4 +280,11 @@ public class QueuedPlaybackService extends AbstractPlaybackService implements
 			getMediaPlayer().setNextMediaPlayer(getNextPlayer());
 		}
 	}
+	
+	/* Private utility methods */
+	
+	private void next() {
+		getMediaPlayer().skip();
+	}
+
 }

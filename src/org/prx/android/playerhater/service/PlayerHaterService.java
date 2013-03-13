@@ -90,4 +90,8 @@ public interface PlayerHaterService {
 
 	public abstract void onRemoteControlButtonPressed(int keycodeMediaNext);
 
+	void setSongInfo(Song song);
+
+	void stopService();
+
 }

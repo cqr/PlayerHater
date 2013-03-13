@@ -184,6 +184,11 @@ public abstract class AbstractPlaybackService extends Service implements
 	}
 
 	@Override
+	public void stopService() {
+		stop();
+	}
+	
+	@Override
 	public boolean stop() {
 		Log.d(TAG, "STOPPING");
 		mShutdownRequestListener.onShutdownRequested();
@@ -381,6 +386,11 @@ public abstract class AbstractPlaybackService extends Service implements
 
 	protected void release() {
 		getMediaPlayer().release();
+	}
+	
+	@Override
+	public void setSongInfo(Song song) {
+		mLifecycleListener.onSongChanged(song);
 	}
 
 	@Override
