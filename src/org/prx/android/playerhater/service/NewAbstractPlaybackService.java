@@ -75,6 +75,7 @@ public abstract class NewAbstractPlaybackService extends Service implements
 
 	@Override
 	public void onDestroy() {
+		onStopped();
 		getMediaPlayer().release();
 		getBaseContext().unregisterReceiver(mBroadcastReceiver);
 	}
@@ -86,6 +87,7 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	
 	@Override
 	public void stopService() {
+		onStopped();
 		mShutdownRequestListener.onShutdownRequested();
 		super.stopSelf();
 	}
