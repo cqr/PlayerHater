@@ -49,9 +49,6 @@ public class ListenerEcho implements PlayerHaterListener {
 	private void sendLastAction() {
 		if (lastAction != null && mListener != null) {
 			switch (lastAction) {
-			case STOP:
-				mListener.onStopped();
-				break;
 			case PAUSE:
 				mListener.onPaused(lastSong);
 				break;
@@ -61,9 +58,12 @@ public class ListenerEcho implements PlayerHaterListener {
 			case LOADING:
 				mListener.onLoading(lastSong);
 				break;
+			case STOP:
 			default:
-				//NOOP
+				mListener.onStopped();
 			}
+		} else if (mListener != null) {
+			mListener.onStopped();
 		}
 	}
 }
