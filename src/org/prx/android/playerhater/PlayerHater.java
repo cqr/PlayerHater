@@ -317,7 +317,11 @@ public class PlayerHater implements AudioPlaybackInterface,
 
 	@Override
 	public boolean play() {
-		return play(0);
+		if (mPlayerHater != null) {
+			return mPlayerHater.play();
+		} else {
+			return play(0);
+		}
 	}
 
 	// XXX FIXME TODO -- handle case where it is called when player hater is
