@@ -112,7 +112,7 @@ public class SongQueue {
 
 	private void currentSongChanged() {
 		mCurrentSongWas = getNowPlaying();
-		if (mListener != null)
+		if (mListener != null && mCurrentSongWas != null)
 			mListener.onNowPlayingChanged(mCurrentSongWas);
 	}
 

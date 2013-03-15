@@ -229,11 +229,25 @@ public class PlayerHater implements AudioPlaybackInterface,
 		}
 
 		if (!mPlayQueue.isEmpty()) {
-			Song song = mPlayQueue.remove(0);
-			Integer startPosition = mStartPositions.remove(song);
+			int startPosition = 0;
+			Song firstSong = mPlayQueue.remove(0);
+			if (mStartPositions.containsKey(firstSong)) {
+				mPlayerHater.play(firstSong, mStartPositions.remove(firstSong));
+			} else {
+				mPlayerHater.play(firstSong, 0);
+			}
+			
+			for (Song song : mPlayQueue) {
+				try{
+					startPosition = mStartPositions.remove(song);
+				} catch (NullPointerException e) {
+					startPosition = 0;
+				}
+				Log.d(TAG, "Enqueueing" + song);
+				mPlayerHater.enqueue(song);
+			}
 			try {
-				mPlayerHater.play(song, startPosition == null ? 0
-						: startPosition);
+				mPlayerHater.play(startPosition);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -303,11 +317,7 @@ public class PlayerHater implements AudioPlaybackInterface,
 
 	@Override
 	public boolean play() {
-		if (mPlayerHater == null) {
-			return false;
-		} else {
-			return mPlayerHater.play();
-		}
+		return play(0);
 	}
 
 	// XXX FIXME TODO -- handle case where it is called when player hater is
@@ -552,7 +562,7 @@ public class PlayerHater implements AudioPlaybackInterface,
 
 	@Override
 	public void emptyQueue() {
-		if (mPlayerHater != null) {
+		if (mPlayerHater == null) {
 			mPlayQueue.clear();
 		} else {
 			mPlayerHater.emptyQueue();

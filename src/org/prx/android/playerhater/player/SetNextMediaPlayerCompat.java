@@ -90,7 +90,7 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 			if (next != null) {
 				tmp = mNextMediaPlayer.getBarePlayer();
 			}
-			if (tmp != null || was != null) {
+			if (tmp != null) {
 				mMediaPlayer.getBarePlayer().setNextMediaPlayer(tmp);
 			}
 		}

@@ -45,9 +45,12 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	@Override
 	public void onSongChanged(Song song) {
-		onTitleChanged(song.getTitle());
-		onArtistChanged(song.getArtist());
-		onAlbumArtChangedToUri(song.getAlbumArt());
+		if (song != null) {
+			Log.d("PlayerHater", "" + song);
+			onTitleChanged(song.getTitle());
+			onArtistChanged(song.getArtist());
+			onAlbumArtChangedToUri(song.getAlbumArt());
+		}
 	}
 
 	@Override

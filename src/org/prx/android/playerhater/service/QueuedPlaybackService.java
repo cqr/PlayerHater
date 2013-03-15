@@ -16,6 +16,7 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 
 public class QueuedPlaybackService extends NewAbstractPlaybackService implements
@@ -36,7 +37,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	public void onCreate() {
 		super.onCreate();
 		mSongQueue.setQueuedSongsChangedListener(this);
-		mPlugin = new BackgroundedPlugin(mPlugin);
+		//mPlugin = new BackgroundedPlugin(mPlugin);
 		super.setOnCompletionListener(this);
 	}
 
@@ -80,7 +81,6 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 			stopService();
 			return true;
 		}
-		stopService();
 		return false;
 	}
 
@@ -275,6 +275,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 
 	@Override
 	public void onNowPlayingChanged(Song nowPlaying) {
+		Log.d(TAG, "Got a new Song " + nowPlaying);
 		mPlugin.onSongChanged(nowPlaying);
 	}
 
