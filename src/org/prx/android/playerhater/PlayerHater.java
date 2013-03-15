@@ -1,15 +1,26 @@
 package org.prx.android.playerhater;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
+import org.prx.android.playerhater.service.OnShutdownRequestListener;
 import org.prx.android.playerhater.util.AudioPlaybackInterface;
-import org.prx.android.playerhater.util.AutoBindPlayerHater;
+import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.ConfigurationManager;
+import org.prx.android.playerhater.util.ListenerEcho;
 import org.prx.android.playerhater.util.TransientPlayer;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -18,41 +29,61 @@ import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
+import android.os.IBinder;
 import android.util.Log;
 
-public class PlayerHater implements
-		AudioPlaybackInterface {
+public class PlayerHater implements AudioPlaybackInterface,
+		OnShutdownRequestListener {
+	protected static final String TAG = "PLAYERHATER";
 
-	private static AutoBindPlayerHater sPlayerHater;
-	
 	public static boolean EXPANDING_NOTIFICATIONS = false;
 	public static boolean TOUCHABLE_NOTIFICATIONS = false;
 	public static boolean MODERN_AUDIO_FOCUS = false;
 	public static boolean LOCK_SCREEN_CONTROLS = false;
-	
+
+	private static final List<Song> sPlayQueue = new ArrayList<Song>();
+	private static int sStartPosition = 0;
+
+	private static final Set<PlayerHaterPlugin> sPlugins = new HashSet<PlayerHaterPlugin>();
+
+	private static String sPendingAlbumArtType;
+	private static Uri sPendingAlbumArtUrl;
+	private static OnErrorListener sPendingErrorListener;
+	private static OnSeekCompleteListener sPendingSeekListener;
+	private static OnPreparedListener sPendingPreparedListener;
+	private static OnInfoListener sPendingInfoListener;
+	private static OnCompletionListener sPendingCompleteListener;
+	private static int sPendingAlbumArtResourceId;
+	private static String sPendingNotificationTitle;
+	private static String sPendingNotificationText;
+	private static Activity sPendingNotificationIntentActivity;
+	private static OnBufferingUpdateListener sPendingBufferingListener;
+	private static final ListenerEcho sListener = new ListenerEcho();
+
+	private static final List<PlayerHater> sPlayerHaters = new ArrayList<PlayerHater>();
+	private static final String RESOURCE = "resource";
+	private static final String URL = "url";
+
+	private static int sIsBoundSomewhere = 0;
+	private static boolean sInitialized = false;
+
 	public static PlayerHater get(Context context) {
-		return get(context, 0);
-	}
-
-	public static PlayerHater get(Context context, int id) {
-		if (sPlayerHater == null) {
-			sPlayerHater = AutoBindPlayerHater.getInstance();
-			sPlayerHater.addContext(context, id);
-
-			if (context instanceof Activity) {
-				Activity activity = (Activity) context;
-				int button = activity.getIntent().getIntExtra(
-						BroadcastReceiver.REMOTE_CONTROL_BUTTON, -1);
-				if (button != -1) {
-					// XXX FIXME TODO
-					// we have resumed the application because the media button
-					// was pressed. Not sure what that means we should do here
-					// for the sake of the most obvious thing, but it seems like
-					// we should somehow ask the activity for the most
-					// appropriate song to play.
-				}
+		if (context instanceof Activity) {
+			Activity activity = (Activity) context;
+			int button = activity.getIntent().getIntExtra(
+					BroadcastReceiver.REMOTE_CONTROL_BUTTON, -1);
+			if (button != -1) {
+				// XXX FIXME TODO
+				// we have resumed the application because the media button
+				// was pressed. Not sure what that means we should do here
+				// for the sake of the most obvious thing, but it seems like
+				// we should somehow ask the activity for the most
+				// appropriate song to play.
 			}
+		}
 
+		if (!sInitialized) {
+			sInitialized = true;
 			Resources resources = context.getResources();
 			String applicationName = context.getPackageName();
 
@@ -66,209 +97,448 @@ public class PlayerHater implements
 			EXPANDING_NOTIFICATIONS = ConfigurationManager.getFlag(
 					applicationName, resources,
 					"playerhater_expanding_notification");
-
-		} else {
-			sPlayerHater.addContext(context, id);
 		}
 
-		return new PlayerHater(context, id);
-	}
-	
-	public static void release(Context context) {
-		release(context, 0);
+		return new PlayerHater(context);
 	}
 
-	public static void release(Context context, int id) {
-		if (sPlayerHater != null) {
-			sPlayerHater.requestRelease(context, id, true);
+	private static final OnShutdownRequestListener sShutdownListener = new OnShutdownRequestListener() {
+
+		@Override
+		public void onShutdownRequested() {
+			for (PlayerHater instance : sPlayerHaters) {
+				instance.onShutdownRequested();
+			}
+		}
+	};
+
+	private static class PHServiceConnection implements ServiceConnection {
+
+		private final PlayerHater myPlayerHater;
+
+		private PHServiceConnection(PlayerHater me) {
+			myPlayerHater = me;
+		}
+
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			IPlayerHaterBinder phService = (IPlayerHaterBinder) service;
+			sIsBoundSomewhere += 1;
+
+			if (sIsBoundSomewhere == 1) {
+				phService.registerShutdownRequestListener(sShutdownListener);
+
+				if (sPendingAlbumArtType != null) {
+					if (sPendingAlbumArtType.equals(RESOURCE)) {
+						phService.setAlbumArt(sPendingAlbumArtResourceId);
+					} else if (sPendingAlbumArtType.equals(URL)) {
+						phService.setAlbumArt(sPendingAlbumArtUrl);
+					}
+				}
+
+				for (PlayerHaterPlugin plugin : sPlugins) {
+					phService.registerPlugin(plugin);
+				}
+
+				phService.setListener(sListener);
+
+				if (sPendingErrorListener != null) {
+					phService.setOnErrorListener(sPendingErrorListener);
+				}
+
+				if (sPendingSeekListener != null) {
+					phService.setOnSeekCompleteListener(sPendingSeekListener);
+				}
+
+				if (sPendingPreparedListener != null) {
+					phService.setOnPreparedListener(sPendingPreparedListener);
+				}
+
+				if (sPendingInfoListener != null) {
+					phService.setOnInfoListener(sPendingInfoListener);
+				}
+
+				if (sPendingCompleteListener != null) {
+					phService.setOnCompletionListener(sPendingCompleteListener);
+				}
+
+				if (sPendingBufferingListener != null) {
+					phService
+							.setOnBufferingUpdateListener(sPendingBufferingListener);
+				}
+
+				if (sPendingNotificationTitle != null) {
+					phService.setTitle(sPendingNotificationTitle);
+				}
+
+				if (sPendingNotificationText != null) {
+					phService.setArtist(sPendingNotificationText);
+				}
+
+				if (sPendingNotificationIntentActivity != null) {
+					phService
+							.setIntentActivity(sPendingNotificationIntentActivity);
+				}
+
+				if (!sPlayQueue.isEmpty()) {
+					Song firstSong = sPlayQueue.remove(0);
+					phService.play(firstSong, sStartPosition);
+
+					for (Song song : sPlayQueue) {
+						phService.enqueue(song);
+					}
+					sPlayQueue.clear();
+				}
+				for (PlayerHater instance : sPlayerHaters) {
+					instance.bind(phService);
+				}
+			} else {
+				myPlayerHater.bind(phService);
+			}
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			sIsBoundSomewhere -= 1;
+			if (sIsBoundSomewhere == 0) {
+				for (PlayerHater instance : sPlayerHaters) {
+					instance.unbind();
+				}
+			} else {
+				myPlayerHater.unbind();
+			}
 		}
 	}
-	
+
+	private IPlayerHaterBinder mPlayerHater;
+	private boolean mIsRegistered = false;
 	private final Context mContext;
-	private final int mId;
-	
-	private PlayerHater(Context context, int id) {
+	private final ServiceConnection mServiceConnection;
+
+	public PlayerHater(Context context) {
 		mContext = context;
-		mId = id;
+		mServiceConnection = new PHServiceConnection(this);
+		if (sIsBoundSomewhere > 0) {
+			startService();
+		}
+		sPlayerHaters.add(this);
+	}
+
+	private void bind(IPlayerHaterBinder service) {
+		mPlayerHater = service;
+	}
+
+	private void unbind() {
+		mPlayerHater = null;
+	}
+
+	private void startService() {
+		if (mPlayerHater == null) {
+			if (mContext.bindService(buildServiceIntent(mContext),
+					mServiceConnection, Context.BIND_AUTO_CREATE)) {
+				mIsRegistered = true;
+			}
+		}
 	}
 
 	@Override
 	public boolean pause() {
-		return sPlayerHater.pause();
+		if (mPlayerHater == null) {
+			return false;
+		} else {
+			return mPlayerHater.pause();
+		}
 	}
 
 	@Override
 	public boolean stop() {
-		return sPlayerHater.stop();
+		if (mPlayerHater == null) {
+			return true;
+		} else {
+			return mPlayerHater.stop();
+		}
 	}
 
 	@Override
 	public boolean play() {
-		return sPlayerHater.play();
+		if (mPlayerHater != null) {
+			return mPlayerHater.play();
+		} else {
+			return play(0);
+		}
 	}
 
 	@Override
 	public boolean play(int startTime) {
-		return sPlayerHater.play(startTime);
+		if (mPlayerHater == null) {
+			if (sPlayQueue.size() > 0) {
+				if (startTime > 0) {
+					sStartPosition = startTime;
+				}
+				startService();
+				return true;
+			} else {
+				throw new IllegalStateException();
+			}
+		} else {
+			return mPlayerHater.play(startTime);
+		}
 	}
 
 	@Override
 	public boolean play(Uri url) {
-		return sPlayerHater.play(url);
+		return play(new BasicSong(url, null, null, null), 0);
 	}
 
 	@Override
 	public boolean play(Uri url, int startTime) {
-		return sPlayerHater.play(url, startTime);
+		return play(new BasicSong(url, null, null, null), startTime);
 	}
 
 	@Override
 	public boolean play(Song song) {
-		return sPlayerHater.play(song);
+		return play(song, 0);
 	}
 
 	@Override
 	public boolean play(Song song, int startTime) {
-		return sPlayerHater.play(song, startTime);
+		if (mPlayerHater == null) {
+			sPlayQueue.clear();
+			sStartPosition = startTime;
+			sPlayQueue.add(song);
+			startService();
+			return true;
+		} else {
+			return mPlayerHater.play(song, startTime);
+		}
 	}
 
 	@Override
 	public boolean seekTo(int startTime) {
-		return sPlayerHater.seekTo(startTime);
-	}
-
-	@Override
-	public void enqueue(Song song) {
-		sPlayerHater.enqueue(song);
-	}
-
-	@Override
-	public boolean skipTo(int position) {
-		return sPlayerHater.skipTo(position);
-	}
-
-	@Override
-	public void emptyQueue() {
-		sPlayerHater.emptyQueue();
-	}
-
-	@Override
-	public TransientPlayer playEffect(Uri url) {
-		return sPlayerHater.playEffect(url);
-	}
-
-	@Override
-	public TransientPlayer playEffect(Uri url, boolean isDuckable) {
-		return sPlayerHater.playEffect(url, isDuckable);
-	}
-
-	@Override
-	public void setAlbumArt(int resourceId) {
-		sPlayerHater.setAlbumArt(resourceId);
-	}
-
-	@Override
-	public void setAlbumArt(Uri url) {
-		sPlayerHater.setAlbumArt(url);
+		if (mPlayerHater == null) {
+			if (sPlayQueue.size() > 0) {
+				sStartPosition = startTime;
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			mPlayerHater.seekTo(startTime);
+			return true;
+		}
 	}
 
 	@Override
 	public void setTitle(String title) {
-		sPlayerHater.setTitle(title);
+		sPendingNotificationTitle = title;
+		if (mPlayerHater != null) {
+			mPlayerHater.setTitle(title);
+		}
 	}
 
 	@Override
 	public void setArtist(String artist) {
-		sPlayerHater.setArtist(artist);
+		sPendingNotificationText = artist;
+		if (mPlayerHater != null) {
+			mPlayerHater.setArtist(artist);
+		}
 	}
 
 	@Override
 	public void setActivity(Activity activity) {
-		sPlayerHater.setActivity(activity);
+		sPendingNotificationIntentActivity = activity;
+		if (mPlayerHater != null) {
+			mPlayerHater.setIntentActivity(activity);
+		}
 	}
 
 	@Override
 	public int getCurrentPosition() {
-		return sPlayerHater.getCurrentPosition();
+		if (mPlayerHater == null) {
+			return 0;
+		}
+		return mPlayerHater.getCurrentPosition();
 	}
 
 	@Override
 	public int getDuration() {
-		return sPlayerHater.getDuration();
+		if (mPlayerHater == null) {
+			return 0;
+		}
+		return mPlayerHater.getDuration();
 	}
 
 	@Override
 	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
-		sPlayerHater.setOnBufferingUpdateListener(listener);
+		sPendingBufferingListener = listener;
+		if (mPlayerHater != null) {
+			mPlayerHater.setOnBufferingUpdateListener(listener);
+		}
 	}
 
 	@Override
 	public void setOnCompletionListener(OnCompletionListener listener) {
-		sPlayerHater.setOnCompletionListener(listener);
+		sPendingCompleteListener = listener;
+		if (mPlayerHater != null) {
+			mPlayerHater.setOnCompletionListener(listener);
+		}
 	}
 
 	@Override
 	public void setOnInfoListener(OnInfoListener listener) {
-		sPlayerHater.setOnInfoListener(listener);
+		sPendingInfoListener = listener;
+		if (mPlayerHater != null) {
+			mPlayerHater.setOnInfoListener(listener);
+		}
 	}
 
 	@Override
 	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-		sPlayerHater.setOnSeekCompleteListener(listener);
+		sPendingSeekListener = listener;
+		if (mPlayerHater != null) {
+			mPlayerHater.setOnSeekCompleteListener(listener);
+		}
 	}
 
 	@Override
 	public void setOnErrorListener(OnErrorListener listener) {
-		sPlayerHater.setOnErrorListener(listener);
+		sPendingErrorListener = listener;
+		if (mPlayerHater != null) {
+			mPlayerHater.setOnErrorListener(listener);
+		}
 	}
 
 	@Override
 	public void setOnPreparedListener(OnPreparedListener listener) {
-		sPlayerHater.setOnPreparedListener(listener);
+		sPendingPreparedListener = listener;
+		if (mPlayerHater != null) {
+			mPlayerHater.setOnPreparedListener(listener);
+		}
 	}
 
 	@Override
 	public void setListener(PlayerHaterListener listener) {
-		sPlayerHater.setListener(listener);
+		setListener(listener, true);
 	}
 
 	@Override
 	public void setListener(PlayerHaterListener listener, boolean withEcho) {
-		sPlayerHater.setListener(listener, withEcho);
+		sListener.setListener(listener, withEcho);
 	}
 
 	@Override
 	public Song nowPlaying() {
-		return sPlayerHater.nowPlaying();
+		if (mPlayerHater == null && sPlayQueue.size() > 0) {
+			return sPlayQueue.get(0);
+		} else if (mPlayerHater == null) {
+			return null;
+		}
+		return mPlayerHater.getNowPlaying();
 	}
 
 	@Override
 	public boolean isPlaying() {
-		return sPlayerHater.isPlaying();
+		if (mPlayerHater == null) {
+			return false;
+		}
+		return mPlayerHater.isPlaying();
 	}
 
 	@Override
 	public boolean isLoading() {
-		return sPlayerHater.isLoading();
+		if (mPlayerHater == null && !sPlayQueue.isEmpty()) {
+			return true;
+		} else if (mPlayerHater == null) {
+			return false;
+		}
+		return mPlayerHater.isLoading();
 	}
 
 	@Override
 	public int getState() {
-		return sPlayerHater.getState();
+		if (mPlayerHater == null) {
+			return Player.IDLE;
+		}
+		return mPlayerHater.getState();
+	}
+
+	@Override
+	public void setAlbumArt(int resourceId) {
+		sPendingAlbumArtType = RESOURCE;
+		sPendingAlbumArtResourceId = resourceId;
+		if (mPlayerHater != null) {
+			mPlayerHater.setAlbumArt(resourceId);
+		}
+	}
+
+	@Override
+	public void setAlbumArt(Uri url) {
+		sPendingAlbumArtType = URL;
+		sPendingAlbumArtUrl = url;
+		if (mPlayerHater != null) {
+			mPlayerHater.setAlbumArt(url);
+		}
+	}
+
+	@Override
+	public TransientPlayer playEffect(Uri url) {
+		return playEffect(url, true);
+	}
+
+	@Override
+	public TransientPlayer playEffect(Uri url, boolean isDuckable) {
+		return TransientPlayer.play(mContext, url, isDuckable);
+	}
+
+	@Override
+	public void enqueue(Song song) {
+		if (mPlayerHater != null) {
+			mPlayerHater.enqueue(song);
+		} else {
+			sPlayQueue.add(song);
+		}
+	}
+
+	@Override
+	public boolean skipTo(int position) {
+		return false;
+	}
+
+	@Override
+	public void emptyQueue() {
+		if (mPlayerHater == null) {
+			sPlayQueue.clear();
+		} else {
+			mPlayerHater.emptyQueue();
+		}
+	}
+
+	@Override
+	public void onShutdownRequested() {
+		if (mPlayerHater != null && mIsRegistered) {
+			mContext.unbindService(mServiceConnection);
+			mIsRegistered = false;
+		}
 	}
 
 	@Override
 	public void registerPlugin(PlayerHaterPlugin plugin) {
-		sPlayerHater.registerPlugin(plugin);
+		sPlugins.add(plugin);
+		if (mPlayerHater != null) {
+			mPlayerHater.registerPlugin(plugin);
+		}
 	}
 
 	@Override
 	public void unregisterPlugin(PlayerHaterPlugin plugin) {
-		sPlayerHater.unregisterPlugin(plugin);
+		sPlugins.remove(plugin);
+		if (mPlayerHater != null) {
+			mPlayerHater.unregisterPlugin(plugin);
+		}
 	}
-	
+
 	public void release() {
-		release(mContext, mId);
+		onShutdownRequested();
 	}
 
 	public static Intent buildServiceIntent(Context context) {
@@ -276,7 +546,7 @@ public class PlayerHater implements
 		intent.setPackage(context.getPackageName());
 		if (context.getPackageManager().queryIntentServices(intent, 0).size() == 0) {
 			intent = new Intent(context, PlaybackService.class);
-	
+
 			if (context.getPackageManager().queryIntentServices(intent, 0)
 					.size() == 0) {
 				IllegalArgumentException e = new IllegalArgumentException(
@@ -287,8 +557,7 @@ public class PlayerHater implements
 				throw e;
 			}
 		}
-	
+
 		return intent;
 	}
-
 }
