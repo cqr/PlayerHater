@@ -40,6 +40,7 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	protected PlayerHaterListener mPlayerHaterListener;
 	private PlayerHaterBinder mBinder;
 	private OnShutdownRequestListener mShutdownRequestListener;
+	private PluginCollection mPluginCollection;
 
 	abstract Player getMediaPlayer();
 
@@ -51,10 +52,10 @@ public abstract class NewAbstractPlaybackService extends Service implements
 		
 		mBroadcastReceiver = new BroadcastReceiver(this, getBinder());
 
-		PluginCollection collection = new PluginCollection();
+		 mPluginCollection = new PluginCollection();
 
 		if (PlayerHater.MODERN_AUDIO_FOCUS) {
-			collection.add(new AudioFocusPlugin(this));
+			mPluginCollection.add(new AudioFocusPlugin(this));
 		}
 
 		if (PlayerHater.EXPANDING_NOTIFICATIONS) {
@@ -64,13 +65,13 @@ public abstract class NewAbstractPlaybackService extends Service implements
 		} else {
 			mNotificationPlugin = new NotificationPlugin(this);
 		}
-		collection.add(mNotificationPlugin);
+		mPluginCollection.add(mNotificationPlugin);
 
 		if (PlayerHater.LOCK_SCREEN_CONTROLS) {
-			collection.add(new LockScreenControlsPlugin(this));
+			mPluginCollection.add(new LockScreenControlsPlugin(this));
 		}
 
-		mPlugin = collection;
+		mPlugin = mPluginCollection;
 	}
 
 	@Override
@@ -204,6 +205,16 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	/* Plug-In Stuff */
 	
 	@Override
+	public void registerPlugin(PlayerHaterPlugin plugin) {
+		mPluginCollection.add(plugin);
+	}
+	
+	@Override
+	public void unregisterPlugin(PlayerHaterPlugin plugin) {
+		mPluginCollection.remove(plugin);
+	}
+	
+	@Override
 	public void setSongInfo(Song song) {
 		mPlugin.onSongChanged(song);
 	}
@@ -294,16 +305,22 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	
 	protected void onStopped() {
 		mPlugin.onPlaybackStopped();
-		mPlayerHaterListener.onStopped();
+		if (mPlayerHaterListener != null) {
+			mPlayerHaterListener.onStopped();
+		}
 	}
 	
 	protected void onPaused() {
 		mPlugin.onPlaybackPaused();
-		mPlayerHaterListener.onPaused(getNowPlaying());
+		if (mPlayerHaterListener != null) {
+			mPlayerHaterListener.onPaused(getNowPlaying());
+		}
 	}
 	
 	protected void onLoading() {
-		mPlayerHaterListener.onLoading(getNowPlaying());
+		if (mPlayerHaterListener != null) {
+			mPlayerHaterListener.onLoading(getNowPlaying());
+		}
 		mPlugin.onAudioLoading();
 	}
 	

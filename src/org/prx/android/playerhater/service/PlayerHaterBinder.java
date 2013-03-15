@@ -2,6 +2,7 @@ package org.prx.android.playerhater.service;
 
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 
 import android.app.Activity;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -241,6 +242,19 @@ public class PlayerHaterBinder extends Binder implements IPlayerHaterBinder {
 	@Override
 	public void onRemoteControlButtonPressed(int keyCode) {
 		mService.onRemoteControlButtonPressed(keyCode);
+	}
+
+
+	@Override
+	public void registerPlugin(PlayerHaterPlugin plugin) {
+		mService.registerPlugin(plugin);
+		
+	}
+
+
+	@Override
+	public void unregisterPlugin(PlayerHaterPlugin plugin) {
+		mService.unregisterPlugin(plugin);
 	}
 
 }

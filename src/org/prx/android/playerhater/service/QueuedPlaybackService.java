@@ -118,6 +118,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	/* Queue Methods */
 	@Override
 	public void enqueue(Song song) {
+		Log.d(TAG, "Adding song" + song);
 		mSongQueue.appendSong(song);
 	}
 

@@ -2,6 +2,7 @@ package org.prx.android.playerhater.util;
 
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 
 import android.app.Activity;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -63,4 +64,8 @@ public interface AudioPlaybackInterface {
 	boolean isPlaying();
 	boolean isLoading();
 	int getState();
+	
+	// Plugins
+	void registerPlugin(PlayerHaterPlugin plugin);
+	void unregisterPlugin(PlayerHaterPlugin plugin);
 }

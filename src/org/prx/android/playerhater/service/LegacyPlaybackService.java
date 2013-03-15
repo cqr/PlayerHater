@@ -5,6 +5,8 @@ import java.io.IOException;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
+import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
+import org.prx.android.playerhater.plugins.PluginCollection;
 import org.prx.android.playerhater.util.UpdateProgressRunnable;
 
 import android.media.MediaPlayer;
@@ -230,5 +232,15 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onStopped();
 		}
+	}
+
+	@Override
+	public void registerPlugin(PlayerHaterPlugin plugin) {
+		((PluginCollection)mLifecycleListener).add(plugin);	
+	}
+
+	@Override
+	public void unregisterPlugin(PlayerHaterPlugin plugin) {
+		((PluginCollection)mLifecycleListener).remove(plugin);	
 	}
 }

@@ -2,6 +2,8 @@ package org.prx.android.playerhater.service;
 
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
+
 import android.app.Activity;
 import android.app.Notification;
 import android.content.Context;
@@ -93,5 +95,8 @@ public interface PlayerHaterService {
 	void setSongInfo(Song song);
 
 	void stopService();
+
+	public abstract void registerPlugin(PlayerHaterPlugin plugin);
+	public abstract void unregisterPlugin(PlayerHaterPlugin plugin);
 
 }
