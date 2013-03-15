@@ -72,6 +72,8 @@ public abstract class NewAbstractPlaybackService extends Service implements
 		}
 
 		mPlugin = mPluginCollection;
+		
+		getBaseContext().startService(new Intent(getBaseContext(), this.getClass()));
 	}
 
 	@Override

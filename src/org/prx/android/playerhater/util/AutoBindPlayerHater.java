@@ -36,14 +36,14 @@ public class AutoBindPlayerHater implements AudioPlaybackInterface,
 	protected static final String TAG = "PLAYERHATER";
 
 	private static AutoBindPlayerHater sInstance;
-	
+
 	public static AutoBindPlayerHater getInstance() {
 		if (sInstance == null) {
 			sInstance = new AutoBindPlayerHater();
 		}
 		return sInstance;
 	}
-	
+
 	private static final ServiceConnection sServiceConnection = new ServiceConnection() {
 
 		@Override
@@ -68,8 +68,11 @@ public class AutoBindPlayerHater implements AudioPlaybackInterface,
 	private static final String URL = "url";
 
 	private IPlayerHaterBinder mPlayerHater;
+	private Context mBoundContext;
 	private final List<Song> mPlayQueue;
-	private final Map<ContextRefSpec, Context> mContexts;
+	private final Set<Context> mContexts;
+	private final Set<ContextRefSpec> mContextRefSpecs;
+	private final Map<Context, Integer> mContextRefCounts;
 	private final Map<Song, Integer> mStartPositions;
 
 	private String mPendingAlbumArtType;
@@ -92,22 +95,26 @@ public class AutoBindPlayerHater implements AudioPlaybackInterface,
 		mStartPositions = new HashMap<Song, Integer>();
 		mListener = new ListenerEcho();
 		mPlugins = new HashSet<PlayerHaterPlugin>();
-		mContexts = new HashMap<ContextRefSpec, Context>();
+		mContexts = new HashSet<Context>();
+		mContextRefSpecs = new HashSet<ContextRefSpec>();
+		mContextRefCounts = new HashMap<Context, Integer>();
 	}
 
 	public void addContext(Context context, int id) {
 		if (!boundOn(context, id)) {
-			if (mPlayerHater != null) {
-				Intent serviceIntent = PlayerHater.buildServiceIntent(context);
-				context.bindService(serviceIntent, sServiceConnection,
-						Service.BIND_AUTO_CREATE);
+			mContextRefSpecs.add(new ContextRefSpec(context, id));
+			if (mContextRefCounts.containsKey(context)) {
+				mContextRefCounts.put(context,
+						mContextRefCounts.get(context) + 1);
+			} else {
+				mContextRefCounts.put(context, 1);
 			}
-			mContexts.put(new ContextRefSpec(context, id), context);
+			mContexts.add(context);
 		}
 	}
 
 	private boolean boundOn(Context context, int id) {
-		return mContexts.containsKey(new ContextRefSpec(context, id));
+		return mContextRefSpecs.contains(new ContextRefSpec(context, id));
 	}
 
 	private void bind(IPlayerHaterBinder service) {
@@ -194,12 +201,31 @@ public class AutoBindPlayerHater implements AudioPlaybackInterface,
 
 	public void requestRelease(Context context, int id, boolean resetContext) {
 		if (mPlayerHater != null && context != null) {
-			context.unbindService(sServiceConnection);
-			// If it worked, then we no longer have a handle on the context
-			// and shouldn't be fooled.
-			if (resetContext
-					&& mContexts.containsKey(new ContextRefSpec(context, id))) {
-				mContexts.remove(new ContextRefSpec(context, id));
+			if (resetContext && boundOn(context, id)) {
+				int count = mContextRefCounts.get(context);
+				if (count > 1) {
+					mContextRefCounts.put(context, count - 1);
+				} else {
+					mContextRefCounts.remove(context);
+					mContexts.remove(context);
+				}
+				mContextRefSpecs.remove(new ContextRefSpec(context, id));
+			}
+
+			if (mBoundContext == context) {
+				for (Context c : mContexts) {
+					if (c != context) {
+						mBoundContext = c;
+						Intent serviceIntent = PlayerHater
+								.buildServiceIntent(mBoundContext);
+						context.unbindService(sServiceConnection);
+						mBoundContext.bindService(serviceIntent,
+								sServiceConnection, Service.BIND_AUTO_CREATE);
+						return;
+					}
+				}
+				context.unbindService(sServiceConnection);
+				mPlayerHater = null;
 			}
 		}
 	}
@@ -210,12 +236,9 @@ public class AutoBindPlayerHater implements AudioPlaybackInterface,
 
 	private void startService() {
 		if (mPlayerHater == null) {
-			Log.d("org.prx.remix", "Trying to start up the service");
-			for (Context context : mContexts.values()) {
-				Log.d("org.prx.remix", "going to try to bind for this context");
-				context.bindService(PlayerHater.buildServiceIntent(context),
-						sServiceConnection, Context.BIND_AUTO_CREATE);
-			}
+			Context context = mContexts.iterator().next();
+			context.bindService(PlayerHater.buildServiceIntent(context),
+					sServiceConnection, Context.BIND_AUTO_CREATE);
 		}
 	}
 
@@ -467,7 +490,8 @@ public class AutoBindPlayerHater implements AudioPlaybackInterface,
 
 	@Override
 	public TransientPlayer playEffect(Uri url, boolean isDuckable) {
-		return TransientPlayer.play(mContexts.get(0), url, isDuckable);
+		return TransientPlayer.play((Context) mContexts.toArray()[0], url,
+				isDuckable);
 	}
 
 	@Override
@@ -498,8 +522,8 @@ public class AutoBindPlayerHater implements AudioPlaybackInterface,
 	// we can start back up again.
 	@Override
 	public void onShutdownRequested() {
-		for (ContextRefSpec refSpec : mContexts.keySet()) {
-			requestRelease(mContexts.get(refSpec), refSpec.getId(), false);
+		for (ContextRefSpec refSpec : mContextRefSpecs) {
+			requestRelease(refSpec.getContext(), refSpec.getId(), false);
 		}
 	}
 
@@ -518,5 +542,4 @@ public class AutoBindPlayerHater implements AudioPlaybackInterface,
 			mPlayerHater.unregisterPlugin(plugin);
 		}
 	}
-
 }
