@@ -1,6 +1,8 @@
 package org.prx.android.playerhater.service;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.MediaPlayerWithState;
@@ -26,26 +28,29 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 	private MediaPlayerWithState mMediaPlayer;
 	private OnPreparedListener mOnPreparedListener;
 	private int mStartTime;
-	
+
 	private Thread mUpdateProgressThread;
 	private final Handler mHandler = new UpdateHandler(this);
 	private final UpdateProgressRunnable mUpdateProgressRunner = new UpdateProgressRunnable(
 			mHandler, PROGRESS_UPDATE);
 
+	private Map<Class<? extends PlayerHaterPlugin>, PlayerHaterPlugin> mExternalPlugins;
+
 	@Override
 	public void onCreate() {
-		super.onCreate(); 
-		mMediaPlayer = buildMediaPlayer(true); 
-		this.mLifecycleListener.onNextTrackUnavailable(); 
+		super.onCreate();
+		mExternalPlugins = new HashMap<Class<? extends PlayerHaterPlugin>, PlayerHaterPlugin>();
+		mMediaPlayer = buildMediaPlayer(true);
+		this.mLifecycleListener.onNextTrackUnavailable();
 		mPlayerListenerManager.setOnPreparedListener(this);
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		stopProgressThread();
 		super.onDestroy();
 	}
-	
+
 	@Override
 	public boolean pause() {
 		if (super.pause()) {
@@ -56,7 +61,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 			return false;
 		}
 	}
-	
+
 	@Override
 	public boolean stop() {
 		if (super.stop()) {
@@ -72,7 +77,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 		startProgressThread(getMediaPlayer());
 		super.resume();
 	}
-	
+
 	@Override
 	public Song getNowPlaying() {
 		return mSong;
@@ -83,7 +88,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 		sendIsStopped();
 		super.release();
 	}
-	
+
 	@Override
 	public boolean play(Song song, int startTime)
 			throws IllegalArgumentException {
@@ -108,40 +113,46 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 
 	@Override
 	public void enqueue(Song song) {
-		throw new IllegalStateException("You can't enqueue when using the legacy service.");
+		throw new IllegalStateException(
+				"You can't enqueue when using the legacy service.");
+	}
+	
+	@Override
+	public boolean skipTo(int position) {
+		return false;
 	}
 
 	@Override
-	public void emptyQueue() {}
+	public void emptyQueue() {
+	}
 
 	@Override
 	protected MediaPlayerWithState getMediaPlayer() {
 		return mMediaPlayer;
 	}
-	
+
 	@Override
 	public void setOnPreparedListener(OnPreparedListener onPrepared) {
 		mOnPreparedListener = onPrepared;
 	}
-	
+
 	@Override
 	public boolean play(int startTime) throws IllegalStateException {
 		mStartTime = startTime;
 		return play();
 	}
-	
+
 	@Override
 	protected void prepare() {
 		sendIsLoading();
 		super.prepare();
 	}
-	
-	@Override
-	public void seekTo(int position) {
-		sendIsLoading();
-		super.seekTo(position);
-	}
 
+	@Override
+	public boolean seekTo(int position) {
+		sendIsLoading();
+		return super.seekTo(position);
+	}
 
 	@Override
 	public void onPrepared(MediaPlayer mp) {
@@ -150,17 +161,16 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 			mStartTime = 0;
 			seekTo(seekTo);
 		}
-		
+
 		getMediaPlayer().start();
 		sendStartedPlaying();
 		startProgressThread(getMediaPlayer());
-		
+
 		if (mOnPreparedListener != null) {
 			mOnPreparedListener.onPrepared(mp);
 		}
 	}
 
-	
 	private static class UpdateHandler extends Handler {
 		private LegacyPlaybackService mService;
 
@@ -177,7 +187,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 			}
 		}
 	}
-	
+
 	protected void stopProgressThread() {
 		Log.d(TAG, "STOPPING PROGRESS THREAD");
 		if (mUpdateProgressThread != null && mUpdateProgressThread.isAlive()) {
@@ -193,7 +203,7 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 		mUpdateProgressThread = new Thread(mUpdateProgressRunner);
 		mUpdateProgressThread.start();
 	}
-	
+
 	protected void sendStartedPlaying() {
 		Log.d(TAG, "SENDING START PLAY");
 		mLifecycleListener.onSongChanged(getNowPlaying());
@@ -235,12 +245,23 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 	}
 
 	@Override
-	public void registerPlugin(PlayerHaterPlugin plugin) {
-		((PluginCollection)mLifecycleListener).add(plugin);	
+	public void registerPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
+		PlayerHaterPlugin plugin;
+		try {
+			plugin = pluginClass.getConstructor().newInstance();
+		} catch (Exception e) {
+			throw new IllegalArgumentException(
+					"Plugins must implement a default constructor.");
+		}
+		mExternalPlugins.put(pluginClass, plugin);
+		((PluginCollection) mLifecycleListener).add(plugin);
 	}
 
 	@Override
-	public void unregisterPlugin(PlayerHaterPlugin plugin) {
-		((PluginCollection)mLifecycleListener).remove(plugin);	
+	public void unregisterPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
+		if (mExternalPlugins.containsKey(pluginClass)) {
+			((PluginCollection) mLifecycleListener).remove(mExternalPlugins
+					.get(pluginClass));
+		}
 	}
 }

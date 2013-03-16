@@ -8,7 +8,6 @@ import static org.prx.android.playerhater.player.Gapless.gapless;
 import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
-import org.prx.android.playerhater.plugins.BackgroundedPlugin;
 import org.prx.android.playerhater.util.SongQueue;
 import org.prx.android.playerhater.util.SongQueue.OnQeueuedSongsChangedListener;
 
@@ -85,9 +84,10 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	}
 
 	@Override
-	public void seekTo(int msec) {
+	public boolean seekTo(int msec) {
 		getMediaPlayer().seekTo(msec);
 		startClockThread();
+		return true;
 	}
 
 	@Override
@@ -120,6 +120,11 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	public void enqueue(Song song) {
 		Log.d(TAG, "Adding song" + song);
 		mSongQueue.appendSong(song);
+	}
+	
+	@Override
+	public boolean skipTo(int position) {
+		return mSongQueue.skipTo(position);
 	}
 
 	@Override

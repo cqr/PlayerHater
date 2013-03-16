@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.util.IPlayerHater;
+
+import android.content.Context;
 import android.net.Uri;
 
 public class PluginCollection implements PlayerHaterPlugin {
@@ -98,6 +101,19 @@ public class PluginCollection implements PlayerHaterPlugin {
 	public void onNextTrackUnavailable() {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onNextTrackUnavailable();
+	}
+
+	@Override
+	public void onServiceStarted(Context context, IPlayerHater playerHater) {
+		for (PlayerHaterPlugin plugin : mPlugins)
+			plugin.onServiceStarted(context, playerHater);
+	}
+
+	@Override
+	public void onServiceStopping() {
+		for (PlayerHaterPlugin plugin : mPlugins)
+			plugin.onServiceStopping();
+		
 	}
 
 }

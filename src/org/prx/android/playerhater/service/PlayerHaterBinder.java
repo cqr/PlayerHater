@@ -3,7 +3,6 @@ package org.prx.android.playerhater.service;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
-
 import android.app.Activity;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -22,7 +21,6 @@ public class PlayerHaterBinder extends Binder implements IPlayerHaterBinder {
 		mService = service;
 	}
 	
-
 	public void registerShutdownRequestListener(OnShutdownRequestListener listener) {
 		mService.setOnShutdownRequestListener(listener);
 	}
@@ -72,8 +70,8 @@ public class PlayerHaterBinder extends Binder implements IPlayerHaterBinder {
 	 * @see org.prx.android.playerhater.service.IPlayerHaterBinder#seekTo(int)
 	 */
 	@Override
-	public void seekTo(int startTime) throws IllegalStateException { 
-		mService.seekTo(startTime); 
+	public boolean seekTo(int startTime) throws IllegalStateException { 
+		return mService.seekTo(startTime); 
 	}
 
 	/* (non-Javadoc)
@@ -96,7 +94,7 @@ public class PlayerHaterBinder extends Binder implements IPlayerHaterBinder {
 	 * @see org.prx.android.playerhater.service.IPlayerHaterBinder#setIntentActivity(android.app.Activity)
 	 */
 	@Override
-	public void setIntentActivity(Activity activity) {
+	public void setActivity(Activity activity) {
 		mService.setIntentClass(activity.getClass());
 	}
 	
@@ -176,7 +174,7 @@ public class PlayerHaterBinder extends Binder implements IPlayerHaterBinder {
 	 * @see org.prx.android.playerhater.service.IPlayerHaterBinder#getNowPlaying()
 	 */
 	@Override
-	public Song getNowPlaying() {
+	public Song nowPlaying() {
 		return mService.getNowPlaying();
 	}
 
@@ -246,15 +244,24 @@ public class PlayerHaterBinder extends Binder implements IPlayerHaterBinder {
 
 
 	@Override
-	public void registerPlugin(PlayerHaterPlugin plugin) {
-		mService.registerPlugin(plugin);
+	public void registerPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
+		mService.registerPlugin(pluginClass);
 		
 	}
 
 
 	@Override
-	public void unregisterPlugin(PlayerHaterPlugin plugin) {
-		mService.unregisterPlugin(plugin);
+	public void unregisterPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
+		mService.unregisterPlugin(pluginClass);
+	}
+	
+	@Override
+	public boolean play(Song song) {
+		return play(song, 0);
 	}
 
+	@Override
+	public boolean skipTo(int position) {
+		return mService.skipTo(position);
+	}
 }

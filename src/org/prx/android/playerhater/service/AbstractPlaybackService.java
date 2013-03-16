@@ -197,7 +197,7 @@ public abstract class AbstractPlaybackService extends Service implements
 	}
 
 	@Override
-	public void seekTo(int pos) {
+	public boolean seekTo(int pos) {
 		Log.d(TAG, "SEEKING TO " + pos);
 		mPlayAfterSeek = (mPlayAfterSeek || getState() == Player.STARTED);
 
@@ -205,8 +205,9 @@ public abstract class AbstractPlaybackService extends Service implements
 			getMediaPlayer().pause();
 			getMediaPlayer().seekTo(pos);
 		} catch (java.lang.IllegalStateException e) {
-			// do nothing
+			return false;
 		}
+		return true;
 	}
 
 	// COMPLETION

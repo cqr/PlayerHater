@@ -9,9 +9,9 @@ import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.service.OnShutdownRequestListener;
-import org.prx.android.playerhater.util.AudioPlaybackInterface;
 import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.BroadcastReceiver;
+import org.prx.android.playerhater.util.ClientPlayerHater;
 import org.prx.android.playerhater.util.ConfigurationManager;
 import org.prx.android.playerhater.util.ListenerEcho;
 import org.prx.android.playerhater.util.TransientPlayer;
@@ -32,8 +32,8 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
 
-public class PlayerHater implements AudioPlaybackInterface,
-		OnShutdownRequestListener {
+public class PlayerHater implements OnShutdownRequestListener,
+		ClientPlayerHater {
 	protected static final String TAG = "PLAYERHATER";
 
 	public static boolean EXPANDING_NOTIFICATIONS = false;
@@ -44,7 +44,7 @@ public class PlayerHater implements AudioPlaybackInterface,
 	private static final List<Song> sPlayQueue = new ArrayList<Song>();
 	private static int sStartPosition = 0;
 
-	private static final Set<PlayerHaterPlugin> sPlugins = new HashSet<PlayerHaterPlugin>();
+	private static final Set<Class<? extends PlayerHaterPlugin>> sPlugins = new HashSet<Class<? extends PlayerHaterPlugin>>();
 
 	private static String sPendingAlbumArtType;
 	private static Uri sPendingAlbumArtUrl;
@@ -136,8 +136,8 @@ public class PlayerHater implements AudioPlaybackInterface,
 					}
 				}
 
-				for (PlayerHaterPlugin plugin : sPlugins) {
-					phService.registerPlugin(plugin);
+				for (Class<? extends PlayerHaterPlugin> pluginClass : sPlugins) {
+					phService.registerPlugin(pluginClass);
 				}
 
 				phService.setListener(sListener);
@@ -176,8 +176,7 @@ public class PlayerHater implements AudioPlaybackInterface,
 				}
 
 				if (sPendingNotificationIntentActivity != null) {
-					phService
-							.setIntentActivity(sPendingNotificationIntentActivity);
+					phService.setActivity(sPendingNotificationIntentActivity);
 				}
 
 				if (!sPlayQueue.isEmpty()) {
@@ -348,7 +347,7 @@ public class PlayerHater implements AudioPlaybackInterface,
 	public void setActivity(Activity activity) {
 		sPendingNotificationIntentActivity = activity;
 		if (mPlayerHater != null) {
-			mPlayerHater.setIntentActivity(activity);
+			mPlayerHater.setActivity(activity);
 		}
 	}
 
@@ -433,7 +432,7 @@ public class PlayerHater implements AudioPlaybackInterface,
 		} else if (mPlayerHater == null) {
 			return null;
 		}
-		return mPlayerHater.getNowPlaying();
+		return mPlayerHater.nowPlaying();
 	}
 
 	@Override
@@ -522,18 +521,18 @@ public class PlayerHater implements AudioPlaybackInterface,
 	}
 
 	@Override
-	public void registerPlugin(PlayerHaterPlugin plugin) {
-		sPlugins.add(plugin);
+	public void registerPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
+		sPlugins.add(pluginClass);
 		if (mPlayerHater != null) {
-			mPlayerHater.registerPlugin(plugin);
+			mPlayerHater.registerPlugin(pluginClass);
 		}
 	}
 
 	@Override
-	public void unregisterPlugin(PlayerHaterPlugin plugin) {
-		sPlugins.remove(plugin);
+	public void unregisterPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
+		sPlugins.remove(pluginClass);
 		if (mPlayerHater != null) {
-			mPlayerHater.unregisterPlugin(plugin);
+			mPlayerHater.unregisterPlugin(pluginClass);
 		}
 	}
 

@@ -1,5 +1,8 @@
 package org.prx.android.playerhater.service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
@@ -41,6 +44,7 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	private PlayerHaterBinder mBinder;
 	private OnShutdownRequestListener mShutdownRequestListener;
 	private PluginCollection mPluginCollection;
+	private Map<Class<? extends PlayerHaterPlugin>, PlayerHaterPlugin> mExternalPlugins;
 
 	abstract Player getMediaPlayer();
 
@@ -49,10 +53,11 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	@Override
 	public void onCreate() {
 		TAG = getPackageName() + "/PH/" + getClass().getSimpleName();
-		
+
 		mBroadcastReceiver = new BroadcastReceiver(this, getBinder());
 
-		 mPluginCollection = new PluginCollection();
+		mExternalPlugins = new HashMap<Class<? extends PlayerHaterPlugin>, PlayerHaterPlugin>();
+		mPluginCollection = new PluginCollection();
 
 		if (PlayerHater.MODERN_AUDIO_FOCUS) {
 			mPluginCollection.add(new AudioFocusPlugin(this));
@@ -72,13 +77,15 @@ public abstract class NewAbstractPlaybackService extends Service implements
 		}
 
 		mPlugin = mPluginCollection;
-		
-		getBaseContext().startService(new Intent(getBaseContext(), this.getClass()));
+
+		mPlugin.onServiceStarted(getBaseContext(), getBinder());
+		getBaseContext().startService(new Intent(getBaseContext(), getClass()));
 	}
 
 	@Override
 	public void onDestroy() {
 		onStopped();
+		mPlugin.onServiceStopping();
 		getMediaPlayer().release();
 		getBaseContext().unregisterReceiver(mBroadcastReceiver);
 	}
@@ -87,7 +94,7 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	public IBinder onBind(Intent intent) {
 		return getBinder();
 	}
-	
+
 	@Override
 	public void stopService() {
 		onStopped();
@@ -146,14 +153,14 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	}
 
 	/* END Generic Player Controls */
-	
+
 	/* Decomposed Player Methods */
-	
+
 	@Override
 	public boolean play(Song song) throws IllegalArgumentException {
 		return play(song, 0);
 	}
-	
+
 	/* END Decomposed Player Methods */
 
 	/* Player Listeners */
@@ -196,7 +203,7 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	}
 
 	/* END The Anointed One */
-	
+
 	@Override
 	public void setOnShutdownRequestListener(OnShutdownRequestListener listener) {
 		mShutdownRequestListener = listener;
@@ -205,17 +212,30 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	/* END Player Listeners */
 
 	/* Plug-In Stuff */
-	
+
 	@Override
-	public void registerPlugin(PlayerHaterPlugin plugin) {
+	public void registerPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
+		PlayerHaterPlugin plugin;
+		try {
+			plugin = pluginClass.getConstructor().newInstance();
+		} catch (Exception e) {
+			throw new IllegalArgumentException(
+					"Plugins must implement a default constructor.");
+		}
+		mExternalPlugins.put(pluginClass, plugin);
 		mPluginCollection.add(plugin);
+		plugin.onServiceStarted(getBaseContext(), getBinder());
 	}
-	
+
 	@Override
-	public void unregisterPlugin(PlayerHaterPlugin plugin) {
-		mPluginCollection.remove(plugin);
+	public void unregisterPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
+		if (mExternalPlugins.containsKey(pluginClass)) {
+			PlayerHaterPlugin plugin = mExternalPlugins.get(pluginClass);
+			mPluginCollection.remove(plugin);
+			plugin.onServiceStopping();
+		}
 	}
-	
+
 	@Override
 	public void setSongInfo(Song song) {
 		mPlugin.onSongChanged(song);
@@ -240,13 +260,13 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	public void setAlbumArt(Uri url) {
 		mPlugin.onAlbumArtChangedToUri(url);
 	}
-	
+
 	@Override
 	public void setIntentClass(Class<? extends Activity> klass) {
 		Intent intent = new Intent(getApplicationContext(), klass);
 		intent.addCategory(Intent.CATEGORY_LAUNCHER);
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-				| Intent.FLAG_ACTIVITY_SINGLE_TOP );
+				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent pending = PendingIntent.getActivity(getBaseContext(),
 				456, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 		mNotificationPlugin.onIntentActivityChanged(pending);
@@ -302,40 +322,40 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	}
 
 	/* END Remote Controls */
-	
+
 	/* Events for Subclasses */
-	
+
 	protected void onStopped() {
 		mPlugin.onPlaybackStopped();
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onStopped();
 		}
 	}
-	
+
 	protected void onPaused() {
 		mPlugin.onPlaybackPaused();
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onPaused(getNowPlaying());
 		}
 	}
-	
+
 	protected void onLoading() {
 		if (mPlayerHaterListener != null) {
 			mPlayerHaterListener.onLoading(getNowPlaying());
 		}
 		mPlugin.onAudioLoading();
 	}
-	
+
 	protected void onStarted() {
 		mPlugin.onPlaybackStarted();
 		mPlugin.onSongChanged(getNowPlaying());
 		mPlugin.onDurationChanged(getDuration());
 	}
-	
+
 	protected void onResumed() {
 		mPlugin.onPlaybackResumed();
 	}
-	
+
 	/* END Events for Subclasses */
 
 	/* Private utility methods */

@@ -4,7 +4,9 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.util.IPlayerHater;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -34,6 +36,16 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin {
 		start();
 		// Temporary
 		mHandler = new QueuedHandler(mQueue);
+	}
+	
+	@Override
+	public void onServiceStarted(Context context, IPlayerHater playerHater) {
+		mPlugin.onServiceStarted(context, playerHater);
+	}
+
+	@Override
+	public void onServiceStopping() {
+		mPlugin.onServiceStopping();
 	}
 
 	@Override
@@ -186,5 +198,4 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin {
 			}
 		}
 	}
-
 }

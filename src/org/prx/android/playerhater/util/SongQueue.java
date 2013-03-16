@@ -122,5 +122,14 @@ public class SongQueue {
 			mListener.onNextSongChanged(mNextSongWas);
 	}
 
+	public boolean skipTo(int position) {
+		if (position <= mSongs.size()) {
+			mPlayheadPosition = position;
+			songOrderChanged();
+			return true;
+		}
+		return false;
+	}
+
 
 }

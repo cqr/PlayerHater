@@ -26,7 +26,7 @@ public interface PlayerHaterService {
 
 	public abstract boolean play() throws IllegalStateException;
 
-	public abstract boolean play(int startTime) throws IllegalStateException; 
+	public abstract boolean play(int startTime) throws IllegalStateException;
 
 	public abstract void setTitle(String title);
 
@@ -64,6 +64,8 @@ public interface PlayerHaterService {
 
 	public abstract void enqueue(Song song);
 
+	public abstract boolean skipTo(int position);
+
 	public abstract void emptyQueue();
 
 	public abstract void setIntentClass(Class<? extends Activity> klass);
@@ -81,7 +83,7 @@ public interface PlayerHaterService {
 
 	public abstract void unduck();
 
-	public abstract void seekTo(int max);
+	public abstract boolean seekTo(int max);
 
 	public abstract boolean play(Song song) throws IllegalArgumentException;
 
@@ -96,7 +98,10 @@ public interface PlayerHaterService {
 
 	void stopService();
 
-	public abstract void registerPlugin(PlayerHaterPlugin plugin);
-	public abstract void unregisterPlugin(PlayerHaterPlugin plugin);
+	public abstract void registerPlugin(
+			Class<? extends PlayerHaterPlugin> pluginClass);
+
+	public abstract void unregisterPlugin(
+			Class<? extends PlayerHaterPlugin> pluginClass);
 
 }
