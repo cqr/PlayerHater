@@ -2,7 +2,6 @@ package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
-import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.util.IPlayerHater;
 
 import android.content.Context;

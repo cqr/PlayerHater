@@ -1,10 +1,9 @@
 package org.prx.android.playerhater;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-
+import java.util.Map;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
@@ -44,7 +43,7 @@ public class PlayerHater implements OnShutdownRequestListener,
 	private static final List<Song> sPlayQueue = new ArrayList<Song>();
 	private static int sStartPosition = 0;
 
-	private static final Set<Class<? extends PlayerHaterPlugin>> sPlugins = new HashSet<Class<? extends PlayerHaterPlugin>>();
+	private static final Map<Class<? extends PlayerHaterPlugin>, PlayerHaterPlugin> sPlugins = new HashMap<Class<? extends PlayerHaterPlugin>, PlayerHaterPlugin>();
 
 	private static String sPendingAlbumArtType;
 	private static Uri sPendingAlbumArtUrl;
@@ -136,8 +135,8 @@ public class PlayerHater implements OnShutdownRequestListener,
 					}
 				}
 
-				for (Class<? extends PlayerHaterPlugin> pluginClass : sPlugins) {
-					phService.registerPlugin(pluginClass);
+				for (PlayerHaterPlugin plugin : sPlugins.values()) {
+					phService.addPluginInstance(plugin);
 				}
 
 				phService.setListener(sListener);
@@ -522,17 +521,30 @@ public class PlayerHater implements OnShutdownRequestListener,
 
 	@Override
 	public void registerPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
-		sPlugins.add(pluginClass);
-		if (mPlayerHater != null) {
-			mPlayerHater.registerPlugin(pluginClass);
+		if (!sPlugins.containsKey(pluginClass)) {
+			try {
+				PlayerHaterPlugin plugin = pluginClass.getConstructor().newInstance();
+				sPlugins.put(pluginClass, plugin);
+				if (mPlayerHater != null) {
+					mPlayerHater.addPluginInstance(plugin);
+				} else {
+					plugin.onServiceStarted(mContext, this);
+				}
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Plugins must implement a default constructor.");
+			}
 		}
 	}
 
 	@Override
 	public void unregisterPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
-		sPlugins.remove(pluginClass);
-		if (mPlayerHater != null) {
-			mPlayerHater.unregisterPlugin(pluginClass);
+		if (sPlugins.containsKey(pluginClass)) {
+			PlayerHaterPlugin plugin = sPlugins.remove(pluginClass);
+			if (mPlayerHater != null) {
+				mPlayerHater.unregisterPlugin(pluginClass);
+			} else {
+				plugin.onServiceStopping();
+			}
 		}
 	}
 

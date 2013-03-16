@@ -84,7 +84,6 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 
 		@Override
 		public void setNextMediaPlayer(MediaPlayerWithState next) {
-			MediaPlayerWithState was = mNextMediaPlayer;
 			mNextMediaPlayer = next;
 			MediaPlayer tmp = null;
 			if (next != null) {

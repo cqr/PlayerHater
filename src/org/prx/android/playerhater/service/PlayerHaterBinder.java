@@ -248,7 +248,11 @@ public class PlayerHaterBinder extends Binder implements IPlayerHaterBinder {
 		mService.registerPlugin(pluginClass);
 		
 	}
-
+	
+	@Override
+	public void addPluginInstance(PlayerHaterPlugin plugin) {
+		mService.addPluginInstance(plugin);
+	}
 
 	@Override
 	public void unregisterPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {

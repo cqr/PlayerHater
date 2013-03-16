@@ -104,4 +104,6 @@ public interface PlayerHaterService {
 	public abstract void unregisterPlugin(
 			Class<? extends PlayerHaterPlugin> pluginClass);
 
+	public abstract void addPluginInstance(PlayerHaterPlugin plugin);
+
 }

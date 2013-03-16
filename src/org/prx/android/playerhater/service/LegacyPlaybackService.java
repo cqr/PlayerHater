@@ -264,4 +264,9 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 					.get(pluginClass));
 		}
 	}
+
+	@Override
+	public void addPluginInstance(PlayerHaterPlugin plugin) {
+		((PluginCollection)mLifecycleListener).add(plugin);
+	}
 }

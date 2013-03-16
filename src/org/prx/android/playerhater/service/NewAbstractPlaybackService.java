@@ -215,16 +215,26 @@ public abstract class NewAbstractPlaybackService extends Service implements
 
 	@Override
 	public void registerPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
-		PlayerHaterPlugin plugin;
 		try {
-			plugin = pluginClass.getConstructor().newInstance();
+			if (!mExternalPlugins.containsKey(pluginClass)) {
+				PlayerHaterPlugin plugin = pluginClass.getConstructor()
+						.newInstance();
+				addPluginInstance(plugin);
+			}
+
 		} catch (Exception e) {
 			throw new IllegalArgumentException(
 					"Plugins must implement a default constructor.");
 		}
-		mExternalPlugins.put(pluginClass, plugin);
-		mPluginCollection.add(plugin);
-		plugin.onServiceStarted(getBaseContext(), getBinder());
+	}
+
+	@Override
+	public void addPluginInstance(PlayerHaterPlugin plugin) {
+		if (!mExternalPlugins.containsKey(plugin.getClass())) {
+			mExternalPlugins.put(plugin.getClass(), plugin);
+			mPluginCollection.add(plugin);
+			plugin.onServiceStarted(getBaseContext(), getBinder());
+		}
 	}
 
 	@Override
