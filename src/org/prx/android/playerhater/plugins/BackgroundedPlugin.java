@@ -6,6 +6,7 @@ import java.util.Queue;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.util.IPlayerHater;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
@@ -26,6 +27,7 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin {
 	private static final int PLAYBACK_RESUMED = 10;
 	private static final int PLAYBACK_PAUSED = 11;
 	private static final int AUDIO_LOADING = 12;
+	private static final int INTENT_CHANGED = 13;
 
 	private Handler mHandler;
 	private final PlayerHaterPlugin mPlugin;
@@ -125,6 +127,11 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin {
 		mHandler.sendEmptyMessage(NEXT_TRACK_UNAVAILABLE);
 	}
 	
+	@Override
+	public void onIntentActivityChanged(PendingIntent pending) {
+		mHandler.obtainMessage(INTENT_CHANGED, pending).sendToTarget();
+	}
+	
 	private static final class QueuedMessage {
 		public int what;
 		public Object obj;
@@ -195,6 +202,9 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin {
 				break;
 			case AUDIO_LOADING:
 				mPlugin.onAudioLoading();
+				break;
+			case INTENT_CHANGED:
+				mPlugin.onIntentActivityChanged((PendingIntent)msg.obj);
 			}
 		}
 	}

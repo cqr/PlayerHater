@@ -4,6 +4,7 @@ import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.util.IPlayerHater;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
@@ -13,6 +14,10 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	private static final String TAG = "AbstractPlugin";
 	private IPlayerHater mPlayerHater;
 	private Context mContext;
+	
+	public AbstractPlugin() {
+		
+	}
 	
 	@Override
 	public void onServiceStarted(Context context, IPlayerHater binder) {
@@ -87,4 +92,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	public final Context getContext() {
 		return mContext;
 	}
+
+	@Override
+	public void onIntentActivityChanged(PendingIntent pending) { }
 }

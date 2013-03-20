@@ -2,7 +2,6 @@ package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.service.PlayerHaterService;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 
 import android.annotation.TargetApi;
@@ -24,11 +23,6 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	protected Uri mNotificationImageUrl;
 	protected boolean mNotificationCanSkip = true;
 	private RemoteViews mNotificationView;
-
-
-	public TouchableNotificationPlugin(PlayerHaterService service) {
-		super(service);
-	}
 
 	@Override
 	public void onSongChanged(Song song) {
@@ -54,7 +48,6 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 		if (mNotificationImageResourceId != 0) {
 			mNotificationImageUrl = null;
 			setImageViewResource(R.id.image, mNotificationImageResourceId);
-			updateNotification();
 		}
 	}
 
@@ -64,7 +57,6 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 		if (mNotificationImageUrl != null) {
 			mNotificationImageResourceId = 0;
 			setImageViewUri(R.id.image, mNotificationImageUrl);
-			updateNotification();
 		}
 	}
 
@@ -76,10 +68,10 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 
 	@Override
 	public void onPlaybackPaused() {
-		setImageViewResource(R.id.button, R.drawable.__player_hater_play);
+		setImageViewResource(R.id.button, R.drawable.zzz__ph_bt_play_enabled);
 		updateNotification();
 	}
-	
+
 	@Override
 	public void onPlaybackResumed() {
 		setImageViewResource(R.id.button, R.drawable.__player_hater_pause);
@@ -93,24 +85,24 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	public void setIntentClass(Class<? extends Activity> intentClass) {
-		Intent i = new Intent(mService.getBaseContext(), intentClass);
+		Intent i = new Intent(getContext(), intentClass);
 		i.putExtra("fromPlayerHaterNotification", true);
-		mContentIntent = PendingIntent.getActivity(mService.getBaseContext(),
-				777, i, PendingIntent.FLAG_UPDATE_CURRENT);
+		mContentIntent = PendingIntent.getActivity(getContext(), 777, i,
+				PendingIntent.FLAG_UPDATE_CURRENT);
 		mNotification.contentIntent = mContentIntent;
 	}
 
 	@Override
 	public void onNextTrackAvailable() {
-		this.mNotificationCanSkip = true; 
-		setViewVisibility(R.id.skip, View.VISIBLE); 
+		this.mNotificationCanSkip = true;
+		setViewVisibility(R.id.skip, View.VISIBLE);
 		updateNotification();
 	}
 
 	@Override
 	public void onNextTrackUnavailable() {
-		this.mNotificationCanSkip = false; 
-		setViewVisibility(R.id.skip, View.GONE); 
+		this.mNotificationCanSkip = false;
+		setViewVisibility(R.id.skip, View.GONE);
 		updateNotification();
 	}
 
@@ -128,12 +120,12 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 			mNotificationView.setImageViewResource(R.id.image,
 					mNotificationImageResourceId);
 		}
-		
-		if (mNotificationCanSkip) { 
-			this.onNextTrackAvailable(); 
-		} else { 
-			this.onNextTrackUnavailable(); 
-		}
+
+		// if (mNotificationCanSkip) {
+		// onNextTrackAvailable();
+		// } else {
+		// onNextTrackUnavailable();
+		// }
 
 		return mNotificationView;
 	}
@@ -150,18 +142,16 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	protected RemoteViews buildNotificationView() {
-		return new RemoteViews(mService.getBaseContext().getPackageName(),
+		return new RemoteViews(getContext().getPackageName(),
 				R.layout.zzz_ph_hc_notification);
 	}
 
 	private PendingIntent getMediaButtonPendingIntent(int keycode) {
-		Intent intent = new Intent(mService.getBaseContext(),
-				BroadcastReceiver.class);
+		Intent intent = new Intent(getContext(), BroadcastReceiver.class);
 		intent.setAction(Intent.ACTION_MEDIA_BUTTON);
 		intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(
 				KeyEvent.ACTION_UP, keycode));
-		return PendingIntent.getBroadcast(mService.getBaseContext(), keycode,
-				intent, 0);
+		return PendingIntent.getBroadcast(getContext(), keycode, intent, 0);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -170,12 +160,11 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	protected Notification.Builder getNotificationBuilder() {
-		return new Notification.Builder(mService.getBaseContext())
-		.setAutoCancel(false)
-		.setSmallIcon(R.drawable.zzz_ph_ic_notification)
-		.setTicker("Playing: " + mNotificationTitle)
-		.setContent(getNotificationView())
-		.setContentIntent(mContentIntent);
+		return new Notification.Builder(getContext()).setAutoCancel(false)
+				.setSmallIcon(R.drawable.zzz_ph_ic_notification)
+				.setTicker("Playing: " + mNotificationTitle)
+				.setContent(getNotificationView())
+				.setContentIntent(mContentIntent);
 	}
 
 	protected void setTextViewText(int id, String text) {
@@ -189,13 +178,13 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 			mNotificationView.setBoolean(viewId, "setEnabled", enabled);
 		}
 	}
-	
+
 	protected void setViewVisibility(int viewId, int visible) {
 		if (mNotificationView != null) {
 			mNotificationView.setViewVisibility(viewId, visible);
 		}
 	}
-	
+
 	protected void setImageViewResource(int id, int resourceId) {
 		if (mNotificationView != null) {
 			mNotificationView.setImageViewResource(id, resourceId);

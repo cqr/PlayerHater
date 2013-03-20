@@ -2,7 +2,6 @@ package org.prx.android.playerhater.util;
 
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import android.app.Activity;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -33,6 +32,10 @@ public interface IPlayerHater {
 	void enqueue(Song song);
 
 	boolean skipTo(int position);
+	
+	void skip();
+	
+	void skipBack();
 
 	void emptyQueue();
 
@@ -76,9 +79,4 @@ public interface IPlayerHater {
 	boolean isLoading();
 
 	int getState();
-
-	// Plugins
-	void registerPlugin(Class<? extends PlayerHaterPlugin> pluginClass);
-
-	void unregisterPlugin(Class<? extends PlayerHaterPlugin> pluginClass);
 }

@@ -2,7 +2,8 @@ package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.service.PlayerHaterService;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
+import org.prx.android.playerhater.util.IPlayerHater;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
@@ -19,7 +20,7 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	protected static final int NOTIFICATION_NU = 9747245;
 	private static final String TAG = "NotificationPlugin";
-	protected PlayerHaterService mService;
+	protected IPlayerHaterBinder mService;
 	protected NotificationManager mNotificationManager;
 	protected PendingIntent mContentIntent;
 	protected String mNotificationTitle = "PlayerHater";
@@ -27,20 +28,24 @@ public class NotificationPlugin extends AbstractPlugin {
 	private boolean mIsVisible = false;
 	private Notification mNotification;
 
-	public NotificationPlugin(PlayerHaterService service) {
-		mService = service;
-		Context c = mService.getBaseContext().getApplicationContext();
-		PackageManager packageManager = c.getPackageManager();
-		mNotificationManager = (NotificationManager) c
+	public NotificationPlugin() { }
+
+	@Override
+	public void onServiceStarted(Context context, IPlayerHater playerHater) {
+		super.onServiceStarted(context, playerHater);
+		mService = (IPlayerHaterBinder) playerHater;
+
+		PackageManager packageManager = context.getPackageManager();
+		mNotificationManager = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 
 		Intent resumeActivityIntent = packageManager
-				.getLaunchIntentForPackage(c.getPackageName());
+				.getLaunchIntentForPackage(getContext().getPackageName());
 		resumeActivityIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 		resumeActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
 				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		mContentIntent = PendingIntent.getActivity(c, NOTIFICATION_NU,
-				resumeActivityIntent, 0);
+		mContentIntent = PendingIntent.getActivity(getContext(),
+				NOTIFICATION_NU, resumeActivityIntent, 0);
 	}
 
 	@Override
@@ -66,8 +71,8 @@ public class NotificationPlugin extends AbstractPlugin {
 			mNotification = new Notification(R.drawable.zzz_ph_ic_notification,
 					"Playing: " + mNotificationTitle, 0);
 
-		mNotification.setLatestEventInfo(mService.getBaseContext(),
-				mNotificationTitle, mNotificationText, mContentIntent);
+		mNotification.setLatestEventInfo(getContext(), mNotificationTitle,
+				mNotificationText, mContentIntent);
 		return mNotification;
 	}
 

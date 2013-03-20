@@ -1,8 +1,6 @@
 package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.R;
-import org.prx.android.playerhater.service.PlayerHaterService;
-
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.net.Uri;
@@ -14,10 +12,6 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 
 	private RemoteViews mExpandedView;
 	private Notification mNotification;
-
-	public ExpandableNotificationPlugin(PlayerHaterService service) {
-		super(service);
-	}
 
 	@Override
 	protected Notification getNotification() {
@@ -31,8 +25,8 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 
 	private RemoteViews getExpandedView() {
 		if (mExpandedView == null) {
-			mExpandedView = new RemoteViews(mService.getBaseContext()
-					.getPackageName(), R.layout.zzz_ph_exp_notification);
+			mExpandedView = new RemoteViews(getContext().getPackageName(),
+					R.layout.zzz_ph_exp_notification);
 			setListeners(mExpandedView);
 		}
 
@@ -44,10 +38,10 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 			mExpandedView.setImageViewResource(R.id.image,
 					mNotificationImageResourceId);
 		}
-		if (mNotificationCanSkip) { 
-			onNextTrackAvailable(); 
-		} else { 
-			onNextTrackUnavailable(); 
+		if (mNotificationCanSkip) {
+			onNextTrackAvailable();
+		} else {
+			onNextTrackUnavailable();
 		}
 		return mExpandedView;
 	}
@@ -75,7 +69,7 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 		}
 		super.setViewVisibility(viewId, visible);
 	}
-	
+
 	@Override
 	protected void setImageViewResource(int viewId, int resourceId) {
 		super.setImageViewResource(viewId, resourceId);

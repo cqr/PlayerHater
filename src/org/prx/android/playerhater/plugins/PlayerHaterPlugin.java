@@ -3,6 +3,7 @@ package org.prx.android.playerhater.plugins;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.util.IPlayerHater;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
 
@@ -36,5 +37,7 @@ public interface PlayerHaterPlugin {
 	
 	void onNextTrackAvailable();
 	
-	void onNextTrackUnavailable(); 
+	void onNextTrackUnavailable();
+
+	void onIntentActivityChanged(PendingIntent pending); 
 }

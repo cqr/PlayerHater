@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <plugin
+        name="org.prx.android.playerhater.plugins.AudioFocusPlugin"
+        enabled="@bool/__playerhater_audiofocus" />
+    <plugin
+        name="org.prx.android.playerhater.plugins.TouchableNotificationPlugin"
+        enabled="@bool/__playerhater_touchable_notification" />
+    <plugin
+        name="org.prx.android.playerhater.plugins.ExpandableNotificationPlugin"
+        enabled="@bool/__playerhater_expanding_notification" />
+    <plugin
+        name="org.prx.android.playerhater.plugins.LockScreenControlsPlugin"
+        enabled="@bool/__playerhater_lockscreen" />
+</config>

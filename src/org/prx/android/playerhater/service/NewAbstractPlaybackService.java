@@ -1,21 +1,14 @@
 package org.prx.android.playerhater.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
-import org.prx.android.playerhater.plugins.AudioFocusPlugin;
-import org.prx.android.playerhater.plugins.ExpandableNotificationPlugin;
-import org.prx.android.playerhater.plugins.LockScreenControlsPlugin;
-import org.prx.android.playerhater.plugins.NotificationPlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.plugins.PluginCollection;
-import org.prx.android.playerhater.plugins.TouchableNotificationPlugin;
 import org.prx.android.playerhater.util.BroadcastReceiver;
+import org.prx.android.playerhater.util.ConfigurationManager;
 import org.prx.android.playerhater.util.PlayerListenerManager;
 
 import android.app.Activity;
@@ -30,6 +23,7 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.KeyEvent;
 
 public abstract class NewAbstractPlaybackService extends Service implements
@@ -38,13 +32,12 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	protected String TAG;
 	protected BroadcastReceiver mBroadcastReceiver;
 	protected PlayerHaterPlugin mPlugin;
-	private NotificationPlugin mNotificationPlugin;
 	protected final PlayerListenerManager mPlayerListenerManager = new PlayerListenerManager();
 	protected PlayerHaterListener mPlayerHaterListener;
 	private PlayerHaterBinder mBinder;
+	private ConfigurationManager mConfig;
 	private OnShutdownRequestListener mShutdownRequestListener;
 	private PluginCollection mPluginCollection;
-	private Map<Class<? extends PlayerHaterPlugin>, PlayerHaterPlugin> mExternalPlugins;
 
 	abstract Player getMediaPlayer();
 
@@ -53,33 +46,11 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	@Override
 	public void onCreate() {
 		TAG = getPackageName() + "/PH/" + getClass().getSimpleName();
-
 		mBroadcastReceiver = new BroadcastReceiver(this, getBinder());
-
-		mExternalPlugins = new HashMap<Class<? extends PlayerHaterPlugin>, PlayerHaterPlugin>();
 		mPluginCollection = new PluginCollection();
-
-		if (PlayerHater.MODERN_AUDIO_FOCUS) {
-			mPluginCollection.add(new AudioFocusPlugin(this));
-		}
-
-		if (PlayerHater.EXPANDING_NOTIFICATIONS) {
-			mNotificationPlugin = new ExpandableNotificationPlugin(this);
-		} else if (PlayerHater.TOUCHABLE_NOTIFICATIONS) {
-			mNotificationPlugin = new TouchableNotificationPlugin(this);
-		} else {
-			mNotificationPlugin = new NotificationPlugin(this);
-		}
-		mPluginCollection.add(mNotificationPlugin);
-
-		if (PlayerHater.LOCK_SCREEN_CONTROLS) {
-			mPluginCollection.add(new LockScreenControlsPlugin(this));
-		}
-
 		mPlugin = mPluginCollection;
-
-		mPlugin.onServiceStarted(getBaseContext(), getBinder());
-		getBaseContext().startService(new Intent(getBaseContext(), getClass()));
+		Intent intent = new Intent(getBaseContext(), getClass());
+		getBaseContext().startService(intent);
 	}
 
 	@Override
@@ -92,7 +63,26 @@ public abstract class NewAbstractPlaybackService extends Service implements
 
 	@Override
 	public IBinder onBind(Intent intent) {
+		if (mConfig == null) {
+			ConfigurationManager config = intent.getExtras().getParcelable(
+					PlayerHater.EXTRA_CONFIG);
+			if (config != null) {
+				setConfig(config);
+			}
+		}
 		return getBinder();
+	}
+
+	private void setConfig(ConfigurationManager config) {
+		mConfig = config;
+		for (Class<? extends PlayerHaterPlugin> plugin : mConfig.getServicePlugins()) {
+			try {
+				mPluginCollection.add(plugin.newInstance());
+			} catch (Exception e) {
+				Log.e(TAG, "Could not instantiate plugin " + plugin.getCanonicalName(), e);
+			}
+		}
+		mPlugin.onServiceStarted(getApplicationContext(), getBinder());
 	}
 
 	@Override
@@ -212,38 +202,10 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	/* END Player Listeners */
 
 	/* Plug-In Stuff */
-
-	@Override
-	public void registerPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
-		try {
-			if (!mExternalPlugins.containsKey(pluginClass)) {
-				PlayerHaterPlugin plugin = pluginClass.getConstructor()
-						.newInstance();
-				addPluginInstance(plugin);
-			}
-
-		} catch (Exception e) {
-			throw new IllegalArgumentException(
-					"Plugins must implement a default constructor.");
-		}
-	}
-
+	
 	@Override
 	public void addPluginInstance(PlayerHaterPlugin plugin) {
-		if (!mExternalPlugins.containsKey(plugin.getClass())) {
-			mExternalPlugins.put(plugin.getClass(), plugin);
-			mPluginCollection.add(plugin);
-			plugin.onServiceStarted(getBaseContext(), getBinder());
-		}
-	}
-
-	@Override
-	public void unregisterPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
-		if (mExternalPlugins.containsKey(pluginClass)) {
-			PlayerHaterPlugin plugin = mExternalPlugins.get(pluginClass);
-			mPluginCollection.remove(plugin);
-			plugin.onServiceStopping();
-		}
+		mPluginCollection.add(plugin);
 	}
 
 	@Override
@@ -279,7 +241,7 @@ public abstract class NewAbstractPlaybackService extends Service implements
 				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent pending = PendingIntent.getActivity(getBaseContext(),
 				456, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-		mNotificationPlugin.onIntentActivityChanged(pending);
+		mPlugin.onIntentActivityChanged(pending);
 	}
 
 	/* END Plug-In Stuff */

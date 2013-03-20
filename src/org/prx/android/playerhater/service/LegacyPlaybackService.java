@@ -245,28 +245,19 @@ public class LegacyPlaybackService extends AbstractPlaybackService implements
 	}
 
 	@Override
-	public void registerPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
-		PlayerHaterPlugin plugin;
-		try {
-			plugin = pluginClass.getConstructor().newInstance();
-		} catch (Exception e) {
-			throw new IllegalArgumentException(
-					"Plugins must implement a default constructor.");
-		}
-		mExternalPlugins.put(pluginClass, plugin);
-		((PluginCollection) mLifecycleListener).add(plugin);
-	}
-
-	@Override
-	public void unregisterPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
-		if (mExternalPlugins.containsKey(pluginClass)) {
-			((PluginCollection) mLifecycleListener).remove(mExternalPlugins
-					.get(pluginClass));
-		}
-	}
-
-	@Override
 	public void addPluginInstance(PlayerHaterPlugin plugin) {
 		((PluginCollection)mLifecycleListener).add(plugin);
+	}
+
+	@Override
+	public void skip() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void skipBack() {
+		// TODO Auto-generated method stub
+		
 	}
 }

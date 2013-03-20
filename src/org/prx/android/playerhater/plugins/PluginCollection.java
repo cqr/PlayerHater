@@ -6,6 +6,7 @@ import java.util.Set;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.util.IPlayerHater;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
 
@@ -114,6 +115,12 @@ public class PluginCollection implements PlayerHaterPlugin {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onServiceStopping();
 		
+	}
+
+	@Override
+	public void onIntentActivityChanged(PendingIntent pending) {
+		for (PlayerHaterPlugin plugin : mPlugins)
+			plugin.onIntentActivityChanged(pending);
 	}
 
 }

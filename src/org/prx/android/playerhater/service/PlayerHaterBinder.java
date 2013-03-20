@@ -4,6 +4,7 @@ import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import android.app.Activity;
+import android.app.Notification;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
@@ -241,22 +242,10 @@ public class PlayerHaterBinder extends Binder implements IPlayerHaterBinder {
 	public void onRemoteControlButtonPressed(int keyCode) {
 		mService.onRemoteControlButtonPressed(keyCode);
 	}
-
-
-	@Override
-	public void registerPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
-		mService.registerPlugin(pluginClass);
-		
-	}
 	
 	@Override
 	public void addPluginInstance(PlayerHaterPlugin plugin) {
 		mService.addPluginInstance(plugin);
-	}
-
-	@Override
-	public void unregisterPlugin(Class<? extends PlayerHaterPlugin> pluginClass) {
-		mService.unregisterPlugin(pluginClass);
 	}
 	
 	@Override
@@ -267,5 +256,35 @@ public class PlayerHaterBinder extends Binder implements IPlayerHaterBinder {
 	@Override
 	public boolean skipTo(int position) {
 		return mService.skipTo(position);
+	}
+
+	@Override
+	public void skip() {
+		mService.skip();
+	}
+
+	@Override
+	public void skipBack() {
+		mService.skipBack();
+	}
+
+	@Override
+	public void duck() {
+		mService.duck();
+	}
+
+	@Override
+	public void unduck() {
+		mService.unduck();
+	}
+
+	@Override
+	public void startForeground(int notificationNu, Notification notification) {
+		mService.startForeground(notificationNu, notification);
+	}
+
+	@Override
+	public void stopForeground(boolean b) {
+		mService.stopForeground(b);
 	}
 }

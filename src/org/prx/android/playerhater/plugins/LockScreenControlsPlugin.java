@@ -4,6 +4,7 @@ import java.net.URL;
 
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.util.BroadcastReceiver;
+import org.prx.android.playerhater.util.IPlayerHater;
 
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
@@ -27,7 +28,9 @@ public class LockScreenControlsPlugin extends AbstractPlugin {
 	private AudioManager mAudioManager;
 	private boolean mCanSkipForward = false;
 
-	public LockScreenControlsPlugin(Context context) {
+
+	@Override
+	public void onServiceStarted(Context context, IPlayerHater playerHater) {
 		mContext = context;
 	}
 

@@ -8,6 +8,7 @@ import static org.prx.android.playerhater.player.Gapless.gapless;
 import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.player.MediaPlayerWrapper;
+import org.prx.android.playerhater.plugins.BackgroundedPlugin;
 import org.prx.android.playerhater.util.SongQueue;
 import org.prx.android.playerhater.util.SongQueue.OnQeueuedSongsChangedListener;
 
@@ -36,7 +37,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	public void onCreate() {
 		super.onCreate();
 		mSongQueue.setQueuedSongsChangedListener(this);
-		//mPlugin = new BackgroundedPlugin(mPlugin);
+		mPlugin = new BackgroundedPlugin(mPlugin);
 		super.setOnCompletionListener(this);
 	}
 
@@ -146,15 +147,11 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	public void onRemoteControlButtonPressed(int button) {
 		switch (button) {
 		case KeyEvent.KEYCODE_MEDIA_NEXT:
-			next();
+			skip();
 			break;
 		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-			if (getCurrentPosition() > 2000
-					|| getNowPlaying() == mSongQueue.back()) {
-				super.onRemoteControlButtonPressed(button);
-			} else {
-				getMediaPlayer().prepareAndPlay(getApplicationContext(), getNowPlaying().getUri(), 0);
-			}
+			skipBack();
+			break;
 		default:
 			super.onRemoteControlButtonPressed(button);
 		}
@@ -297,7 +294,8 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 
 	/* Private utility methods */
 
-	private void next() {
+	@Override
+	public void skip() {
 		boolean autoPlay = isPlaying() && !mSongQueue.isAtLastSong();
 		getMediaPlayer().skip(autoPlay);
 		if (!autoPlay) {
@@ -307,6 +305,16 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 			// to play.
 			onResumed();
 			onLoading();
+		}
+	}
+	
+	@Override
+	public void skipBack() {
+		if (getCurrentPosition() > 2000
+				|| getNowPlaying() == mSongQueue.back()) {
+			super.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_PREVIOUS);
+		} else {
+			getMediaPlayer().prepareAndPlay(getApplicationContext(), getNowPlaying().getUri(), 0);
 		}
 	}
 }

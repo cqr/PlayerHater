@@ -98,12 +98,10 @@ public interface PlayerHaterService {
 
 	void stopService();
 
-	public abstract void registerPlugin(
-			Class<? extends PlayerHaterPlugin> pluginClass);
-
-	public abstract void unregisterPlugin(
-			Class<? extends PlayerHaterPlugin> pluginClass);
-
 	public abstract void addPluginInstance(PlayerHaterPlugin plugin);
+
+	public abstract void skip();
+
+	public abstract void skipBack();
 
 }

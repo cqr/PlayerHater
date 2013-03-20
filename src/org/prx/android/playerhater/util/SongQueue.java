@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.prx.android.playerhater.Song;
 
+import android.util.Log;
+
 public class SongQueue {
 
 	public interface OnQeueuedSongsChangedListener {
@@ -32,6 +34,12 @@ public class SongQueue {
 	public void addSongAtPosition(Song song, int position) {
 		mSongs.add(position, song);
 		songOrderChanged();
+		int i = 1;
+		Log.d("PlayerHater", "Queue");
+		Log.d("PlayerHater", "=========================");
+		for (Song iSong : mSongs) {
+			Log.d("PlayerHater", "" + i++ + " " + iSong);
+		}
 	}
 
 	public Song next() {
@@ -73,7 +81,7 @@ public class SongQueue {
 			return null;
 		}
 		if (mPlayheadPosition == mSongs.size()) {
-			return mSongs.get(0);
+			return null;
 		}
 		return mSongs.get(mPlayheadPosition);
 	}

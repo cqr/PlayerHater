@@ -58,24 +58,6 @@ public abstract class AbstractPlaybackService extends Service implements
 		mBroadcastReceiver = new BroadcastReceiver(this, new PlayerHaterBinder(this));
 
 		PluginCollection collection = new PluginCollection();
-		
-		if (PlayerHater.MODERN_AUDIO_FOCUS) {
-			collection.add(new AudioFocusPlugin(this));
-		}
-
-		if (PlayerHater.EXPANDING_NOTIFICATIONS) {
-			mNotificationPlugin = new ExpandableNotificationPlugin(this);
-		} else if (PlayerHater.TOUCHABLE_NOTIFICATIONS) {
-			mNotificationPlugin = new TouchableNotificationPlugin(this);
-		} else {
-			mNotificationPlugin = new NotificationPlugin(this);
-		}
-		collection.add(mNotificationPlugin);
-
-		if (PlayerHater.LOCK_SCREEN_CONTROLS) {
-			collection.add(new LockScreenControlsPlugin(this));
-		}
-
 		mLifecycleListener = collection;
 
 		mPlayerListenerManager.setOnCompletionListener(this);
