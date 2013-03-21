@@ -1,5 +1,6 @@
 package org.prx.android.playerhater.service;
 
+import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
 import static org.prx.android.playerhater.player.Synchronous.synchronous;
 import static org.prx.android.playerhater.player.WakeLocked.wakeLocked;
@@ -19,6 +20,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 
+@SuppressWarnings("unused")
 public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 		OnQeueuedSongsChangedListener, OnCompletionListener {
 
@@ -67,7 +69,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	@Override
 	public boolean pause() {
 		if (getMediaPlayer().conditionalPause()) {
-			stopClockThread();
+			// stopClockThread();
 			onPaused();
 			return true;
 		}
@@ -119,10 +121,9 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	/* Queue Methods */
 	@Override
 	public void enqueue(Song song) {
-		Log.d(TAG, "Adding song" + song);
 		mSongQueue.appendSong(song);
 	}
-	
+
 	@Override
 	public boolean skipTo(int position) {
 		return mSongQueue.skipTo(position);
@@ -136,6 +137,29 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 			mSongQueue.appendSong(nowPlayingSong);
 		} else {
 			mSongQueue.empty();
+		}
+	}
+
+	@Override
+	public void onNowPlayingChanged(Song nowPlaying) {
+		// If we got here by looping around the queue
+		if (getMediaPlayer().getState() == Player.IDLE) {
+			getMediaPlayer().prepare(getApplicationContext(),
+					nowPlaying.getUri());
+		}
+		mPlugin.onSongChanged(nowPlaying);
+	}
+
+	@Override
+	public void onNextSongChanged(Song nextSong) {
+		if (nextSong != null) {
+			mPlugin.onNextTrackAvailable(nextSong);
+			synchronous(getNextPlayer()).prepare(getApplicationContext(),
+					nextSong.getUri());
+			getMediaPlayer().setNextMediaPlayer(getNextPlayer());
+		} else {
+			getMediaPlayer().setNextMediaPlayer(null);
+			mPlugin.onNextTrackUnavailable();
 		}
 	}
 
@@ -168,6 +192,7 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
+		mPlugin.onSongFinished(getNowPlaying(), PlayerHater.TRACK_END);
 		mSongQueue.next();
 		if (mOnCompletionListener != null) {
 			mOnCompletionListener.onCompletion(mp);
@@ -210,16 +235,13 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 			onStarted();
 		}
 
-		if (to == Player.PAUSED || to == Player.PREPARED) {
+		if (to == Player.PAUSED || to == Player.PREPARED
+				|| to == Player.STOPPED) {
 			onPaused();
 		}
 
 		if (to == Player.PREPARING) {
 			onLoading();
-		}
-
-		if (to == Player.STOPPED) {
-			onStopped();
 		}
 	}
 
@@ -277,44 +299,17 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	}
 
 	@Override
-	public void onNowPlayingChanged(Song nowPlaying) {
-		Log.d(TAG, "Got a new Song " + nowPlaying);
-		mPlugin.onSongChanged(nowPlaying);
-	}
-
-	@Override
-	public void onNextSongChanged(Song nextSong) {
-		if (nextSong != null) {
-			mPlugin.onNextTrackAvailable();
-			synchronous(getNextPlayer()).prepare(getApplicationContext(),
-					nextSong.getUri());
-			getMediaPlayer().setNextMediaPlayer(getNextPlayer());
-		}
-	}
-
-	/* Private utility methods */
-
-	@Override
 	public void skip() {
-		boolean autoPlay = isPlaying() && !mSongQueue.isAtLastSong();
-		getMediaPlayer().skip(autoPlay);
-		if (!autoPlay) {
-			onPaused();
-		} else {
-			// for UI purposes, make sure that we are clear that we are loading
-			// to play.
-			onResumed();
-			onLoading();
-		}
+		getMediaPlayer().skip();
 	}
-	
+
 	@Override
 	public void skipBack() {
-		if (getCurrentPosition() > 2000
-				|| getNowPlaying() == mSongQueue.back()) {
+		if (getCurrentPosition() > 2000 || getNowPlaying() == mSongQueue.back()) {
 			super.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_PREVIOUS);
 		} else {
-			getMediaPlayer().prepareAndPlay(getApplicationContext(), getNowPlaying().getUri(), 0);
+			getMediaPlayer().prepareAndPlay(getApplicationContext(),
+					getNowPlaying().getUri(), 0);
 		}
 	}
 }

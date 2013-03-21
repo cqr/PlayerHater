@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <bool name="__playerhater_notification">false</bool>
+    <bool name="__playerhater_notification">true</bool>
     <bool name="__playerhater_lockscreen">false</bool>
     <bool name="__playerhater_audiofocus">false</bool>
     <bool name="__playerhater_touchable_notification">false</bool>

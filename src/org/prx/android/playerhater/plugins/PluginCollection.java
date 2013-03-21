@@ -93,9 +93,9 @@ public class PluginCollection implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onNextTrackAvailable() {
+	public void onNextTrackAvailable(Song nextSong) {
 		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onNextTrackAvailable();
+			plugin.onNextTrackAvailable(nextSong);
 	}
 
 	@Override
@@ -121,6 +121,24 @@ public class PluginCollection implements PlayerHaterPlugin {
 	public void onIntentActivityChanged(PendingIntent pending) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onIntentActivityChanged(pending);
+	}
+
+	@Override
+	public void onServiceRebind(Context context, IPlayerHater playerHater) {
+		for (PlayerHaterPlugin plugin : mPlugins)
+			plugin.onServiceRebind(context, playerHater);
+	}
+
+	@Override
+	public void onSongFinished(Song song, int reason) {
+		for (PlayerHaterPlugin plugin : mPlugins)
+			plugin.onSongFinished(song, reason);
+	}
+
+	@Override
+	public void onChangesComplete() {
+		for (PlayerHaterPlugin plugin : mPlugins)
+			plugin.onChangesComplete();
 	}
 
 }

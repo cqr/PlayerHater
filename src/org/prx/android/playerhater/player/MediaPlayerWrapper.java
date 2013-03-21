@@ -315,4 +315,9 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		mMediaPlayer.setOnPreparedListener(this);
 		mMediaPlayer.setOnSeekCompleteListener(this);
 	}
+	
+	@Override
+	public String toString() {
+		return mMediaPlayer.toString() + " (" + getStateName() + ")";
+	}
 }

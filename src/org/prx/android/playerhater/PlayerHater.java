@@ -12,7 +12,7 @@ import org.prx.android.playerhater.service.OnShutdownRequestListener;
 import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.ClientPlayerHater;
-import org.prx.android.playerhater.util.ConfigurationManager;
+import org.prx.android.playerhater.util.Config;
 import org.prx.android.playerhater.util.ListenerEcho;
 import org.prx.android.playerhater.util.TransientPlayer;
 import android.app.Activity;
@@ -32,8 +32,11 @@ import android.util.Log;
 
 public class PlayerHater implements ClientPlayerHater {
 	public static final String TAG = "PLAYERHATER";
-	
-	private static ConfigurationManager sConfig;
+
+	public static final int TRACK_END = 4;
+	public static final int SKIP_BUTTON = 5;
+
+	private static Config sConfig;
 
 	private static final int STATE_IDLE = 0;
 	private static final int STATE_CONNECTING = 1;
@@ -87,15 +90,19 @@ public class PlayerHater implements ClientPlayerHater {
 		}
 
 		if (sConfig == null) {
-			sConfig = new ConfigurationManager(context);
-			for (Class<? extends PlayerHaterPlugin> pluginClass : sConfig.getPrebindPlugins()) {
+			sConfig = new Config(context);
+			for (Class<? extends PlayerHaterPlugin> pluginClass : sConfig
+					.getPrebindPlugins()) {
 				try {
 					PlayerHaterPlugin plugin = pluginClass.newInstance();
 					sPlugins.add(plugin);
-					PlayerHater ph = new PlayerHater(context.getApplicationContext());
+					PlayerHater ph = new PlayerHater(
+							context.getApplicationContext());
 					plugin.onServiceStarted(context.getApplicationContext(), ph);
 				} catch (Exception e) {
-					Log.e(TAG, "Could not instantiate plugin " + pluginClass.getCanonicalName(), e);
+					Log.e(TAG,
+							"Could not instantiate plugin "
+									+ pluginClass.getCanonicalName(), e);
 				}
 			}
 		}
@@ -274,7 +281,7 @@ public class PlayerHater implements ClientPlayerHater {
 			this, mId);
 	private int mState = STATE_IDLE;
 
-	public PlayerHater(Context context) {
+	private PlayerHater(Context context) {
 		mContext = context;
 		sPlayerHaters.add(this);
 		if (sIsBoundSomewhere > 0) {

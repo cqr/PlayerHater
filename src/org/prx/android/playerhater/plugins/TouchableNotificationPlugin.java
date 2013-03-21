@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.RemoteViews;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -62,48 +61,33 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 
 	@Override
 	public void onPlaybackStarted() {
-		super.onPlaybackStarted();
 		onPlaybackResumed();
+		super.onPlaybackStarted();
 	}
 
 	@Override
 	public void onPlaybackPaused() {
 		setImageViewResource(R.id.button, R.drawable.zzz__ph_bt_play_enabled);
-		updateNotification();
 	}
 
 	@Override
 	public void onPlaybackResumed() {
 		setImageViewResource(R.id.button, R.drawable.__player_hater_pause);
-		updateNotification();
 	}
 
 	@Override
 	protected Notification getNotification() {
-		mNotification = buildNotification();
+		if (mNotification == null)
+			mNotification = buildNotification();
 		return mNotification;
 	}
-
+	
 	public void setIntentClass(Class<? extends Activity> intentClass) {
 		Intent i = new Intent(getContext(), intentClass);
 		i.putExtra("fromPlayerHaterNotification", true);
 		mContentIntent = PendingIntent.getActivity(getContext(), 777, i,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 		mNotification.contentIntent = mContentIntent;
-	}
-
-	@Override
-	public void onNextTrackAvailable() {
-		this.mNotificationCanSkip = true;
-		setViewVisibility(R.id.skip, View.VISIBLE);
-		updateNotification();
-	}
-
-	@Override
-	public void onNextTrackUnavailable() {
-		this.mNotificationCanSkip = false;
-		setViewVisibility(R.id.skip, View.GONE);
-		updateNotification();
 	}
 
 	protected RemoteViews getNotificationView() {
@@ -120,12 +104,6 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 			mNotificationView.setImageViewResource(R.id.image,
 					mNotificationImageResourceId);
 		}
-
-		// if (mNotificationCanSkip) {
-		// onNextTrackAvailable();
-		// } else {
-		// onNextTrackUnavailable();
-		// }
 
 		return mNotificationView;
 	}

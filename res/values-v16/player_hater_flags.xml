@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <bool name="__playerhater_notification">false</bool>
     <bool name="__playerhater_touchable_notification">false</bool>
     <bool name="__playerhater_expanding_notification">true</bool>
 </resources>

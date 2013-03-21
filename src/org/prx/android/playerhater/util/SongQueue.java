@@ -34,12 +34,6 @@ public class SongQueue {
 	public void addSongAtPosition(Song song, int position) {
 		mSongs.add(position, song);
 		songOrderChanged();
-		int i = 1;
-		Log.d("PlayerHater", "Queue");
-		Log.d("PlayerHater", "=========================");
-		for (Song iSong : mSongs) {
-			Log.d("PlayerHater", "" + i++ + " " + iSong);
-		}
 	}
 
 	public Song next() {

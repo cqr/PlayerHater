@@ -1,9 +1,12 @@
 package org.prx.android.playerhater.player;
 
+import org.prx.android.playerhater.PlayerHater;
+
 import android.annotation.TargetApi;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Build;
+import android.util.Log;
 import static org.prx.android.playerhater.player.Synchronous.synchronous;
 
 public interface SetNextMediaPlayerCompat extends OnCompletionListener {
@@ -34,31 +37,20 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 				}
 			}
 		}
-		
+
 		@Override
-		public void skip(boolean autoPlay) {
-			onCompletion(mStateManager.getBarePlayer(), autoPlay);
+		public void skip() {
+			onCompletion(mStateManager.getBarePlayer());
 		}
 
 		@Override
 		public void onCompletion(MediaPlayer mp) {
-			onCompletion(mp, true);
-		}
-		
-		private void onCompletion(MediaPlayer mp, boolean autoPlay) {
 			if (mNextMediaPlayer != null) {
 				mStateManager.swap(mNextMediaPlayer);
 				mNextMediaPlayer.reset();
-				if (autoPlay) {
-					synchronous(mStateManager).conditionalPlay();
-				}
+				synchronous(mStateManager).conditionalPlay();
 			} else {
-				Player tmp = synchronous(mStateManager);
-				tmp.conditionalPause();
-				tmp.seekTo(0);
-				if (autoPlay) {
-					tmp.conditionalPlay();
-				}
+				mStateManager.reset();
 			}
 			if (mOnCompletionListener != null) {
 				mOnCompletionListener.onCompletion(mp);
@@ -73,6 +65,7 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 	public class Modern implements SetNextMediaPlayerCompat {
+		private static final String TAG = PlayerHater.TAG;
 		private final MediaPlayerWithState mMediaPlayer;
 		private MediaPlayerWithState mNextMediaPlayer;
 		private OnCompletionListener mOnComplete;
@@ -89,7 +82,7 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 			if (next != null) {
 				tmp = mNextMediaPlayer.getBarePlayer();
 			}
-			if (tmp != null) {
+			if (tmp != null && tmp != mMediaPlayer.getBarePlayer()) {
 				mMediaPlayer.getBarePlayer().setNextMediaPlayer(tmp);
 			}
 		}
@@ -100,22 +93,25 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 		}
 
 		@Override
-		public void skip(boolean autoPlay) {
-			onCompletion(mMediaPlayer.getBarePlayer());
-			if (autoPlay) {
-				synchronous(mMediaPlayer).conditionalPlay();
+		public void skip() {
+			if (mNextMediaPlayer == null) {
+				mMediaPlayer.reset();
 			}
+			onCompletion(mMediaPlayer.getBarePlayer(), true);
 		}
-
+		
 		@Override
 		public void onCompletion(MediaPlayer mp) {
+			onCompletion(mp, false);
+		}
+		
+		private void onCompletion(MediaPlayer mp, boolean start) {
 			if (mNextMediaPlayer != null) {
 				mMediaPlayer.swap(mNextMediaPlayer);
 				mNextMediaPlayer.reset();
-			} else {
-				Player tmp = synchronous(mMediaPlayer);
-				tmp.conditionalPause();
-				tmp.seekTo(0);
+				if (start) {
+					synchronous(mMediaPlayer).start();
+				}
 			}
 			if (mOnComplete != null) {
 				mOnComplete.onCompletion(mp);
@@ -126,7 +122,7 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 
 	public void setNextMediaPlayer(MediaPlayerWithState mediaPlayer);
 
-	public void skip(boolean autoPlay);
+	public void skip();
 
 	public void setOnCompletionListener(OnCompletionListener onCompletion);
 }

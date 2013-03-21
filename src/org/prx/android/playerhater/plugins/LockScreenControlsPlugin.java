@@ -148,7 +148,7 @@ public class LockScreenControlsPlugin extends AbstractPlugin {
 	}
 
 	@Override
-	public void onNextTrackAvailable() {
+	public void onNextTrackAvailable(Song nextTrack) {
 		mCanSkipForward = true;
 		getRemoteControlClient().setTransportControlFlags(getTCFs());
 	}

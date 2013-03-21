@@ -11,9 +11,13 @@ public interface PlayerHaterPlugin {
 	
 	void onServiceStarted(Context context, IPlayerHater playerHater);
 	
+	void onServiceRebind(Context context, IPlayerHater playerHater);
+	
 	void onServiceStopping();
 	
 	void onSongChanged(Song song);
+	
+	void onSongFinished(Song song, int reason);
 	
 	void onDurationChanged(int duration);
 
@@ -35,9 +39,11 @@ public interface PlayerHaterPlugin {
 
 	void onAlbumArtChangedToUri(Uri url);
 	
-	void onNextTrackAvailable();
+	void onNextTrackAvailable(Song nextTrack);
 	
 	void onNextTrackUnavailable();
 
-	void onIntentActivityChanged(PendingIntent pending); 
+	void onIntentActivityChanged(PendingIntent pending);
+
+	void onChangesComplete(); 
 }

@@ -26,7 +26,7 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 	private RemoteViews getExpandedView() {
 		if (mExpandedView == null) {
 			mExpandedView = new RemoteViews(getContext().getPackageName(),
-					R.layout.zzz_ph_exp_notification);
+					R.layout.zzz_ph_jbb_notification);
 			setListeners(mExpandedView);
 		}
 
@@ -37,11 +37,6 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 		} else if (mNotificationImageResourceId != 0) {
 			mExpandedView.setImageViewResource(R.id.image,
 					mNotificationImageResourceId);
-		}
-		if (mNotificationCanSkip) {
-			onNextTrackAvailable();
-		} else {
-			onNextTrackUnavailable();
 		}
 		return mExpandedView;
 	}

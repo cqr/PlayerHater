@@ -8,7 +8,7 @@ import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.plugins.PluginCollection;
 import org.prx.android.playerhater.util.BroadcastReceiver;
-import org.prx.android.playerhater.util.ConfigurationManager;
+import org.prx.android.playerhater.util.Config;
 import org.prx.android.playerhater.util.PlayerListenerManager;
 
 import android.app.Activity;
@@ -35,7 +35,7 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	protected final PlayerListenerManager mPlayerListenerManager = new PlayerListenerManager();
 	protected PlayerHaterListener mPlayerHaterListener;
 	private PlayerHaterBinder mBinder;
-	private ConfigurationManager mConfig;
+	private Config mConfig;
 	private OnShutdownRequestListener mShutdownRequestListener;
 	private PluginCollection mPluginCollection;
 
@@ -64,7 +64,7 @@ public abstract class NewAbstractPlaybackService extends Service implements
 	@Override
 	public IBinder onBind(Intent intent) {
 		if (mConfig == null) {
-			ConfigurationManager config = intent.getExtras().getParcelable(
+			Config config = intent.getExtras().getParcelable(
 					PlayerHater.EXTRA_CONFIG);
 			if (config != null) {
 				setConfig(config);
@@ -73,7 +73,7 @@ public abstract class NewAbstractPlaybackService extends Service implements
 		return getBinder();
 	}
 
-	private void setConfig(ConfigurationManager config) {
+	private void setConfig(Config config) {
 		mConfig = config;
 		for (Class<? extends PlayerHaterPlugin> plugin : mConfig.getServicePlugins()) {
 			try {

@@ -11,20 +11,22 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ServiceInfo;
+import android.content.res.Resources;
+import android.content.res.Resources.NotFoundException;
 import android.content.res.XmlResourceParser;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
-public class ConfigurationManager implements Parcelable {
+public class Config implements Parcelable {
 
 	private final Set<String> mPlugins = new HashSet<String>();
 	private final Set<String> mPreboundPlugins = new HashSet<String>();
 
-	public ConfigurationManager(Context context) {
+	public Config(Context context) {
 		XmlResourceParser parser = context.getResources().getXml(
 				R.xml.zzz_ph_config_defaults);
-		load(parser);
+		load(parser, context);
 		try {
 			ServiceInfo info = context.getPackageManager().getServiceInfo(
 					PlayerHater.buildServiceIntent(context).getComponent(),
@@ -33,7 +35,7 @@ public class ConfigurationManager implements Parcelable {
 				int id = info.metaData.getInt("org.prx.playerhater.Config", 0);
 				if (id != 0) {
 					parser = context.getResources().getXml(id);
-					load(parser);
+					load(parser, context);
 				}
 			}
 		} catch (NameNotFoundException e) {
@@ -45,6 +47,9 @@ public class ConfigurationManager implements Parcelable {
 	}
 
 	public Set<Class<? extends PlayerHaterPlugin>> getServicePlugins() {
+		for (String plugin : mPlugins) {
+			Log.d(PlayerHater.TAG, plugin);
+		}
 		return getPlugins(mPlugins);
 	}
 
@@ -74,23 +79,23 @@ public class ConfigurationManager implements Parcelable {
 		dest.writeStringArray(getPreboundPluginsArray());
 	}
 
-	public static final Parcelable.Creator<ConfigurationManager> CREATOR = new Parcelable.Creator<ConfigurationManager>() {
+	public static final Parcelable.Creator<Config> CREATOR = new Parcelable.Creator<Config>() {
 
 		@Override
-		public ConfigurationManager createFromParcel(Parcel in) {
-			return new ConfigurationManager(in);
+		public Config createFromParcel(Parcel in) {
+			return new Config(in);
 		}
 
 		@Override
-		public ConfigurationManager[] newArray(int size) {
-			return new ConfigurationManager[size];
+		public Config[] newArray(int size) {
+			return new Config[size];
 		}
 	};
 
 	private static final int PLUGIN = 1;
 	private static final int INVALID_TAG = -1;
 
-	private ConfigurationManager(Parcel in) {
+	private Config(Parcel in) {
 		setPluginsArray(in.createStringArray());
 		setPreboundPluginsArray(in.createStringArray());
 	}
@@ -118,7 +123,8 @@ public class ConfigurationManager implements Parcelable {
 		}
 	}
 
-	private void load(XmlResourceParser parser) {
+	private void load(XmlResourceParser parser, Context context) {
+		Resources res = context.getResources();
 		try {
 			parser.next();
 			int eventType = parser.getEventType();
@@ -135,12 +141,13 @@ public class ConfigurationManager implements Parcelable {
 					if (parser.getName().equals("plugin")) {
 						currentTagType = PLUGIN;
 					}
-					pluginEnabled = parser.getAttributeBooleanValue(null,
+					pluginEnabled = loadBooleanOrResourceBoolean(res, parser,
 							"enabled", true);
-					prebindPlugin = parser.getAttributeBooleanValue(null,
+					prebindPlugin = loadBooleanOrResourceBoolean(res, parser,
 							"prebind", false);
-					pluginDisabled = parser.getAttributeBooleanValue(null,
+					pluginDisabled = loadBooleanOrResourceBoolean(res, parser,
 							"disabled", false);
+
 					pluginName = parser.getAttributeValue(null, "name");
 				} else if (eventType == XmlResourceParser.END_TAG) {
 					switch (currentTagType) {
@@ -165,5 +172,27 @@ public class ConfigurationManager implements Parcelable {
 		} catch (Exception e) {
 
 		}
+	}
+
+	private boolean loadBooleanOrResourceBoolean(Resources res,
+			XmlResourceParser parser, String attrName, boolean def) {
+		int id;
+		boolean result = def;
+		try {
+			id = parser.getAttributeResourceValue(null, attrName, 0);
+			if (id != 0) {
+				try {
+					result = res.getBoolean(id);
+				} catch (NotFoundException e) {
+					result = parser.getAttributeBooleanValue(null, attrName,
+							def);
+				}
+			} else {
+				result = parser.getAttributeBooleanValue(null, attrName, def);
+			}
+		} catch (Exception e) {
+			return result;
+		}
+		return result;
 	}
 }

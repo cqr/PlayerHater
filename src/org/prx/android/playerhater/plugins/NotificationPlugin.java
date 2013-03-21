@@ -18,7 +18,7 @@ import android.util.Log;
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
 public class NotificationPlugin extends AbstractPlugin {
 
-	protected static final int NOTIFICATION_NU = 9747245;
+	protected static final int NOTIFICATION_NU = 0x974732;
 	private static final String TAG = "NotificationPlugin";
 	protected IPlayerHaterBinder mService;
 	protected NotificationManager mNotificationManager;
@@ -28,7 +28,8 @@ public class NotificationPlugin extends AbstractPlugin {
 	private boolean mIsVisible = false;
 	private Notification mNotification;
 
-	public NotificationPlugin() { }
+	public NotificationPlugin() {
+	}
 
 	@Override
 	public void onServiceStarted(Context context, IPlayerHater playerHater) {
@@ -51,7 +52,6 @@ public class NotificationPlugin extends AbstractPlugin {
 	@Override
 	public void onSongChanged(Song song) {
 		if (song != null) {
-			Log.d("PlayerHater", "" + song);
 			onTitleChanged(song.getTitle());
 			onArtistChanged(song.getArtist());
 			onAlbumArtChangedToUri(song.getAlbumArt());
@@ -60,7 +60,6 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	@Override
 	public void onPlaybackStarted() {
-		Log.d(TAG, "Starting up our notification");
 		mService.startForeground(NOTIFICATION_NU, getNotification());
 		mIsVisible = true;
 	}
@@ -85,7 +84,6 @@ public class NotificationPlugin extends AbstractPlugin {
 	@Override
 	public void onTitleChanged(String notificationTitle) {
 		mNotificationTitle = notificationTitle;
-		updateNotification();
 	}
 
 	public void onIntentActivityChanged(PendingIntent contentIntent) {
@@ -93,16 +91,20 @@ public class NotificationPlugin extends AbstractPlugin {
 		if (mNotification != null) {
 			mNotification.contentIntent = mContentIntent;
 		}
-		updateNotification();
 	}
 
 	@Override
 	public void onArtistChanged(String notificationText) {
 		mNotificationText = notificationText;
+	}
+
+	@Override
+	public void onChangesComplete() {
 		updateNotification();
 	}
 
 	protected void updateNotification() {
+		Log.d(TAG, getNotification().toString());
 		if (mIsVisible) {
 			mNotificationManager.notify(NOTIFICATION_NU, getNotification());
 		}
