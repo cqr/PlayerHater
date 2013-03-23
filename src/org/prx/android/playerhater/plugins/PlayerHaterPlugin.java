@@ -1,7 +1,8 @@
 package org.prx.android.playerhater.plugins;
 
+import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.util.IPlayerHater;
+import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -9,9 +10,9 @@ import android.net.Uri;
 
 public interface PlayerHaterPlugin {
 	
-	void onServiceStarted(Context context, IPlayerHater playerHater);
+	void onPlayerHaterLoaded(Context context, PlayerHater playerHater);
 	
-	void onServiceRebind(Context context, IPlayerHater playerHater);
+	void onServiceBound(PlayerHaterServiceBinder binder);
 	
 	void onServiceStopping();
 	
@@ -23,13 +24,13 @@ public interface PlayerHaterPlugin {
 
 	void onAudioLoading();
 	
-	void onPlaybackPaused();
+	void onAudioPaused();
 	
-	void onPlaybackResumed();
+	void onAudioResumed();
 	
-	void onPlaybackStarted();
+	void onAudioStarted();
 
-	void onPlaybackStopped();
+	void onAudioStopped();
 
 	void onTitleChanged(String title);
 
@@ -39,9 +40,9 @@ public interface PlayerHaterPlugin {
 
 	void onAlbumArtChangedToUri(Uri url);
 	
-	void onNextTrackAvailable(Song nextTrack);
+	void onNextSongAvailable(Song nextTrack);
 	
-	void onNextTrackUnavailable();
+	void onNextSongUnavailable();
 
 	void onIntentActivityChanged(PendingIntent pending);
 

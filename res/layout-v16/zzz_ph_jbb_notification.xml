@@ -13,16 +13,16 @@
         android:scaleType="fitCenter" />
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_toRightOf="@id/image"
         android:orientation="vertical" >
 
         <TextView
             android:id="@+id/title"
             style="@android:style/TextAppearance.StatusBar.EventContent.Title"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="40dp"
             android:layout_weight="1"
@@ -37,11 +37,13 @@
         <TextView
             android:id="@+id/text"
             style="@android:style/TextAppearance.StatusBar.EventContent"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_weight="0"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:singleLine="true"
             android:gravity="top" />
 
         <ImageView

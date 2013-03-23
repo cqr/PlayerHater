@@ -21,7 +21,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 
 @SuppressWarnings("unused")
-public class QueuedPlaybackService extends NewAbstractPlaybackService implements
+public class QueuedPlaybackService extends AbsPlaybackService implements
 		OnQeueuedSongsChangedListener, OnCompletionListener {
 
 	private static final int TICK_DURATION = 500;
@@ -95,6 +95,9 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 
 	@Override
 	public boolean play(int mSec) throws IllegalStateException {
+		if (mSec == 0) {
+			return play(getNowPlaying(), mSec);
+		}
 		pause(); // Might not be the right state, but who cares?
 		seekTo(mSec);
 		return play();
@@ -120,8 +123,9 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 
 	/* Queue Methods */
 	@Override
-	public void enqueue(Song song) {
+	public boolean enqueue(Song song) {
 		mSongQueue.appendSong(song);
+		return true;
 	}
 
 	@Override
@@ -139,6 +143,11 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 			mSongQueue.empty();
 		}
 	}
+	
+	@Override
+	public int getQueueLength() {
+		return mSongQueue.size();
+	}
 
 	@Override
 	public void onNowPlayingChanged(Song nowPlaying) {
@@ -153,13 +162,13 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	@Override
 	public void onNextSongChanged(Song nextSong) {
 		if (nextSong != null) {
-			mPlugin.onNextTrackAvailable(nextSong);
+			mPlugin.onNextSongAvailable(nextSong);
 			synchronous(getNextPlayer()).prepare(getApplicationContext(),
 					nextSong.getUri());
 			getMediaPlayer().setNextMediaPlayer(getNextPlayer());
 		} else {
 			getMediaPlayer().setNextMediaPlayer(null);
-			mPlugin.onNextTrackUnavailable();
+			mPlugin.onNextSongUnavailable();
 		}
 	}
 
@@ -299,17 +308,19 @@ public class QueuedPlaybackService extends NewAbstractPlaybackService implements
 	}
 
 	@Override
-	public void skip() {
+	public boolean skip() {
 		getMediaPlayer().skip();
+		return true;
 	}
 
 	@Override
-	public void skipBack() {
+	public boolean skipBack() {
 		if (getCurrentPosition() > 2000 || getNowPlaying() == mSongQueue.back()) {
 			super.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_PREVIOUS);
 		} else {
 			getMediaPlayer().prepareAndPlay(getApplicationContext(),
 					getNowPlaying().getUri(), 0);
 		}
+		return true;
 	}
 }

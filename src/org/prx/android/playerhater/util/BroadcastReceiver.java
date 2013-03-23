@@ -1,7 +1,8 @@
 package org.prx.android.playerhater.util;
 
 import org.prx.android.playerhater.PlayerHater;
-import org.prx.android.playerhater.service.IPlayerHaterBinder;
+import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -16,13 +17,13 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver impleme
 
 	private static final HeadphoneButtonGestureHelper sGestureHelper = new HeadphoneButtonGestureHelper();
 	
-	private IPlayerHaterBinder mService;
+	private PlayerHaterServiceBinder mService;
 
 	public BroadcastReceiver() {
 		super();
 	}
 
-	public BroadcastReceiver(Context context, IPlayerHaterBinder playbackService) {
+	public BroadcastReceiver(Context context, PlayerHaterServiceBinder playbackService) {
 		super();
 		if (playbackService != null) {
 			mService = playbackService;
@@ -78,10 +79,10 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver impleme
 		}
 	}
 	
-	private IPlayerHaterBinder getService(Context context) {
+	private PlayerHaterServiceBinder getService(Context context) {
 		if (mService == null && context != null) {
 			Intent intent = PlayerHater.buildServiceIntent(context);
-			mService = (IPlayerHaterBinder) peekService(context, intent);
+			mService = PlayerHaterServiceBinder.Stub.asInterface(peekService(context, intent));
 		}
 		return mService;
 	}
@@ -91,7 +92,6 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver impleme
 			try {
 				getService(context).onRemoteControlButtonPressed(keyCode);
 			} catch (Exception e) {
-				Log.e("BroadcastReceiver", "Ugh", e);
 				if (startIfNecessary && context != null) {
 					Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
 					intent.putExtra(REMOTE_CONTROL_BUTTON, keyCode);

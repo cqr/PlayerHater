@@ -1,8 +1,7 @@
 package org.prx.android.playerhater.plugins;
 
-import org.prx.android.playerhater.service.IPlayerHaterBinder;
+import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
 import org.prx.android.playerhater.util.BroadcastReceiver;
-import org.prx.android.playerhater.util.IPlayerHater;
 import org.prx.android.playerhater.util.OnAudioFocusChangeListener;
 
 import android.annotation.TargetApi;
@@ -16,37 +15,43 @@ public class AudioFocusPlugin extends AbstractPlugin {
 	private AudioManager mAudioService;
 	private OnAudioFocusChangeListener mAudioFocusChangeListener;
 	private ComponentName mEventReceiver;
-	private Context mContext;
 
 	public AudioFocusPlugin() {
 
 	}
 
 	@Override
-	public void onServiceStarted(Context context, IPlayerHater playerHater) {
-		mContext = context;
-		mAudioFocusChangeListener = new OnAudioFocusChangeListener(
-				(IPlayerHaterBinder) playerHater);
-		mAudioService = (AudioManager) mContext
-				.getSystemService(Context.AUDIO_SERVICE);
+	public void onServiceBound(PlayerHaterServiceBinder binder) {
+		super.onServiceBound(binder);
+		mAudioFocusChangeListener = new OnAudioFocusChangeListener(binder);
 	}
 
 	@Override
-	public void onPlaybackStarted() {
-		mAudioService.requestAudioFocus(mAudioFocusChangeListener,
+	public void onAudioStarted() {
+		getAudioManager().requestAudioFocus(mAudioFocusChangeListener,
 				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-		mAudioService.registerMediaButtonEventReceiver(getEventReceiver());
+		getAudioManager().registerMediaButtonEventReceiver(getEventReceiver());
 	}
 
 	@Override
-	public void onPlaybackStopped() {
-		mAudioService.abandonAudioFocus(mAudioFocusChangeListener);
-		mAudioService.unregisterMediaButtonEventReceiver(getEventReceiver());
+	public void onAudioStopped() {
+		getAudioManager().abandonAudioFocus(mAudioFocusChangeListener);
+		getAudioManager()
+				.unregisterMediaButtonEventReceiver(getEventReceiver());
 	}
 
-	private ComponentName getEventReceiver() {
+	protected AudioManager getAudioManager() {
+		if (mAudioService == null) {
+			mAudioService = (AudioManager) getContext().getSystemService(
+					Context.AUDIO_SERVICE);
+		}
+
+		return mAudioService;
+	}
+
+	protected ComponentName getEventReceiver() {
 		if (mEventReceiver == null) {
-			mEventReceiver = new ComponentName(mContext,
+			mEventReceiver = new ComponentName(getContext(),
 					BroadcastReceiver.class);
 		}
 		return mEventReceiver;

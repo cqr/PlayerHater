@@ -3,8 +3,9 @@ package org.prx.android.playerhater.plugins;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.util.IPlayerHater;
+import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -27,9 +28,9 @@ public class PluginCollection implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onPlaybackStopped() {
+	public void onAudioStopped() {
 		for (PlayerHaterPlugin listener : mPlugins)
-			listener.onPlaybackStopped();
+			listener.onAudioStopped();
 	}
 
 	@Override
@@ -75,39 +76,39 @@ public class PluginCollection implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onPlaybackPaused() {
+	public void onAudioPaused() {
 		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onPlaybackPaused();
+			plugin.onAudioPaused();
 	}
 
 	@Override
-	public void onPlaybackResumed() {
+	public void onAudioResumed() {
 		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onPlaybackResumed();
+			plugin.onAudioResumed();
 	}
 
 	@Override
-	public void onPlaybackStarted() {
+	public void onAudioStarted() {
 		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onPlaybackStarted();
+			plugin.onAudioStarted();
 	}
 
 	@Override
-	public void onNextTrackAvailable(Song nextSong) {
+	public void onNextSongAvailable(Song nextSong) {
 		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onNextTrackAvailable(nextSong);
+			plugin.onNextSongAvailable(nextSong);
 	}
 
 	@Override
-	public void onNextTrackUnavailable() {
+	public void onNextSongUnavailable() {
 		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onNextTrackUnavailable();
+			plugin.onNextSongUnavailable();
 	}
 
 	@Override
-	public void onServiceStarted(Context context, IPlayerHater playerHater) {
+	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
 		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onServiceStarted(context, playerHater);
+			plugin.onPlayerHaterLoaded(context, playerHater);
 	}
 
 	@Override
@@ -124,9 +125,9 @@ public class PluginCollection implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onServiceRebind(Context context, IPlayerHater playerHater) {
+	public void onServiceBound(PlayerHaterServiceBinder binder) {
 		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onServiceRebind(context, playerHater);
+			plugin.onServiceBound(binder);
 	}
 
 	@Override

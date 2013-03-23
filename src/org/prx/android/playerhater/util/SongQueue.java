@@ -3,6 +3,7 @@ package org.prx.android.playerhater.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
 
 import android.util.Log;
@@ -64,7 +65,7 @@ public class SongQueue {
 	}
 
 	public Song getNowPlaying() {
-		if (mPlayheadPosition == -1) {
+		if (mPlayheadPosition <= 0) {
 			return null;
 		}
 		return mSongs.get(mPlayheadPosition - 1);
@@ -125,13 +126,39 @@ public class SongQueue {
 	}
 
 	public boolean skipTo(int position) {
+		Log.d(PlayerHater.TAG, "skipping to " + position);
 		if (position <= mSongs.size()) {
+			Log.d(PlayerHater.TAG, "YES!");
 			mPlayheadPosition = position;
 			songOrderChanged();
 			return true;
 		}
+		Log.d(PlayerHater.TAG, "no.");
 		return false;
 	}
 
+	public List<Song> getSongsBefore() {
+		List<Song> songs = new ArrayList<Song>();
+		if (mPlayheadPosition > 1) {
+			for (int i=1; i < mPlayheadPosition; i++) {
+				songs.add(mSongs.get(i-1));
+			}
+		}
+		return songs;
+	}
+	
+	public List<Song> getSongsAfter() {
+		List<Song> songs = new ArrayList<Song>();
+		if (mPlayheadPosition > 0 && !isAtLastSong()) {
+			for (int i=mPlayheadPosition+1; i <= mSongs.size(); i++) {
+				songs.add(mSongs.get(i-1));
+			}
+		}
+		return songs;
+	}
+
+	public int size() {
+		return mSongs.size();
+	}
 
 }

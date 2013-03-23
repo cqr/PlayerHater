@@ -2,9 +2,6 @@
 <config>
 
     <plugin
-        name="org.prx.android.playerhater.plugins.AudioFocusPlugin"
-        enabled="@bool/__playerhater_audiofocus" />
-    <plugin
         name="org.prx.android.playerhater.plugins.NotificationPlugin"
         enabled="@bool/__playerhater_notification" />
     <plugin
@@ -13,6 +10,9 @@
     <plugin
         name="org.prx.android.playerhater.plugins.ExpandableNotificationPlugin"
         enabled="@bool/__playerhater_expanding_notification" />
+    <plugin
+        name="org.prx.android.playerhater.plugins.AudioFocusPlugin"
+        enabled="@bool/__playerhater_audiofocus" />
     <plugin
         name="org.prx.android.playerhater.plugins.LockScreenControlsPlugin"
         enabled="@bool/__playerhater_lockscreen" />

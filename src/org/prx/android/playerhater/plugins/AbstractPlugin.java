@@ -1,8 +1,9 @@
 package org.prx.android.playerhater.plugins;
 
+import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
-import org.prx.android.playerhater.util.IPlayerHater;
+import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -12,7 +13,8 @@ import android.util.Log;
 public abstract class AbstractPlugin implements PlayerHaterPlugin {
 
 	private static final String TAG = "AbstractPlugin";
-	private IPlayerHater mPlayerHater;
+	private PlayerHater mPlayerHater;
+	private PlayerHaterServiceBinder mBinder;
 	private Context mContext;
 
 	public AbstractPlugin() {
@@ -20,17 +22,14 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onServiceStarted(Context context, IPlayerHater binder) {
+	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
 		mContext = context;
-		mPlayerHater = binder;
+		mPlayerHater = playerHater;
 	}
 
 	@Override
-	public void onServiceRebind(Context context, IPlayerHater playerHater) {
-		Log.w(TAG,
-				"Forwarding a call to onServiceRebind => onServiceStarted in "
-						+ getClass().getSimpleName());
-		onServiceStarted(context, playerHater);
+	public void onServiceBound(PlayerHaterServiceBinder playerHaterBinder) {
+		mBinder = playerHaterBinder;
 	}
 
 	@Override
@@ -40,19 +39,19 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onPlaybackStarted() {
+	public void onAudioStarted() {
 	}
 
 	@Override
-	public void onPlaybackResumed() {
+	public void onAudioResumed() {
 		Log.w(TAG,
-				"Forwarding a call to onPlaybackResumed => onPlaybackStarted "
+				"Forwarding a call to onAudioResumed => onAudioStarted "
 						+ getClass().getSimpleName());
-		onPlaybackStarted();
+		onAudioStarted();
 	}
 
 	@Override
-	public void onPlaybackStopped() {
+	public void onAudioStopped() {
 	}
 
 	@Override
@@ -84,15 +83,15 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onPlaybackPaused() {
+	public void onAudioPaused() {
 	}
 
 	@Override
-	public void onNextTrackAvailable(Song nextSong) {
+	public void onNextSongAvailable(Song nextSong) {
 	}
 
 	@Override
-	public void onNextTrackUnavailable() {
+	public void onNextSongUnavailable() {
 	}
 
 	@Override
@@ -103,15 +102,19 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	public void onSongFinished(Song song, int reason) {
 	}
 
-	protected final IPlayerHater getPlayerHater() {
+	@Override
+	public void onChangesComplete() {
+	}
+
+	protected final PlayerHater getPlayerHater() {
 		return mPlayerHater;
 	}
 
-	public final Context getContext() {
+	protected final Context getContext() {
 		return mContext;
 	}
 
-	@Override
-	public void onChangesComplete() {
+	protected final PlayerHaterServiceBinder getBinder() {
+		return mBinder;
 	}
 }

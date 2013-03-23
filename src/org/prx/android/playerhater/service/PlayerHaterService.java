@@ -45,9 +45,6 @@ public interface PlayerHaterService {
 
 	public abstract void setOnPreparedListener(OnPreparedListener listener);
 
-	public abstract void setOnShutdownRequestListener(
-			OnShutdownRequestListener listener);
-
 	public abstract void setListener(PlayerHaterListener listener);
 
 	public abstract Song getNowPlaying();
@@ -62,7 +59,9 @@ public interface PlayerHaterService {
 
 	public abstract void setAlbumArt(Uri url);
 
-	public abstract void enqueue(Song song);
+	public abstract boolean enqueue(Song song);
+	
+	public abstract int getQueueLength();
 
 	public abstract boolean skipTo(int position);
 
@@ -100,8 +99,8 @@ public interface PlayerHaterService {
 
 	public abstract void addPluginInstance(PlayerHaterPlugin plugin);
 
-	public abstract void skip();
+	public abstract boolean skip();
 
-	public abstract void skipBack();
+	public abstract boolean skipBack();
 
 }

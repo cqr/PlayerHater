@@ -1,10 +1,8 @@
 package org.prx.android.playerhater.plugins;
 
+import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.service.IPlayerHaterBinder;
-import org.prx.android.playerhater.util.IPlayerHater;
-
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -13,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.RemoteException;
 import android.util.Log;
 
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
@@ -20,7 +19,6 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	protected static final int NOTIFICATION_NU = 0x974732;
 	private static final String TAG = "NotificationPlugin";
-	protected IPlayerHaterBinder mService;
 	protected NotificationManager mNotificationManager;
 	protected PendingIntent mContentIntent;
 	protected String mNotificationTitle = "PlayerHater";
@@ -32,9 +30,8 @@ public class NotificationPlugin extends AbstractPlugin {
 	}
 
 	@Override
-	public void onServiceStarted(Context context, IPlayerHater playerHater) {
-		super.onServiceStarted(context, playerHater);
-		mService = (IPlayerHaterBinder) playerHater;
+	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
+		super.onPlayerHaterLoaded(context, playerHater);
 
 		PackageManager packageManager = context.getPackageManager();
 		mNotificationManager = (NotificationManager) context
@@ -59,9 +56,12 @@ public class NotificationPlugin extends AbstractPlugin {
 	}
 
 	@Override
-	public void onPlaybackStarted() {
-		mService.startForeground(NOTIFICATION_NU, getNotification());
-		mIsVisible = true;
+	public void onAudioStarted() {
+		Log.d(TAG, "audio is getting started");
+		try {
+			getBinder().startForeground(NOTIFICATION_NU, getNotification());
+			mIsVisible = true;
+		} catch (Exception e) {}
 	}
 
 	@SuppressWarnings("deprecation")
@@ -76,9 +76,11 @@ public class NotificationPlugin extends AbstractPlugin {
 	}
 
 	@Override
-	public void onPlaybackStopped() {
-		mIsVisible = false;
-		mService.stopForeground(true);
+	public void onAudioStopped() {
+		try {
+			mIsVisible = false;
+			getBinder().stopForeground(true);
+		} catch (RemoteException e) {}
 	}
 
 	@Override
@@ -104,8 +106,8 @@ public class NotificationPlugin extends AbstractPlugin {
 	}
 
 	protected void updateNotification() {
-		Log.d(TAG, getNotification().toString());
 		if (mIsVisible) {
+			Log.d(TAG, getNotification().toString());
 			mNotificationManager.notify(NOTIFICATION_NU, getNotification());
 		}
 	}

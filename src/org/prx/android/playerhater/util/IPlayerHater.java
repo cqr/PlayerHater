@@ -1,7 +1,9 @@
 package org.prx.android.playerhater.util;
 
+import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
+
 import android.app.Activity;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -12,71 +14,119 @@ import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
 public interface IPlayerHater {
-	// Controls
-	boolean pause();
 
-	boolean stop();
+	/**
+	 * Pauses the player.
+	 * 
+	 * @return true if false if the player is not playing.
+	 */
+	abstract public boolean pause();
+
+	/**
+	 * Stops the player. Returns false if the player is not playing or
+	 * paused. Causes the service to be stopped.
+	 */
+	abstract public boolean stop();
 
 	// Playback
-	boolean play();
 
-	boolean play(int startTime);
+	/**
+	 * Begins playback of the currently loaded {@linkplain Song}
+	 * 
+	 * @return {@code true} if successful, {@code false} if there is no
+	 *         track loaded.
+	 */
+	abstract public boolean play();
 
-	boolean play(Song song);
+	/**
+	 * Begins playback of the currently loaded {@linkplain Song} at
+	 * {@code startTime} in the track.
+	 * 
+	 * @see {@link PlayerHater#seekTo(int)}
+	 * @return {@code true} if successful, {@code false} if there is no
+	 *         track loaded.
+	 */
+	abstract public boolean play(int startTime);
 
-	boolean play(Song song, int startTime);
+	/**
+	 * Begins playback of {@code song}
+	 * 
+	 * @return {@code true} if successful, {@code false} if there is a
+	 *         problem.
+	 */
+	abstract public boolean play(Song song);
 
-	boolean seekTo(int startTime);
+	/**
+	 * Begins playback of {@code song} at {@code startTime}
+	 * 
+	 * @see {@link PlayerHater#play(int)}, {@link PlayerHater#play(Song)}
+	 * @return {@code true} if successful, {@code false} if there is a
+	 *         problem.
+	 */
+	abstract public boolean play(Song song, int startTime);
+
+	/**
+	 * Moves the playhead to {@code startTime}
+	 * 
+	 * @see {@link PlayerHater#play(int)}
+	 * @return {@code true} if successful, {@code false} if there is no song
+	 *         loaded in the player.
+	 */
+	abstract public boolean seekTo(int startTime);
 
 	// Queuing
-	void enqueue(Song song);
+	abstract public boolean enqueue(Song song);
 
-	boolean skipTo(int position);
-	
-	void skip();
-	
-	void skipBack();
+	abstract public boolean skipTo(int position);
 
-	void emptyQueue();
+	abstract public void skip();
+
+	abstract public void skipBack();
+
+	abstract public void emptyQueue();
 
 	// Notification data
-	void setAlbumArt(int resourceId);
+	abstract public void setAlbumArt(int resourceId);
 
-	void setAlbumArt(Uri url);
+	abstract public void setAlbumArt(Uri url);
 
-	void setTitle(String title);
+	abstract public void setTitle(String title);
 
-	void setArtist(String artist);
+	abstract public void setArtist(String artist);
 
-	void setActivity(Activity activity);
+	abstract public void setActivity(Activity activity);
 
 	// Scubber-related data
-	int getCurrentPosition();
+	abstract public int getCurrentPosition();
 
-	int getDuration();
+	abstract public int getDuration();
 
 	// Media Player listeners
-	void setOnBufferingUpdateListener(OnBufferingUpdateListener listener);
+	abstract public void setOnBufferingUpdateListener(
+			OnBufferingUpdateListener listener);
 
-	void setOnCompletionListener(OnCompletionListener listener);
+	abstract public void setOnCompletionListener(
+			OnCompletionListener listener);
 
-	void setOnInfoListener(OnInfoListener listener);
+	abstract public void setOnInfoListener(OnInfoListener listener);
 
-	void setOnSeekCompleteListener(OnSeekCompleteListener listener);
+	abstract public void setOnSeekCompleteListener(
+			OnSeekCompleteListener listener);
 
-	void setOnErrorListener(OnErrorListener listener);
+	abstract public void setOnErrorListener(OnErrorListener listener);
 
-	void setOnPreparedListener(OnPreparedListener listener);
+	abstract public void setOnPreparedListener(OnPreparedListener listener);
 
 	// PlayerHater listener
-	void setListener(PlayerHaterListener listener);
+	@Deprecated
+	abstract public void setListener(PlayerHaterListener listener);
 
 	// Other Getters
-	Song nowPlaying();
+	abstract public Song nowPlaying();
 
-	boolean isPlaying();
+	abstract public boolean isPlaying();
 
-	boolean isLoading();
+	abstract public boolean isLoading();
 
-	int getState();
+	abstract public int getState();
 }

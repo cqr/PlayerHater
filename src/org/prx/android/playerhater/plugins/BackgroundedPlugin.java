@@ -3,8 +3,9 @@ package org.prx.android.playerhater.plugins;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.util.IPlayerHater;
+import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -31,7 +32,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	private static final int PLAYBACK_PAUSED = 11;
 	private static final int AUDIO_LOADING = 12;
 	private static final int INTENT_CHANGED = 13;
-	private static final int SERVICE_REBIND = 14;
 	private static final int SONG_FINISHED = 15;
 
 	private static final int CHANGES_COMPLETE = -1;
@@ -49,8 +49,8 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	}
 
 	@Override
-	public void onServiceStarted(Context context, IPlayerHater playerHater) {
-		mPlugin.onServiceStarted(context, playerHater);
+	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
+		mPlugin.onPlayerHaterLoaded(context, playerHater);
 	}
 
 	@Override
@@ -92,28 +92,28 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	}
 
 	@Override
-	public void onPlaybackPaused() {
+	public void onAudioPaused() {
 		mHandler.removeMessages(CHANGES_COMPLETE);
 		mHandler.sendEmptyMessage(PLAYBACK_PAUSED);
 		mHandler.sendEmptyMessage(CHANGES_COMPLETE);
 	}
 
 	@Override
-	public void onPlaybackResumed() {
+	public void onAudioResumed() {
 		mHandler.removeMessages(CHANGES_COMPLETE);
 		mHandler.sendEmptyMessage(PLAYBACK_RESUMED);
 		mHandler.sendEmptyMessage(CHANGES_COMPLETE);
 	}
 
 	@Override
-	public void onPlaybackStarted() {
+	public void onAudioStarted() {
 		mHandler.removeMessages(CHANGES_COMPLETE);
 		mHandler.sendEmptyMessage(PLAYBACK_STARTED);
 		mHandler.sendEmptyMessage(CHANGES_COMPLETE);
 	}
 
 	@Override
-	public void onPlaybackStopped() {
+	public void onAudioStopped() {
 		mHandler.removeMessages(CHANGES_COMPLETE);
 		mHandler.sendEmptyMessage(PLAYBACK_STOPPED);
 		mHandler.sendEmptyMessage(CHANGES_COMPLETE);
@@ -148,14 +148,14 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	}
 
 	@Override
-	public void onNextTrackAvailable(Song nextTrack) {
+	public void onNextSongAvailable(Song nextTrack) {
 		mHandler.removeMessages(CHANGES_COMPLETE);
 		mHandler.obtainMessage(NEXT_TRACK_AVAILABLE, nextTrack).sendToTarget();
 		mHandler.sendEmptyMessage(CHANGES_COMPLETE);
 	}
 
 	@Override
-	public void onNextTrackUnavailable() {
+	public void onNextSongUnavailable() {
 		mHandler.removeMessages(CHANGES_COMPLETE);
 		mHandler.sendEmptyMessage(NEXT_TRACK_UNAVAILABLE);
 		mHandler.sendEmptyMessage(CHANGES_COMPLETE);
@@ -169,11 +169,8 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	}
 
 	@Override
-	public void onServiceRebind(Context context, IPlayerHater playerHater) {
-		mHandler.removeMessages(CHANGES_COMPLETE);
-		mHandler.obtainMessage(SERVICE_REBIND,
-				new BindEvent(context, playerHater)).sendToTarget();
-		mHandler.sendEmptyMessage(CHANGES_COMPLETE);
+	public void onServiceBound(PlayerHaterServiceBinder playerHater) {
+		mPlugin.onServiceBound(playerHater);
 	}
 
 	@Override
@@ -229,10 +226,10 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 				mPlugin.onDurationChanged((Integer) msg.obj);
 				break;
 			case NEXT_TRACK_UNAVAILABLE:
-				mPlugin.onNextTrackUnavailable();
+				mPlugin.onNextSongUnavailable();
 				break;
 			case NEXT_TRACK_AVAILABLE:
-				mPlugin.onNextTrackAvailable((Song) msg.obj);
+				mPlugin.onNextSongAvailable((Song) msg.obj);
 				break;
 			case ART_CHANGED_URI:
 				mPlugin.onAlbumArtChangedToUri((Uri) msg.obj);
@@ -247,16 +244,16 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 				mPlugin.onTitleChanged((String) msg.obj);
 				break;
 			case PLAYBACK_STOPPED:
-				mPlugin.onPlaybackStopped();
+				mPlugin.onAudioStopped();
 				break;
 			case PLAYBACK_STARTED:
-				mPlugin.onPlaybackStarted();
+				mPlugin.onAudioStarted();
 				break;
 			case PLAYBACK_RESUMED:
-				mPlugin.onPlaybackResumed();
+				mPlugin.onAudioResumed();
 				break;
 			case PLAYBACK_PAUSED:
-				mPlugin.onPlaybackPaused();
+				mPlugin.onAudioPaused();
 				break;
 			case AUDIO_LOADING:
 				mPlugin.onAudioLoading();
@@ -264,23 +261,9 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 			case INTENT_CHANGED:
 				mPlugin.onIntentActivityChanged((PendingIntent) msg.obj);
 				break;
-			case SERVICE_REBIND:
-				BindEvent e = (BindEvent) msg.obj;
-				mPlugin.onServiceRebind(e.context, e.playerHater);
-				break;
 			case SONG_FINISHED:
 				mPlugin.onSongFinished((Song) msg.obj, msg.arg1);
 			}
-		}
-	}
-
-	private static class BindEvent {
-		private Context context;
-		private IPlayerHater playerHater;
-
-		private BindEvent(Context context, IPlayerHater playerHater) {
-			this.context = context;
-			this.playerHater = playerHater;
 		}
 	}
 
