@@ -1,7 +1,7 @@
 package org.prx.android.playerhater.util;
 
 import org.prx.android.playerhater.PlayerHater;
-import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -17,13 +17,13 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver impleme
 
 	private static final HeadphoneButtonGestureHelper sGestureHelper = new HeadphoneButtonGestureHelper();
 	
-	private PlayerHaterServiceBinder mService;
+	private IPlayerHaterBinder mService;
 
 	public BroadcastReceiver() {
 		super();
 	}
 
-	public BroadcastReceiver(Context context, PlayerHaterServiceBinder playbackService) {
+	public BroadcastReceiver(Context context, IPlayerHaterBinder playbackService) {
 		super();
 		if (playbackService != null) {
 			mService = playbackService;
@@ -79,10 +79,10 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver impleme
 		}
 	}
 	
-	private PlayerHaterServiceBinder getService(Context context) {
+	private IPlayerHaterBinder getService(Context context) {
 		if (mService == null && context != null) {
 			Intent intent = PlayerHater.buildServiceIntent(context);
-			mService = PlayerHaterServiceBinder.Stub.asInterface(peekService(context, intent));
+			mService = IPlayerHaterBinder.Stub.asInterface(peekService(context, intent));
 		}
 		return mService;
 	}

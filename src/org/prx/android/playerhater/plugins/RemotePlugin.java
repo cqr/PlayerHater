@@ -2,8 +2,7 @@ package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.service.PlayerHaterBinderPlugin;
-import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.util.BasicSong;
 
 import android.app.PendingIntent;
@@ -11,11 +10,11 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.RemoteException;
 
-public class BinderPlugin implements PlayerHaterPlugin {
+public class RemotePlugin implements PlayerHaterPlugin {
 
-	private PlayerHaterBinderPlugin mBinder;
+	private IRemotePlugin mBinder;
 
-	public BinderPlugin(PlayerHaterBinderPlugin binder) {
+	public RemotePlugin(IRemotePlugin binder) {
 		mBinder = binder;
 	}
 
@@ -26,7 +25,7 @@ public class BinderPlugin implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onServiceBound(PlayerHaterServiceBinder binder) {
+	public void onServiceBound(IPlayerHaterBinder binder) {
 		try {
 			mBinder.onServiceBound(binder);
 		} catch (RemoteException e) {}

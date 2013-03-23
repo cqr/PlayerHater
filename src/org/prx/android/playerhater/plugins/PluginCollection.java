@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -125,7 +125,7 @@ public class PluginCollection implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onServiceBound(PlayerHaterServiceBinder binder) {
+	public void onServiceBound(IPlayerHaterBinder binder) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onServiceBound(binder);
 	}

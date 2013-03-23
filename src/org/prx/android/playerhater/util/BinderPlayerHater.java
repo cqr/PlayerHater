@@ -6,7 +6,7 @@ import java.lang.ref.WeakReference;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 
 import android.app.Activity;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -23,12 +23,12 @@ import android.util.SparseArray;
 public class BinderPlayerHater extends PlayerHater {
 
 	private static BinderPlayerHater sInstance;
-	private final PlayerHaterServiceBinder mBinder;
+	private final IPlayerHaterBinder mBinder;
 	private final SparseArray<WeakSongReference> mSongs = new SparseArray<WeakSongReference>();
 	private final SparseArray<BasicSong> mBasicSongs = new SparseArray<BasicSong>();
 	private final ReferenceQueue<Song> mQueue = new ReferenceQueue<Song>();
 
-	public static BinderPlayerHater get(PlayerHaterServiceBinder binder) {
+	public static BinderPlayerHater get(IPlayerHaterBinder binder) {
 		if (sInstance == null) {
 			sInstance = new BinderPlayerHater(binder);
 		}
@@ -39,7 +39,7 @@ public class BinderPlayerHater extends PlayerHater {
 		sInstance = null;
 	}
 
-	private BinderPlayerHater(PlayerHaterServiceBinder binder) {
+	private BinderPlayerHater(IPlayerHaterBinder binder) {
 		mBinder = binder;
 	}
 

@@ -1,6 +1,6 @@
 package org.prx.android.playerhater.util;
 
-import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 
 import android.media.AudioManager;
 import android.os.RemoteException;
@@ -14,13 +14,13 @@ public class OnAudioFocusChangeListener implements
 	// 5 minutes
 	public static final int SKIP_RESUME_AFTER_DURATION = 300000;
 
-	private PlayerHaterServiceBinder mService;
+	private IPlayerHaterBinder mService;
 	private long pausedAt;
 	private boolean isBeingDucked;
 
 	private boolean isBeingPaused;
 
-	public OnAudioFocusChangeListener(PlayerHaterServiceBinder binder) {
+	public OnAudioFocusChangeListener(IPlayerHaterBinder binder) {
 		mService = binder;
 		isBeingDucked = false;
 	}

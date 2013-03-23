@@ -1,13 +1,13 @@
 package org.prx.android.playerhater.service;
 
 import android.net.Uri;
-import org.prx.android.playerhater.service.PlayerHaterBinderPlugin;
+import org.prx.android.playerhater.plugins.IRemotePlugin;
 import android.app.Notification;
 
 
-interface PlayerHaterServiceBinder {
+interface IPlayerHaterBinder {
 
-	void setBinder(PlayerHaterBinderPlugin binder);
+	void setRemotePlugin(IRemotePlugin binder);
 
 	boolean enqueue(in Uri uri, String title, String artist, in Uri albumArt, int tag);
 	int getQueueLength();

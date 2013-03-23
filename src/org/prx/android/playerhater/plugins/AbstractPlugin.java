@@ -3,7 +3,7 @@ package org.prx.android.playerhater.plugins;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
-import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -14,7 +14,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 
 	private static final String TAG = "AbstractPlugin";
 	private PlayerHater mPlayerHater;
-	private PlayerHaterServiceBinder mBinder;
+	private IPlayerHaterBinder mBinder;
 	private Context mContext;
 
 	public AbstractPlugin() {
@@ -28,7 +28,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onServiceBound(PlayerHaterServiceBinder playerHaterBinder) {
+	public void onServiceBound(IPlayerHaterBinder playerHaterBinder) {
 		mBinder = playerHaterBinder;
 	}
 
@@ -114,7 +114,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 		return mContext;
 	}
 
-	protected final PlayerHaterServiceBinder getBinder() {
+	protected final IPlayerHaterBinder getBinder() {
 		return mBinder;
 	}
 }

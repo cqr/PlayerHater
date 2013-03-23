@@ -5,7 +5,8 @@ import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
-import org.prx.android.playerhater.plugins.BinderPlugin;
+import org.prx.android.playerhater.plugins.RemotePlugin;
+import org.prx.android.playerhater.plugins.IRemotePlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.plugins.PluginCollection;
 import org.prx.android.playerhater.util.BasicSong;
@@ -40,13 +41,12 @@ public abstract class AbsPlaybackService extends Service implements
 	protected BroadcastReceiver mBroadcastReceiver;
 	protected PlayerHaterPlugin mPlugin;
 	protected final PlayerListenerManager mPlayerListenerManager = new PlayerListenerManager();
-	protected PlayerHaterListener mPlayerHaterListener;
 	private Config mConfig;
 	private PluginCollection mPluginCollection;
 	private final PlayerHater mPlayerHater = new ServicePlayerHater(this);
-	private PlayerHaterBinderPlugin mPluginBinder;
+	private IRemotePlugin mPluginBinder;
 
-	private final PlayerHaterServiceBinder.Stub mRemoteBinder = new PlayerHaterServiceBinder.Stub() {
+	private final IPlayerHaterBinder.Stub mRemoteBinder = new IPlayerHaterBinder.Stub() {
 
 		@Override
 		public boolean enqueue(Uri uri, String title, String artist,
@@ -135,11 +135,11 @@ public abstract class AbsPlaybackService extends Service implements
 		}
 
 		@Override
-		public void setBinder(PlayerHaterBinderPlugin binder)
+		public void setRemotePlugin(IRemotePlugin binder)
 				throws RemoteException {
 			binder.onServiceBound(this);
 			mPluginBinder = binder;
-			mPluginCollection.add(new BinderPlugin(binder));
+			mPluginCollection.add(new RemotePlugin(binder));
 		}
 
 		@Override

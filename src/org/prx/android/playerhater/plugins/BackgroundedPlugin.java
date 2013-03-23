@@ -5,7 +5,7 @@ import java.util.Queue;
 
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -169,7 +169,7 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	}
 
 	@Override
-	public void onServiceBound(PlayerHaterServiceBinder playerHater) {
+	public void onServiceBound(IPlayerHaterBinder playerHater) {
 		mPlugin.onServiceBound(playerHater);
 	}
 

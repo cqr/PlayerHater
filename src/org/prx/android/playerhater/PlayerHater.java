@@ -3,9 +3,9 @@ package org.prx.android.playerhater;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.prx.android.playerhater.plugins.IRemotePlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
-import org.prx.android.playerhater.service.PlayerHaterBinderPlugin;
-import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.util.BinderPlayerHater;
 import org.prx.android.playerhater.util.BoundPlayerHater;
 import org.prx.android.playerhater.util.Config;
@@ -134,12 +134,15 @@ public abstract class PlayerHater implements IPlayerHater {
 		}
 	}
 
-	protected static final PlayerHaterBinderPlugin sBinderPlugin = new PlayerHaterBinderPlugin.Stub() {
+	protected static final IRemotePlugin sBinderPlugin = new IRemotePlugin.Stub() {
 
 		@Override
 		public void onUnbindRequested() throws RemoteException {
-			// TODO Auto-generated method stub
-
+			sApplicationContext.unbindService(sServiceConnection);
+			sPlayerHater = null;
+			for (AutoBindHandle handle : sHandles) {
+				handle.unbind();
+			}
 		}
 
 		@Override
@@ -244,7 +247,7 @@ public abstract class PlayerHater implements IPlayerHater {
 		}
 
 		@Override
-		public void onServiceBound(PlayerHaterServiceBinder binder)
+		public void onServiceBound(IPlayerHaterBinder binder)
 				throws RemoteException {
 			for (PlayerHaterPlugin plugin : sPlugins) {
 				plugin.onServiceBound(binder);
@@ -272,11 +275,11 @@ public abstract class PlayerHater implements IPlayerHater {
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			PlayerHaterServiceBinder sBinder = PlayerHaterServiceBinder.Stub
+			IPlayerHaterBinder sBinder = IPlayerHaterBinder.Stub
 					.asInterface(service);
 
 			try {
-				sBinder.setBinder(sBinderPlugin);
+				sBinder.setRemotePlugin(sBinderPlugin);
 			} catch (RemoteException e) { }
 			
 			sPlayerHater = BinderPlayerHater.get(sBinder);

@@ -1,6 +1,6 @@
 package org.prx.android.playerhater.plugins;
 
-import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.OnAudioFocusChangeListener;
 
@@ -21,7 +21,7 @@ public class AudioFocusPlugin extends AbstractPlugin {
 	}
 
 	@Override
-	public void onServiceBound(PlayerHaterServiceBinder binder) {
+	public void onServiceBound(IPlayerHaterBinder binder) {
 		super.onServiceBound(binder);
 		mAudioFocusChangeListener = new OnAudioFocusChangeListener(binder);
 	}

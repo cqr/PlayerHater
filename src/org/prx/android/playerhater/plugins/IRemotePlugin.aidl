@@ -1,9 +1,9 @@
-package org.prx.android.playerhater.service;
+package org.prx.android.playerhater.plugins;
 
 import android.net.Uri;
-import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 
-interface PlayerHaterBinderPlugin {
+interface IRemotePlugin {
 
 	void onUnbindRequested();
 	
@@ -35,7 +35,7 @@ interface PlayerHaterBinderPlugin {
 	
 	void onNextSongUnavailable();
 	
-	void onServiceBound(PlayerHaterServiceBinder binder);
+	void onServiceBound(IPlayerHaterBinder binder);
 	
 	void onIntentActivityChanged(in PendingIntent intent);
 	

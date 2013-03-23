@@ -2,7 +2,7 @@ package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.service.PlayerHaterServiceBinder;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -12,7 +12,7 @@ public interface PlayerHaterPlugin {
 	
 	void onPlayerHaterLoaded(Context context, PlayerHater playerHater);
 	
-	void onServiceBound(PlayerHaterServiceBinder binder);
+	void onServiceBound(IPlayerHaterBinder binder);
 	
 	void onServiceStopping();
 	
