@@ -64,37 +64,277 @@ public interface PlayerHaterPlugin {
 	 */
 	void onServiceStopping();
 
+	/**
+	 * Called when the song that is loaded into the player has changed.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 * 
+	 * @param song
+	 *            The Song which is now loaded into the player.
+	 */
 	void onSongChanged(Song song);
 
+	/**
+	 * Called when the song that was loaded into the player has completed.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 * 
+	 * @param song
+	 *            The Song that has finished playing.
+	 * @param reason
+	 *            The reason that the song reached the end. One of
+	 *            {@link PlayerHater#SKIP_BUTTON } or
+	 *            {@link PlayerHater#TRACK_END }
+	 */
 	void onSongFinished(Song song, int reason);
 
+	/**
+	 * Called when the duration of the currently loaded track has changed.
+	 * Typically called whenever {@link PlayerHaterPlugin#onSongChanged(Song)}
+	 * has been called, but provided as a convenience for plugins that do not
+	 * care about other metdata.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 * 
+	 * @param duration
+	 *            The new duration of the currently loaded Song in milliseconds.
+	 */
 	void onDurationChanged(int duration);
 
+	/**
+	 * Called when the player has started preparing or buffering the Song loaded
+	 * into it.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 */
 	void onAudioLoading();
 
+	/**
+	 * Called when playback has been paused.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 */
 	void onAudioPaused();
 
+	/**
+	 * Called when playback has been resumed after being paused.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 */
 	void onAudioResumed();
 
+	/**
+	 * Called when audio begins playback for the first time.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 */
 	void onAudioStarted();
 
+	/**
+	 * Called when the audio has been stopped without the possibility of
+	 * resuming.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 */
 	void onAudioStopped();
 
+	/**
+	 * Called when the title of the currently playing track has changed.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 * 
+	 * @param title
+	 *            The new title of the currently playing track.
+	 */
 	void onTitleChanged(String title);
 
+	/**
+	 * Called when the artist of the currently playing track has changed.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 * 
+	 * @param artist
+	 *            The new artist of the currently playing track.
+	 */
 	void onArtistChanged(String artist);
 
+	/**
+	 * Called when the album art resource for the currently playing track has
+	 * changed.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 * 
+	 * @param resourceId
+	 *            The resource ID of the new album art.
+	 */
 	void onAlbumArtChanged(int resourceId);
 
+	/**
+	 * Called when the album art of the currently playing track has changed.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 * 
+	 * @param url
+	 *            The URI of the new album art for the currently playing track.
+	 */
 	void onAlbumArtChangedToUri(Uri url);
 
+	/**
+	 * Called when there is a song "on deck" to play next.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 * 
+	 * @param nextTrack
+	 *            The next song which will be played.
+	 */
 	void onNextSongAvailable(Song nextTrack);
 
+	/**
+	 * Called when there is no song "on deck" to play next.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 */
 	void onNextSongUnavailable();
 
-	void onIntentActivityChanged(PendingIntent pending);
-
-	void onChangesComplete();
-
+	/**
+	 * Called when the requested Transport Control Flags have changed.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 * 
+	 * @see {@link android.media.RemoteControlClient#setTransportControlFlags(int)}
+	 * 
+	 * @param transportControlFlags
+	 *            A bitmask representing the transport control flags requested
+	 */
 	void onTransportControlFlagsChanged(int transportControlFlags);
+
+	/**
+	 * Called when the requested pending intent for resuming the host
+	 * application has changed.
+	 * <p>
+	 * <b>NOTE:</b> This method, by default, is not guaranteed to run on the UI
+	 * thread. If you need it to run on the UI Thread, you should ensure that
+	 * your plugin is run in the context of a BackgroundedPlugin with the
+	 * correct flags set.
+	 * <p>
+	 * If you just want a method which is guaranteed to run on the UI thread,
+	 * {@link #onChangesComplete()} is guaranteed to be called shortly after any
+	 * changes, and will always be run on the UI thread by default.
+	 * 
+	 * @param intent
+	 *            A pending intent that the plugin should use if it wants to
+	 *            resume the hosting application.
+	 */
+	void onIntentActivityChanged(PendingIntent intent);
+
+	/**
+	 * Called after one or more state-change callbacks have completed. This
+	 * method is guaranteed, by default, to run on the UI thread.
+	 */
+	void onChangesComplete();
 }
