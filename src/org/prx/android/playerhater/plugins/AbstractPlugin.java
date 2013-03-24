@@ -8,11 +8,18 @@ import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 
+/**
+ * A simple helper for writing {@linkplain PlayerHaterPlugin}s
+ * <p>
+ * Subclasses MUST implement a default no-argument constructor.
+ * 
+ * @see {@link PlayerHaterPlugin}
+ * @since 2.0.0
+ * @version 2.1.0
+ * @author Chris Rhoden
+ */
 public abstract class AbstractPlugin implements PlayerHaterPlugin {
-
-	protected static final String _TAG = "AbstractPlugin";
 	private PlayerHater mPlayerHater;
 	private IPlayerHaterBinder mBinder;
 	private Context mContext;
@@ -21,12 +28,26 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Overridden implementations should be sure to call
+	 * {@code super.onPlayerHaterLoaded} so that future calls to
+	 * {@link #getContext()} and {@link #getPlayerHater()} can succeed.
+	 */
 	@Override
 	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
 		mContext = context;
 		mPlayerHater = playerHater;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Overridden implementations should be sure to call
+	 * {@code super.onServiceBound} so that future calls to {@link #getBinder()}
+	 * can succeed.
+	 */
 	@Override
 	public void onServiceBound(IPlayerHaterBinder playerHaterBinder) {
 		mBinder = playerHaterBinder;
@@ -42,10 +63,14 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	public void onAudioStarted() {
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The default implementation forwards thos method call to
+	 * {@link #onAudioStarted()}
+	 */
 	@Override
 	public void onAudioResumed() {
-		Log.w(_TAG, "Forwarding a call to onAudioResumed => onAudioStarted "
-				+ getClass().getSimpleName());
 		onAudioStarted();
 	}
 
@@ -69,8 +94,19 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	public void onAlbumArtChangedToUri(Uri url) {
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The default implementation will call {@link #onAlbumArtChangedToUri(Uri)}
+	 * , {@link #onTitleChanged(String)}, and {@link #onArtistChanged(String)}
+	 */
 	@Override
 	public void onSongChanged(Song song) {
+		if (song != null) {
+			onTitleChanged(song.getTitle());
+			onArtistChanged(song.getArtist());
+			onAlbumArtChangedToUri(song.getAlbumArt());
+		}
 	}
 
 	@Override
@@ -119,10 +155,23 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 		return mPlayerHater;
 	}
 
+	/**
+	 * A method providing simple access to the plugin's context without having
+	 * to override {@link #onPlayerHaterLoaded(Context, PlayerHater)}
+	 * 
+	 * @return The {@link Context} in which the plugin is running.
+	 */
 	protected final Context getContext() {
 		return mContext;
 	}
 
+	/**
+	 * A method providing simple access to a service binder without having to
+	 * override {@link onServiceBound(IPlayerHaterBinder)}
+	 * 
+	 * @return The {@link IPlayerHaterBinder} that the plugin is bound to if the
+	 *         service is running. Otherwise, {@code null}.
+	 */
 	protected final IPlayerHaterBinder getBinder() {
 		return mBinder;
 	}
