@@ -2,7 +2,6 @@ package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.R;
-import org.prx.android.playerhater.Song;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -47,15 +46,6 @@ public class NotificationPlugin extends AbstractPlugin {
 	}
 
 	@Override
-	public void onSongChanged(Song song) {
-		if (song != null) {
-			onTitleChanged(song.getTitle());
-			onArtistChanged(song.getArtist());
-			onAlbumArtChangedToUri(song.getAlbumArt());
-		}
-	}
-
-	@Override
 	public void onAudioStarted() {
 		Log.d(TAG, "audio is getting started");
 		try {
@@ -69,7 +59,6 @@ public class NotificationPlugin extends AbstractPlugin {
 		if (mNotification == null)
 			mNotification = new Notification(R.drawable.zzz_ph_ic_notification,
 					"Playing: " + mNotificationTitle, 0);
-
 		mNotification.setLatestEventInfo(getContext(), mNotificationTitle,
 				mNotificationText, mContentIntent);
 		return mNotification;
