@@ -151,8 +151,6 @@ public class PluginCollection implements PlayerHaterPlugin {
 	@Override
 	public void onSongFinished(Song song, int reason) {
 		for (PlayerHaterPlugin plugin : mPlugins) {
-			Log.d("collection", "" + plugin);
-			if (plugin != null)
 				plugin.onSongFinished(song, reason);
 		}
 	}
