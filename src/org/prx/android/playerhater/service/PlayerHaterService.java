@@ -100,4 +100,6 @@ public interface PlayerHaterService {
 
 	public abstract boolean skipBack();
 
+	public abstract void setTransportControlFlags(int transportControlFlags);
+
 }

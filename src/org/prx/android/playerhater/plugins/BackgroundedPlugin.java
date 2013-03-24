@@ -38,12 +38,14 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	public static final int PLAYER_HATER_LOADED = 16;
 	public static final int SERVICE_STOPPING = 17;
 	public static final int CHANGES_COMPLETE = 18;
-
+	public static final int TRANSPORT_CONTROL_FLAGS_CHANGED = 19;
+	
 	private static final int CHANGES_COMPLETE_INTERNAL = -1;
 
 	public static final Integer[] DEFAULT_FOREGROUND_ACTIONS = {
 			CHANGES_COMPLETE, SERVICE_BOUND, PLAYER_HATER_LOADED,
 			SERVICE_STOPPING };
+	
 	private TargetableHandler mHandler;
 	private final Looper mLooper;
 	private final PlayerHaterPlugin mPlugin;
@@ -210,6 +212,13 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 				.sendToTarget();
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
+	
+	@Override
+	public void onTransportControlFlagsChanged(int transportControlFlags) {
+		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
+		mHandler.obtainTargettedMessage(TRANSPORT_CONTROL_FLAGS_CHANGED, transportControlFlags, 0).sendToTarget();
+		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
+	}
 
 	private static class TargetableHandler extends Handler {
 
@@ -230,7 +239,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 			return obtainMessage(what, obj);
 		}
 
-		@SuppressWarnings("unused")
 		public Message obtainTargettedMessage(int what, int arg1, int arg2) {
 			return obtainMessage(what, arg1, arg2);
 		}
@@ -426,6 +434,9 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 			break;
 		case SERVICE_STOPPING:
 			mPlugin.onServiceStopping();
+			break;
+		case TRANSPORT_CONTROL_FLAGS_CHANGED:
+			mPlugin.onTransportControlFlagsChanged(msg.arg1);
 			break;
 		case CHANGES_COMPLETE:
 			mPlugin.onChangesComplete();

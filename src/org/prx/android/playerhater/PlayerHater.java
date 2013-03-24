@@ -59,6 +59,7 @@ public abstract class PlayerHater implements IPlayerHater {
 	private static final Set<AutoBindHandle> sHandles = new HashSet<AutoBindHandle>();
 	protected static final String RESOURCE = "resource";
 	protected static final String URL = "url";
+	protected static int sTransportControlFlags;
 	public static final String EXTRA_CONFIG = "config";
 
 	/**
@@ -286,6 +287,11 @@ public abstract class PlayerHater implements IPlayerHater {
 		public void onAlbumArtResourceChanged(int albumArtResource)
 				throws RemoteException {
 			sPlugin.onAlbumArtChanged(albumArtResource);
+		}
+		
+		@Override
+		public void onTransportControlFlagsChanged(int transportControlFlags) {
+			sPlugin.onTransportControlFlagsChanged(transportControlFlags);
 		}
 
 		@Override

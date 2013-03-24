@@ -149,9 +149,14 @@ public class PluginCollection implements PlayerHaterPlugin {
 
 	@Override
 	public void onSongFinished(Song song, int reason) {
-		for (PlayerHaterPlugin plugin : mPlugins) {
+		for (PlayerHaterPlugin plugin : mPlugins)
 				plugin.onSongFinished(song, reason);
-		}
+	}
+	
+	@Override
+	public void onTransportControlFlagsChanged(int transportControlFlags) {
+		for (PlayerHaterPlugin plugin : mPlugins) 
+			plugin.onTransportControlFlagsChanged(transportControlFlags);
 	}
 
 	@Override

@@ -42,4 +42,6 @@ interface IRemotePlugin {
 	void onChangesComplete();
 	
 	void releaseSong(int songTag);
+	
+	void onTransportControlFlagsChanged(int transportControlFlags);
 }

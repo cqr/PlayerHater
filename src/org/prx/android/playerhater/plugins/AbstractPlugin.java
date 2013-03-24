@@ -105,6 +105,10 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	public void onChangesComplete() {
 	}
 
+	@Override
+	public void onTransportControlFlagsChanged(int transportControlFlags) {
+	}
+
 	/**
 	 * Grants the plugin easy access to the instance of {@link PlayerHater} that
 	 * it is permitted to use.
@@ -122,5 +126,4 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	protected final IPlayerHaterBinder getBinder() {
 		return mBinder;
 	}
-	
 }

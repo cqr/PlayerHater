@@ -26,6 +26,7 @@ interface IPlayerHaterBinder {
 	void setAlbumArtUrl(in Uri uri);
 	void setTitle(String title);
 	void setArtist(String artist);
+	void setTransportControlFlags(int transportControlFlags);
 	
 	int getDuration();
 	int getCurrentPosition();

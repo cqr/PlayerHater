@@ -274,6 +274,13 @@ public class BinderPlayerHater extends PlayerHater {
 		}
 	}
 
+	@Override
+	public void setTransportControlFlags(int transportControlFlags) {
+		try {
+			mBinder.setTransportControlFlags(transportControlFlags);
+		} catch (RemoteException e) {}
+	}
+
 	private int tagSong(Song song) {
 		mSongs.put(song.hashCode(), song);
 		return song.hashCode();
@@ -303,4 +310,5 @@ public class BinderPlayerHater extends PlayerHater {
 			mSongs.put(songTag, newSong);
 		}
 	}
+
 }

@@ -95,4 +95,6 @@ public interface PlayerHaterPlugin {
 	void onIntentActivityChanged(PendingIntent pending);
 
 	void onChangesComplete();
+
+	void onTransportControlFlagsChanged(int transportControlFlags);
 }

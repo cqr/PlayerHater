@@ -239,21 +239,6 @@ public interface IPlayerHater {
 	 */
 	abstract public int getDuration();
 
-//	// Media Player listeners
-//	abstract public void setOnBufferingUpdateListener(
-//			OnBufferingUpdateListener listener);
-//
-//	abstract public void setOnCompletionListener(OnCompletionListener listener);
-//
-//	abstract public void setOnInfoListener(OnInfoListener listener);
-//
-//	abstract public void setOnSeekCompleteListener(
-//			OnSeekCompleteListener listener);
-//
-//	abstract public void setOnErrorListener(OnErrorListener listener);
-//
-//	abstract public void setOnPreparedListener(OnPreparedListener listener);
-
 	/**
 	 * Sets up a receiver of periodic events from the PlayerHater service.
 	 * <p>
@@ -290,8 +275,9 @@ public interface IPlayerHater {
 	abstract public boolean isLoading();
 
 	/**
-	 * Gets the state of the currently loaded {@linkplain android.media.MediaPlayer MediaPlayer},
-	 * represented as an int.
+	 * Gets the state of the currently loaded
+	 * {@linkplain android.media.MediaPlayer MediaPlayer}, represented as an
+	 * int.
 	 * 
 	 * @return One of: {@link MediaPlayerWithState#IDLE IDLE},
 	 *         {@link MediaPlayerWithState#INITIALIZED INITIALIZED},
@@ -299,12 +285,19 @@ public interface IPlayerHater {
 	 *         {@link MediaPlayerWithState#PREPARED PREPARED},
 	 *         {@link MediaPlayerWithState#STARTED STARTED},
 	 *         {@link MediaPlayerWithState#PAUSED PAUSED},
-	 *         {@link MediaPlayerWithState#PLAYBACK_COMPLETED PLAYBACK_COMPLETED},
-	 *         {@link MediaPlayerWithState#STOPPED STOPPED},
-	 *         {@link MediaPlayerWithState#END END}, or
+	 *         {@link MediaPlayerWithState#PLAYBACK_COMPLETED
+	 *         PLAYBACK_COMPLETED}, {@link MediaPlayerWithState#STOPPED STOPPED}
+	 *         , {@link MediaPlayerWithState#END END}, or
 	 *         {@link MediaPlayerWithState#ERROR ERROR}
 	 */
 	abstract public int getState();
-	
-	//abstract public void setTransportControlFlags(int transportControlFlags);
+
+	/**
+	 * Sets the visible buttons for plugins. It is up to the implementation of
+	 * the plugin to honor these settings.
+	 * 
+	 * @see {@link android.media.RemoteControlClient#setTransportControlFlags(int) }
+	 * @param transportControlFlags
+	 */
+	abstract public void setTransportControlFlags(int transportControlFlags);
 }

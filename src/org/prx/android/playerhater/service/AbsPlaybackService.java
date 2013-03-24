@@ -104,6 +104,13 @@ public abstract class AbsPlaybackService extends Service implements
 		public void setArtist(String artist) throws RemoteException {
 			AbsPlaybackService.this.setArtist(artist);
 		}
+		
+		@Override
+		public void setTransportControlFlags(int transportControlFlags)
+				throws RemoteException {
+			AbsPlaybackService.this.setTransportControlFlags(transportControlFlags);
+			
+		}
 
 		@Override
 		public int getDuration() throws RemoteException {
@@ -204,7 +211,6 @@ public abstract class AbsPlaybackService extends Service implements
 		public void unduck() throws RemoteException {
 			AbsPlaybackService.this.unduck();
 		}
-
 	};
 
 	abstract Player getMediaPlayer();
@@ -391,6 +397,11 @@ public abstract class AbsPlaybackService extends Service implements
 	@Override
 	public void setAlbumArt(Uri url) {
 		mPlugin.onAlbumArtChangedToUri(url);
+	}
+	
+	@Override
+	public void setTransportControlFlags(int transportControlFlags) {
+		mPlugin.onTransportControlFlagsChanged(transportControlFlags);
 	}
 
 	@Override

@@ -403,6 +403,15 @@ public class BoundPlayerHater extends PlayerHater {
 			mPlayerHater.skipBack();
 		}
 	}
+	
+	@Override
+	public void setTransportControlFlags(int transportControlFlags) {
+		if (mPlayerHater == null) {
+			sTransportControlFlags = transportControlFlags;
+		} else {
+			mPlayerHater.setTransportControlFlags(transportControlFlags);
+		}
+	}
 
 	/**
 	 * {@inheritDoc}

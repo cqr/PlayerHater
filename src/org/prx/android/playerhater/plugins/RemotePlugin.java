@@ -39,15 +39,15 @@ public class RemotePlugin implements PlayerHaterPlugin {
 	@Override
 	public void onSongChanged(Song song) {
 		try {
-			mBinder.onSongChanged(((BasicSong)song).tag);
+			mBinder.onSongChanged(((BasicSong) song).tag);
 		} catch (RemoteException e) {}
 	}
 
 	@Override
 	public void onSongFinished(Song song, int reason) {
 		try {
-			mBinder.onSongFinished(((BasicSong)song).tag, reason);
-		} catch (RemoteException e) { }
+			mBinder.onSongFinished(((BasicSong) song).tag, reason);
+		} catch (RemoteException e) {}
 	}
 
 	@Override
@@ -141,7 +141,7 @@ public class RemotePlugin implements PlayerHaterPlugin {
 	@Override
 	public void onNextSongAvailable(Song nextTrack) {
 		try {
-			mBinder.onNextSongAvailable(((BasicSong)nextTrack).tag);
+			mBinder.onNextSongAvailable(((BasicSong) nextTrack).tag);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -176,6 +176,13 @@ public class RemotePlugin implements PlayerHaterPlugin {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void onTransportControlFlagsChanged(int transportControlFlags) {
+		try {
+			mBinder.onTransportControlFlagsChanged(transportControlFlags);
+		} catch (RemoteException e) {}
 	}
 
 }

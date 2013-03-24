@@ -137,4 +137,9 @@ public class ServicePlayerHater extends PlayerHater {
 		return mService.getState();
 	}
 
+	@Override
+	public void setTransportControlFlags(int transportControlFlags) {
+		mService.setTransportControlFlags(transportControlFlags);
+	}
+
 }
