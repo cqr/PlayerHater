@@ -41,4 +41,5 @@ interface IRemotePlugin {
 	
 	void onChangesComplete();
 	
+	void releaseSong(int songTag);
 }

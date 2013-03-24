@@ -10,21 +10,39 @@ import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
+import android.util.SparseArray;
 
 public class PluginCollection implements PlayerHaterPlugin {
 
 	private final Set<PlayerHaterPlugin> mPlugins;
+	private final SparseArray<PlayerHaterPlugin> mPluginTags;
 
 	public PluginCollection() {
 		mPlugins = new HashSet<PlayerHaterPlugin>();
+		mPluginTags = new SparseArray<PlayerHaterPlugin>();
 	}
 
 	public void add(PlayerHaterPlugin plugin) {
+		add(plugin, 0);
+	}
+
+	public void add(PlayerHaterPlugin plugin, int tag) {
+		if (tag != 0) {
+			mPluginTags.put(tag, plugin);
+		}
 		mPlugins.add(plugin);
 	}
 
 	public void remove(PlayerHaterPlugin plugin) {
 		mPlugins.remove(plugin);
+	}
+
+	public void remove(int tag) {
+		if (tag != 0 && mPluginTags.get(tag) != null) {
+			mPlugins.remove(mPluginTags.get(tag));
+			mPluginTags.delete(tag);
+		}
 	}
 
 	@Override
@@ -115,7 +133,7 @@ public class PluginCollection implements PlayerHaterPlugin {
 	public void onServiceStopping() {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onServiceStopping();
-		
+
 	}
 
 	@Override
@@ -132,8 +150,11 @@ public class PluginCollection implements PlayerHaterPlugin {
 
 	@Override
 	public void onSongFinished(Song song, int reason) {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onSongFinished(song, reason);
+		for (PlayerHaterPlugin plugin : mPlugins) {
+			Log.d("collection", "" + plugin);
+			if (plugin != null)
+				plugin.onSongFinished(song, reason);
+		}
 	}
 
 	@Override

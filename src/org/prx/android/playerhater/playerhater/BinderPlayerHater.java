@@ -25,9 +25,7 @@ public class BinderPlayerHater extends PlayerHater {
 
 	private static BinderPlayerHater sInstance;
 	private final IPlayerHaterBinder mBinder;
-	private final SparseArray<WeakSongReference> mSongs = new SparseArray<WeakSongReference>();
-	private final SparseArray<BasicSong> mBasicSongs = new SparseArray<BasicSong>();
-	private final ReferenceQueue<Song> mQueue = new ReferenceQueue<Song>();
+	private final SparseArray<Song> mSongs = new SparseArray<Song>();
 
 	public static BinderPlayerHater get(IPlayerHaterBinder binder) {
 		if (sInstance == null) {
@@ -202,41 +200,42 @@ public class BinderPlayerHater extends PlayerHater {
 		}
 	}
 
-//	@Override
-//	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
-//		// TODO Auto-generated method stub
-//
-//	}
-//
-//	@Override
-//	public void setOnCompletionListener(OnCompletionListener listener) {
-//		// TODO Auto-generated method stub
-//
-//	}
-//
-//	@Override
-//	public void setOnInfoListener(OnInfoListener listener) {
-//		// TODO Auto-generated method stub
-//
-//	}
-//
-//	@Override
-//	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-//		// TODO Auto-generated method stub
-//
-//	}
-//
-//	@Override
-//	public void setOnErrorListener(OnErrorListener listener) {
-//		// TODO Auto-generated method stub
-//
-//	}
-//
-//	@Override
-//	public void setOnPreparedListener(OnPreparedListener listener) {
-//		// TODO Auto-generated method stub
-//
-//	}
+	// @Override
+	// public void setOnBufferingUpdateListener(OnBufferingUpdateListener
+	// listener) {
+	// // TODO Auto-generated method stub
+	//
+	// }
+	//
+	// @Override
+	// public void setOnCompletionListener(OnCompletionListener listener) {
+	// // TODO Auto-generated method stub
+	//
+	// }
+	//
+	// @Override
+	// public void setOnInfoListener(OnInfoListener listener) {
+	// // TODO Auto-generated method stub
+	//
+	// }
+	//
+	// @Override
+	// public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
+	// // TODO Auto-generated method stub
+	//
+	// }
+	//
+	// @Override
+	// public void setOnErrorListener(OnErrorListener listener) {
+	// // TODO Auto-generated method stub
+	//
+	// }
+	//
+	// @Override
+	// public void setOnPreparedListener(OnPreparedListener listener) {
+	// // TODO Auto-generated method stub
+	//
+	// }
 
 	@Override
 	@Deprecated
@@ -285,8 +284,7 @@ public class BinderPlayerHater extends PlayerHater {
 	}
 
 	private int tagSong(Song song) {
-		mSongs.put(song.hashCode(), new WeakSongReference(song, mQueue));
-		mBasicSongs.put(song.hashCode(), new BasicSong(song));
+		mSongs.put(song.hashCode(), song);
 		return song.hashCode();
 	}
 
@@ -295,33 +293,23 @@ public class BinderPlayerHater extends PlayerHater {
 	}
 
 	public Song getSong(int nowPlayingTag) {
-		WeakSongReference toRemove = (WeakSongReference) mQueue.poll();
-		while (toRemove != null) {
-			mSongs.delete(toRemove.tag);
-			toRemove = (WeakSongReference) mQueue.poll();
-		}
-		WeakSongReference toReturn = mSongs.get(nowPlayingTag);
-		if (toReturn != null) {
-			Song referenced = mSongs.get(nowPlayingTag).get();
-			if (referenced != null) {
-				return referenced;
-			}
-		}
-		return mBasicSongs.get(nowPlayingTag);
-	}
-
-	private static class WeakSongReference extends WeakReference<Song> {
-
-		public int tag;
-
-		public WeakSongReference(Song r, ReferenceQueue<? super Song> q) {
-			super(r, q);
-			tag = r.hashCode();
-		}
-
+		return mSongs.get(nowPlayingTag);
 	}
 
 	public IPlayerHaterBinder getBinder() {
 		return mBinder;
+	}
+
+	public void releaseSong(int songTag) {
+		// XXX TODO This probably isn't necessary (this method is only called by
+		// the service when it is sure that it will never send this tag again),
+		// but I am leaving it here for now. It is a leak, by its very
+		// definition, so probably should be removed soon.
+		Log.d("release", "Releasing a song " + songTag);
+		if (mSongs.get(songTag) != null) {
+			Song newSong = new BasicSong(mSongs.get(songTag));
+			mSongs.delete(songTag);
+			mSongs.put(songTag, newSong);
+		}
 	}
 }

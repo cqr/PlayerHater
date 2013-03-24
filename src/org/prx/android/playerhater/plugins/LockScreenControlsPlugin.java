@@ -19,6 +19,11 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
 	private RemoteControlClient mRemoteControlClient;
 
+	private int mTransportControlFlags = RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
+			| RemoteControlClient.FLAG_KEY_MEDIA_STOP
+			| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
+			| RemoteControlClient.FLAG_KEY_MEDIA_NEXT;
+
 	@Override
 	public void onAudioStarted() {
 		super.onAudioStarted();
@@ -57,8 +62,7 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 				image = BitmapFactory.decodeStream(new URL(song.getUri()
 						.toString()).openStream());
 			}
-		} catch (Exception e) {
-		}
+		} catch (Exception e) {}
 
 		getRemoteControlClient()
 				.editMetadata(true)
@@ -112,17 +116,10 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 					getContext(), 0, mediaButtonIntent,
 					PendingIntent.FLAG_CANCEL_CURRENT);
 			mRemoteControlClient = new RemoteControlClient(pendingIntent);
-			mRemoteControlClient.setTransportControlFlags(getTCFs());
+			mRemoteControlClient
+					.setTransportControlFlags(mTransportControlFlags);
 		}
 		return mRemoteControlClient;
-	}
-
-	private int getTCFs() {
-		int tcfs = RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
-				| RemoteControlClient.FLAG_KEY_MEDIA_STOP
-				| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
-				| RemoteControlClient.FLAG_KEY_MEDIA_NEXT;
-		return tcfs;
 	}
 
 }

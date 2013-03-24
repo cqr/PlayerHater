@@ -1,5 +1,7 @@
 package org.prx.android.playerhater.service;
 
+import java.lang.ref.PhantomReference;
+import java.lang.ref.ReferenceQueue;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.MediaPlayerWithState;
@@ -36,6 +38,7 @@ import android.view.KeyEvent;
 public abstract class AbsPlaybackService extends Service implements
 		PlayerHaterService {
 
+	protected static final int REMOTE_PLUGIN = 2525;
 	protected String TAG;
 	protected BroadcastReceiver mBroadcastReceiver;
 	protected PlayerHaterPlugin mPlugin;
@@ -44,6 +47,7 @@ public abstract class AbsPlaybackService extends Service implements
 	private PluginCollection mPluginCollection;
 	private final PlayerHater mPlayerHater = new ServicePlayerHater(this);
 	private IRemotePlugin mPluginBinder;
+	private ReferenceQueue<Song> mSongReferenceQueue = new ReferenceQueue<Song>();
 
 	private final IPlayerHaterBinder.Stub mRemoteBinder = new IPlayerHaterBinder.Stub() {
 
@@ -51,6 +55,7 @@ public abstract class AbsPlaybackService extends Service implements
 		public boolean enqueue(Uri uri, String title, String artist,
 				Uri albumArt, int tag) throws RemoteException {
 			Song song = new BasicSong(uri, title, artist, albumArt, tag);
+			new PhantomSongReference(song, mSongReferenceQueue);
 			AbsPlaybackService.this.enqueue(song);
 			return true;
 		}
@@ -136,9 +141,13 @@ public abstract class AbsPlaybackService extends Service implements
 		@Override
 		public void setRemotePlugin(IRemotePlugin binder)
 				throws RemoteException {
-			binder.onServiceBound(this);
-			mPluginBinder = binder;
-			mPluginCollection.add(new RemotePlugin(binder));
+			mPluginCollection.remove(REMOTE_PLUGIN);
+			
+			if (binder != null) {
+				binder.onServiceBound(this);
+				mPluginBinder = binder;
+				mPluginCollection.add(new RemotePlugin(binder), REMOTE_PLUGIN);
+			}
 		}
 
 		@Override
@@ -468,7 +477,28 @@ public abstract class AbsPlaybackService extends Service implements
 
 	protected void onResumed() {
 		mPlugin.onAudioResumed();
+		clearSongReferences();
 	}
 
 	/* END Events for Subclasses */
+
+	private void clearSongReferences() {
+		PhantomSongReference ref = (PhantomSongReference) mSongReferenceQueue
+				.poll();
+		if (ref != null) {
+			try {
+				mPluginBinder.releaseSong(ref.tag);
+			} catch (RemoteException e) {}
+		}
+	}
+
+	private static class PhantomSongReference extends PhantomReference<Song> {
+		public final int tag;
+
+		public PhantomSongReference(Song r, ReferenceQueue<? super Song> q) {
+			super(r, q);
+			tag = ((BasicSong) r).tag;
+		}
+
+	}
 }

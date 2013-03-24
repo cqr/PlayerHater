@@ -122,4 +122,5 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	protected final IPlayerHaterBinder getBinder() {
 		return mBinder;
 	}
+	
 }

@@ -304,6 +304,11 @@ public abstract class PlayerHater implements IPlayerHater {
 		public void onChangesComplete() throws RemoteException {
 			sPlugin.onChangesComplete();
 		}
+
+		@Override
+		public void releaseSong(int songTag) throws RemoteException {
+			sPlayerHater.releaseSong(songTag);
+		}
 	};
 
 	protected static final ServiceConnection sServiceConnection = new ServiceConnection() {

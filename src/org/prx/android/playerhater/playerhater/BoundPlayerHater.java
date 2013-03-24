@@ -64,8 +64,8 @@ public class BoundPlayerHater extends PlayerHater {
 	public void setBoundPlugin(PlayerHaterPlugin plugin) {
 		removeCurrentPlugin();
 		mPlugin = plugin;
-		sPluginCollection.add(plugin);
 		if (mPlugin != null) {
+			sPluginCollection.add(plugin);
 			mPlugin.onPlayerHaterLoaded(mContext.get(), this);
 			if (mPlayerHater != null
 					&& mPlayerHater instanceof BinderPlayerHater) {

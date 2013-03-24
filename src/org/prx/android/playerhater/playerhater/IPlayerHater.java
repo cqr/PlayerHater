@@ -6,12 +6,6 @@ import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.MediaPlayerWithState;
 
 import android.app.Activity;
-import android.media.MediaPlayer.OnBufferingUpdateListener;
-import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnInfoListener;
-import android.media.MediaPlayer.OnPreparedListener;
-import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
 /**
@@ -311,4 +305,6 @@ public interface IPlayerHater {
 	 *         {@link MediaPlayerWithState#ERROR ERROR}
 	 */
 	abstract public int getState();
+	
+	//abstract public void setTransportControlFlags(int transportControlFlags);
 }
