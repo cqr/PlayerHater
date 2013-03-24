@@ -407,7 +407,7 @@ public class BoundPlayerHater extends PlayerHater {
 	@Override
 	public void setTransportControlFlags(int transportControlFlags) {
 		if (mPlayerHater == null) {
-			sTransportControlFlags = transportControlFlags;
+			sPendingTransportControlFlags = transportControlFlags;
 		} else {
 			mPlayerHater.setTransportControlFlags(transportControlFlags);
 		}

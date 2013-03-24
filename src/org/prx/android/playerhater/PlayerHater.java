@@ -59,7 +59,7 @@ public abstract class PlayerHater implements IPlayerHater {
 	private static final Set<AutoBindHandle> sHandles = new HashSet<AutoBindHandle>();
 	protected static final String RESOURCE = "resource";
 	protected static final String URL = "url";
-	protected static int sTransportControlFlags;
+	protected static int sPendingTransportControlFlags;
 	public static final String EXTRA_CONFIG = "config";
 
 	/**
@@ -379,6 +379,10 @@ public abstract class PlayerHater implements IPlayerHater {
 
 			if (sPendingNotificationIntentActivity != null) {
 				sPlayerHater.setActivity(sPendingNotificationIntentActivity);
+			}
+			
+			if (sPendingTransportControlFlags != 0) {
+				sPlayerHater.setTransportControlFlags(sPendingTransportControlFlags);
 			}
 
 			if (sPlayQueue.getNowPlaying() != null) {
