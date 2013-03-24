@@ -1,8 +1,5 @@
 package org.prx.android.playerhater.playerhater;
 
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
-
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
@@ -10,12 +7,6 @@ import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.util.BasicSong;
 
 import android.app.Activity;
-import android.media.MediaPlayer.OnBufferingUpdateListener;
-import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnInfoListener;
-import android.media.MediaPlayer.OnPreparedListener;
-import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.util.Log;

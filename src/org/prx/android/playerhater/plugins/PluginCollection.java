@@ -10,7 +10,6 @@ import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 import android.util.SparseArray;
 
 public class PluginCollection implements PlayerHaterPlugin {

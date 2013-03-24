@@ -11,12 +11,6 @@ import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 
 import android.app.Activity;
 import android.content.Context;
-import android.media.MediaPlayer.OnBufferingUpdateListener;
-import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnInfoListener;
-import android.media.MediaPlayer.OnPreparedListener;
-import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
 public class BoundPlayerHater extends PlayerHater {

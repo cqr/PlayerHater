@@ -7,12 +7,6 @@ import org.prx.android.playerhater.plugins.PlayerHaterListenerPlugin;
 import org.prx.android.playerhater.service.PlayerHaterService;
 
 import android.app.Activity;
-import android.media.MediaPlayer.OnBufferingUpdateListener;
-import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnInfoListener;
-import android.media.MediaPlayer.OnPreparedListener;
-import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
 public class ServicePlayerHater extends PlayerHater {
@@ -116,36 +110,6 @@ public class ServicePlayerHater extends PlayerHater {
 	public int getDuration() {
 		return mService.getDuration();
 	}
-
-//	@Override
-//	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
-//		mService.setOnBufferingUpdateListener(listener);
-//	}
-//
-//	@Override
-//	public void setOnCompletionListener(OnCompletionListener listener) {
-//		mService.setOnCompletionListener(listener);
-//	}
-//
-//	@Override
-//	public void setOnInfoListener(OnInfoListener listener) {
-//		mService.setOnInfoListener(listener);
-//	}
-//
-//	@Override
-//	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-//		mService.setOnSeekCompleteListener(listener);
-//	}
-//
-//	@Override
-//	public void setOnErrorListener(OnErrorListener listener) {
-//		mService.setOnErrorListener(listener);
-//	}
-//
-//	@Override
-//	public void setOnPreparedListener(OnPreparedListener listener) {
-//		mService.setOnPreparedListener(listener);
-//	}
 
 	@Override
 	@Deprecated

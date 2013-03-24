@@ -6,13 +6,9 @@ import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.Player;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
 
 public class PlayerHaterListenerPlugin extends AbstractPlugin {
 
-	private static final String TAG = "PlayerHaterListenerPlugin";
 	private final PlayerHaterListener mListener;
 	private Song mSong;
 
@@ -34,7 +30,6 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 	
 	@Override
 	public void onChangesComplete() {
-		Log.d(TAG, "mt(1): "+ Looper.myLooper());
 		switch(getPlayerHater().getState()) {
 		case Player.STARTED:
 			mListener.onPlaying(mSong, getPlayerHater().getCurrentPosition());

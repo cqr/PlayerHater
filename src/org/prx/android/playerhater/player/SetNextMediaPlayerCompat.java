@@ -1,12 +1,9 @@
 package org.prx.android.playerhater.player;
 
-import org.prx.android.playerhater.PlayerHater;
-
 import android.annotation.TargetApi;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Build;
-import android.util.Log;
 import static org.prx.android.playerhater.player.Synchronous.synchronous;
 
 public interface SetNextMediaPlayerCompat extends OnCompletionListener {
@@ -65,7 +62,6 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 	public class Modern implements SetNextMediaPlayerCompat {
-		private static final String TAG = PlayerHater.TAG;
 		private final MediaPlayerWithState mMediaPlayer;
 		private MediaPlayerWithState mNextMediaPlayer;
 		private OnCompletionListener mOnComplete;
