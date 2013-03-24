@@ -9,9 +9,11 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.media.RemoteControlClient;
 import android.net.Uri;
 import android.os.Build;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.RemoteViews;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -76,12 +78,40 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	@Override
+	public void onTransportControlFlagsChanged(int transportControlFlags) {
+		if ((transportControlFlags & RemoteControlClient.FLAG_KEY_MEDIA_NEXT) == 0) {
+			setViewVisibility(R.id.skip, View.GONE);
+		} else {
+			setViewVisibility(R.id.skip, View.VISIBLE);
+		}
+
+		if ((transportControlFlags & RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS) == 0) {
+			setViewVisibility(R.id.back, View.GONE);
+		} else {
+			setViewVisibility(R.id.back, View.VISIBLE);
+		}
+
+		if ((transportControlFlags & (RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
+				| RemoteControlClient.FLAG_KEY_MEDIA_PLAY | RemoteControlClient.FLAG_KEY_MEDIA_PAUSE)) != 0) {
+			setViewVisibility(R.id.button, View.VISIBLE);
+		} else {
+			setViewVisibility(R.id.button, View.GONE);
+		}
+
+		if ((transportControlFlags & RemoteControlClient.FLAG_KEY_MEDIA_STOP) != 0) {
+			setViewVisibility(R.id.stop, View.VISIBLE);
+		} else {
+			setViewVisibility(R.id.stop, View.GONE);
+		}
+	}
+
+	@Override
 	protected Notification getNotification() {
 		if (mNotification == null)
 			mNotification = buildNotification();
 		return mNotification;
 	}
-	
+
 	public void setIntentClass(Class<? extends Activity> intentClass) {
 		Intent i = new Intent(getContext(), intentClass);
 		i.putExtra("fromPlayerHaterNotification", true);
