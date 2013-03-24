@@ -255,10 +255,11 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 	}
 
 	public void onTick() {
-		if (isPlaying() && mPlayerHaterListener != null) {
-			mPlayerHaterListener.onPlaying(getNowPlaying(),
-					getCurrentPosition());
-		}
+		// XXX Put this into plugins
+//		if (isPlaying() && mPlayerHaterListener != null) {
+//			mPlayerHaterListener.onPlaying(getNowPlaying(),
+//					getCurrentPosition());
+//		}
 	}
 
 	private Thread getClockThread() {

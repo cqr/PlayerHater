@@ -1,4 +1,4 @@
-package org.prx.android.playerhater.util;
+package org.prx.android.playerhater.playerhater;
 
 import java.lang.ref.WeakReference;
 
@@ -6,6 +6,7 @@ import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.Player;
+import org.prx.android.playerhater.plugins.PlayerHaterListenerPlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 
 import android.app.Activity;
@@ -37,13 +38,23 @@ public class BoundPlayerHater extends PlayerHater {
 
 	};
 
+	/**
+	 * @see {@link PlayerHater#bind(Context)}
+	 */
 	public BoundPlayerHater(Context context) {
+		if (sConfig == null) {
+			PlayerHater.configure(context);
+		}
 		mContext = new WeakReference<Context>(context);
 		requestAutoBind(mAutoBindHandle);
 	}
 
 	protected void bind(PlayerHater playerHater) {
 		mPlayerHater = playerHater;
+		if (mPlugin != null && mPlayerHater instanceof BinderPlayerHater) {
+			mPlugin.onServiceBound(((BinderPlayerHater) mPlayerHater)
+					.getBinder());
+		}
 	}
 
 	protected void unbind() {
@@ -53,7 +64,15 @@ public class BoundPlayerHater extends PlayerHater {
 	public void setBoundPlugin(PlayerHaterPlugin plugin) {
 		removeCurrentPlugin();
 		mPlugin = plugin;
-		sPlugins.add(plugin);
+		sPluginCollection.add(plugin);
+		if (mPlugin != null) {
+			mPlugin.onPlayerHaterLoaded(mContext.get(), this);
+			if (mPlayerHater != null
+					&& mPlayerHater instanceof BinderPlayerHater) {
+				mPlugin.onServiceBound(((BinderPlayerHater) mPlayerHater)
+						.getBinder());
+			}
+		}
 	}
 
 	public void release() {
@@ -64,7 +83,7 @@ public class BoundPlayerHater extends PlayerHater {
 
 	private void removeCurrentPlugin() {
 		if (mPlugin != null) {
-			sPlugins.remove(mPlugin);
+			sPluginCollection.remove(mPlugin);
 		}
 		mPlugin = null;
 	}
@@ -78,6 +97,12 @@ public class BoundPlayerHater extends PlayerHater {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Since version 2.0.0, this method also stops the background service,
+	 * allowing Android to shut it down to free memory.
+	 */
 	@Override
 	public boolean stop() {
 		if (mPlayerHater == null) {
@@ -87,6 +112,15 @@ public class BoundPlayerHater extends PlayerHater {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Since version 2.0.0, this method will cause a service that is not yet
+	 * started to start. Because some behavior is deferred until the service has
+	 * started, it is possible that unintended behaviors will not be seen until
+	 * after this method or one of the other variants of {@linkplain play()} is
+	 * called.
+	 */
 	@Override
 	public boolean play() {
 		if (mPlayerHater != null) {
@@ -96,6 +130,15 @@ public class BoundPlayerHater extends PlayerHater {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Since version 2.0.0, this method will cause a service that is not yet
+	 * started to start. Because some behavior is deferred until the service has
+	 * started, it is possible that unintended behaviors will not be seen until
+	 * after this method or one of the other variants of {@linkplain play()} is
+	 * called.
+	 */
 	@Override
 	public boolean play(int startTime) {
 		if (mPlayerHater == null) {
@@ -116,11 +159,29 @@ public class BoundPlayerHater extends PlayerHater {
 	// return play(new BasicSong(url, null, null, null), startTime);
 	// }
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Since version 2.0.0, this method will cause a service that is not yet
+	 * started to start. Because some behavior is deferred until the service has
+	 * started, it is possible that unintended behaviors will not be seen until
+	 * after this method or one of the other variants of {@linkplain play()} is
+	 * called.
+	 */
 	@Override
 	public boolean play(Song song) {
 		return play(song, 0);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Since version 2.0.0, this method will cause a service that is not yet
+	 * started to start. Because some behavior is deferred until the service has
+	 * started, it is possible that unintended behaviors will not be seen until
+	 * after this method or one of the other variants of {@linkplain play()} is
+	 * called.
+	 */
 	@Override
 	public boolean play(Song song, int startTime) {
 		if (mPlayerHater == null) {
@@ -181,6 +242,13 @@ public class BoundPlayerHater extends PlayerHater {
 		return mPlayerHater.getCurrentPosition();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Note: This method will return 0 when the service is not started,
+	 * regardless of whether or not there is a song loaded into the player which
+	 * will start when {@linkplain #play()} is called.
+	 */
 	@Override
 	public int getDuration() {
 		if (mPlayerHater == null) {
@@ -189,63 +257,53 @@ public class BoundPlayerHater extends PlayerHater {
 		return mPlayerHater.getDuration();
 	}
 
-	@Override
-	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
-		sPendingBufferingListener = listener;
-		if (mPlayerHater != null) {
-			mPlayerHater.setOnBufferingUpdateListener(listener);
-		}
-	}
-
-	@Override
-	public void setOnCompletionListener(OnCompletionListener listener) {
-		sPendingCompleteListener = listener;
-		if (mPlayerHater != null) {
-			mPlayerHater.setOnCompletionListener(listener);
-		}
-	}
-
-	@Override
-	public void setOnInfoListener(OnInfoListener listener) {
-		sPendingInfoListener = listener;
-		if (mPlayerHater != null) {
-			mPlayerHater.setOnInfoListener(listener);
-		}
-	}
-
-	@Override
-	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-		sPendingSeekListener = listener;
-		if (mPlayerHater != null) {
-			mPlayerHater.setOnSeekCompleteListener(listener);
-		}
-	}
-
-	@Override
-	public void setOnErrorListener(OnErrorListener listener) {
-		sPendingErrorListener = listener;
-		if (mPlayerHater != null) {
-			mPlayerHater.setOnErrorListener(listener);
-		}
-	}
-
-	@Override
-	public void setOnPreparedListener(OnPreparedListener listener) {
-		sPendingPreparedListener = listener;
-		if (mPlayerHater != null) {
-			mPlayerHater.setOnPreparedListener(listener);
-		}
-	}
-
-	// @Override
-	// public void setListener(PlayerHaterListener listener) {
-	// setListener(listener, true);
-	// }
-
-	// @Override
-	// public void setListener(PlayerHaterListener listener, boolean withEcho) {
-	// sListener.setListener(listener, withEcho);
-	// }
+//	@Override
+//	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
+//		sPendingBufferingListener = listener;
+//		if (mPlayerHater != null) {
+//			mPlayerHater.setOnBufferingUpdateListener(listener);
+//		}
+//	}
+//
+//	@Override
+//	public void setOnCompletionListener(OnCompletionListener listener) {
+//		sPendingCompleteListener = listener;
+//		if (mPlayerHater != null) {
+//			mPlayerHater.setOnCompletionListener(listener);
+//		}
+//	}
+//
+//	@Override
+//	public void setOnInfoListener(OnInfoListener listener) {
+//		sPendingInfoListener = listener;
+//		if (mPlayerHater != null) {
+//			mPlayerHater.setOnInfoListener(listener);
+//		}
+//	}
+//
+//	@Override
+//	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
+//		sPendingSeekListener = listener;
+//		if (mPlayerHater != null) {
+//			mPlayerHater.setOnSeekCompleteListener(listener);
+//		}
+//	}
+//
+//	@Override
+//	public void setOnErrorListener(OnErrorListener listener) {
+//		sPendingErrorListener = listener;
+//		if (mPlayerHater != null) {
+//			mPlayerHater.setOnErrorListener(listener);
+//		}
+//	}
+//
+//	@Override
+//	public void setOnPreparedListener(OnPreparedListener listener) {
+//		sPendingPreparedListener = listener;
+//		if (mPlayerHater != null) {
+//			mPlayerHater.setOnPreparedListener(listener);
+//		}
+//	}
 
 	@Override
 	public Song nowPlaying() {
@@ -318,8 +376,11 @@ public class BoundPlayerHater extends PlayerHater {
 
 	@Override
 	public boolean skipTo(int position) {
-		// XXX TODO FIXME OBVIOUSLY
-		return false;
+		if (mPlayerHater == null) {
+			return sPlayQueue.skipTo(position);
+		} else {
+			return mPlayerHater.skipTo(position);
+		}
 	}
 
 	@Override
@@ -349,10 +410,35 @@ public class BoundPlayerHater extends PlayerHater {
 		}
 	}
 
-	@Override
-	@Deprecated
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * In the current implementation of this method, the call:
+	 * <p>
+	 * {@code mPlayerHater.setListener(listener)}
+	 * <p>
+	 * is functionally equivalent to:
+	 * <p>
+	 * {@code mPlayerHater.setBoundPlugin(new PlayerHaterListenerPlugin(listener))}
+	 * <p>
+	 * For the sake of clarity and flexibility, you should use that code
+	 * instead.
+	 * 
+	 * @deprecated The implementation of this method was extremely resource
+	 *             intensive, inflexible, and prone to leaks. An upgrade path
+	 *             has been provided in the form of
+	 *             {@linkplain PlayerHaterListenerPlugin}. This method is now a
+	 *             simple wrapper around that class.
+	 * 
+	 * 
+	 * @see {@link BoundPlayerHater#setBoundPlugin(PlayerHaterPlugin)}
+	 * @see {@link PlayerHaterListenerPlugin}
+	 */
 	public void setListener(PlayerHaterListener listener) {
-		// TODO Auto-generated method stub
-
+		if (listener == null) {
+			setBoundPlugin(null);
+		} else {
+			setBoundPlugin(new PlayerHaterListenerPlugin(listener));
+		}
 	}
 }

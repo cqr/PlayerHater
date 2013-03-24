@@ -13,7 +13,7 @@ public class Gapless extends MediaPlayerDecorator {
 	public Gapless(MediaPlayerWithState stateManager) {
 		super(stateManager);
 
-		if (android.os.Build.VERSION.SDK_INT >= 16 && false) {
+		if (android.os.Build.VERSION.SDK_INT >= 16) {
 			mMediaPlayerNexter = new SetNextMediaPlayerCompat.Modern(stateManager);
 		} else {
 			mMediaPlayerNexter = new SetNextMediaPlayerCompat.Compat(stateManager);

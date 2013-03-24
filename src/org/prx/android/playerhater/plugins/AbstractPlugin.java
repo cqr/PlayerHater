@@ -12,7 +12,7 @@ import android.util.Log;
 
 public abstract class AbstractPlugin implements PlayerHaterPlugin {
 
-	private static final String TAG = "AbstractPlugin";
+	protected static final String _TAG = "AbstractPlugin";
 	private PlayerHater mPlayerHater;
 	private IPlayerHaterBinder mBinder;
 	private Context mContext;
@@ -44,9 +44,8 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 
 	@Override
 	public void onAudioResumed() {
-		Log.w(TAG,
-				"Forwarding a call to onAudioResumed => onAudioStarted "
-						+ getClass().getSimpleName());
+		Log.w(_TAG, "Forwarding a call to onAudioResumed => onAudioStarted "
+				+ getClass().getSimpleName());
 		onAudioStarted();
 	}
 
@@ -106,6 +105,12 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	public void onChangesComplete() {
 	}
 
+	/**
+	 * Grants the plugin easy access to the instance of {@link PlayerHater} that
+	 * it is permitted to use.
+	 * 
+	 * @return An instance of PlayerHater
+	 */
 	protected final PlayerHater getPlayerHater() {
 		return mPlayerHater;
 	}

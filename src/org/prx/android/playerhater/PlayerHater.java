@@ -3,14 +3,15 @@ package org.prx.android.playerhater;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.prx.android.playerhater.playerhater.BinderPlayerHater;
+import org.prx.android.playerhater.playerhater.BoundPlayerHater;
+import org.prx.android.playerhater.playerhater.IPlayerHater;
+import org.prx.android.playerhater.plugins.BackgroundedPlugin;
 import org.prx.android.playerhater.plugins.IRemotePlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
+import org.prx.android.playerhater.plugins.PluginCollection;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
-import org.prx.android.playerhater.util.BinderPlayerHater;
-import org.prx.android.playerhater.util.BoundPlayerHater;
 import org.prx.android.playerhater.util.Config;
-import org.prx.android.playerhater.util.IPlayerHater;
-import org.prx.android.playerhater.util.ListenerEcho;
 import org.prx.android.playerhater.util.SongQueue;
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -39,9 +40,8 @@ public abstract class PlayerHater implements IPlayerHater {
 	protected static final SongQueue sPlayQueue = new SongQueue();
 	protected static int sStartPosition = 0;
 	private static Context sApplicationContext;
-
-	protected static final Set<PlayerHaterPlugin> sPlugins = new HashSet<PlayerHaterPlugin>();
-
+	protected static final PluginCollection sPluginCollection = new PluginCollection();
+	protected static final PlayerHaterPlugin sPlugin = new BackgroundedPlugin(sPluginCollection);
 	protected static String sPendingAlbumArtType;
 	protected static Uri sPendingAlbumArtUrl;
 	protected static OnErrorListener sPendingErrorListener;
@@ -55,35 +55,95 @@ public abstract class PlayerHater implements IPlayerHater {
 	protected static Activity sPendingNotificationIntentActivity;
 	protected static OnBufferingUpdateListener sPendingBufferingListener;
 	protected static Config sConfig;
-	protected static final ListenerEcho sListener = new ListenerEcho();
-
 	protected static BinderPlayerHater sPlayerHater;
-
 	private static final Set<AutoBindHandle> sHandles = new HashSet<AutoBindHandle>();
-
 	protected static final String RESOURCE = "resource";
 	protected static final String URL = "url";
-
 	public static final String EXTRA_CONFIG = "config";
 
+	/**
+	 * Gets an instance of a {@linkplain BoundPlayerHater} which can be used to
+	 * interact with the playback service.
+	 * 
+	 * Calling this method will also invoke
+	 * {@linkplain PlayerHater#configure(Context)} if it has not yet been
+	 * called.
+	 * 
+	 * @since 2.1.0
+	 * 
+	 * @param context
+	 *            The context on which to bind the service.
+	 * @return an instance of PlayerHater which one can use to interact with the
+	 *         Playback Service.
+	 */
 	public static BoundPlayerHater bind(Context context) {
-		if (sConfig == null) {
-			configure(context);
-		}
-
 		return new BoundPlayerHater(context);
 	}
 
-	private static void configure(Context context) {
+	/**
+	 * Gets an instance of {@link PlayerHater} which can be used to interact
+	 * with the playback service.
+	 * 
+	 * @deprecated This method name is misleading and there are some important
+	 *             differences between the interface provided by
+	 *             {@linkplain PlayerHater} and {@linkplain BoundPlayerHater}
+	 *             (namely, the {@linkplain BoundPlayerHater#release() #release}
+	 *             method).
+	 *             <p>
+	 *             In version 2.0.0, you would call
+	 *             {@code mPlayerHater = PlayerHater.get(this)} and then later
+	 *             call {@code PlayerHater.release(mPlayerHater)}. This is
+	 *             confusing, so it has been replaced with the {@link
+	 *             PlayerHater.bind(Context)} {@link BoundPlayerHater#release()}
+	 *             pair.
+	 * 
+	 * @see #bind(Context)
+	 * @since 2.0.0
+	 * 
+	 * @param context
+	 *            The context on which to bind the service.
+	 * @return an instance of PlayerHater which one can use to interact with the
+	 *         Playback Service.
+	 */
+	public static PlayerHater get(Context context) {
+		return new BoundPlayerHater(context);
+	}
+
+	/**
+	 * Releases a previously bound {@linkplain PlayerHater} instance.
+	 * 
+	 * @deprecated In version 2.0.0, you would call
+	 *             {@code mPlayerHater = PlayerHater.get(this)} and then later
+	 *             call {@code PlayerHater.release(mPlayerHater)}. This is
+	 *             confusing, so it has been replaced with the
+	 *             {@link PlayerHater#bind(Context)}
+	 *             {@link BoundPlayerHater#release()} pair.
+	 * 
+	 * @since 2.0.0
+	 * @see {@link BoundPlayerHater#release()}
+	 * @param playerHater
+	 *            The PlayerHater to be released.
+	 */
+	public static void release(PlayerHater playerHater) {
+		if (playerHater instanceof BoundPlayerHater) {
+			((BoundPlayerHater) playerHater).release();
+		}
+	}
+
+	/**
+	 * Configures PlayerHater.
+	 * 
+	 * @param context
+	 *            A Context object from within the application to be used.
+	 */
+	public static void configure(Context context) {
 		context = context.getApplicationContext();
 		sConfig = new Config(context);
 		for (Class<? extends PlayerHaterPlugin> pluginClass : sConfig
 				.getPrebindPlugins()) {
 			try {
 				PlayerHaterPlugin plugin = pluginClass.newInstance();
-				sPlugins.add(plugin);
-				plugin.onPlayerHaterLoaded(context, new BoundPlayerHater(
-						context));
+				new BoundPlayerHater(context).setBoundPlugin(plugin);
 			} catch (Exception e) {
 				Log.e(TAG,
 						"Could not instantiate plugin "
@@ -106,6 +166,17 @@ public abstract class PlayerHater implements IPlayerHater {
 		public void unbind();
 	}
 
+	/**
+	 * Constructs an {@linkplain Intent} which will start the appropriate
+	 * {@linkplain PlayerHaterService} as configured in the project's
+	 * AndroidManifest.xml file.
+	 * 
+	 * @param context
+	 * @return An {@link Intent} which will start the correct service.
+	 * @throws IllegalArgumentException
+	 *             if there is no appropriate service configured in
+	 *             AndroidManifest.xml
+	 */
 	public static Intent buildServiceIntent(Context context) {
 		Intent intent = new Intent("org.prx.android.playerhater.SERVICE");
 		intent.setPackage(context.getPackageName());
@@ -147,127 +218,91 @@ public abstract class PlayerHater implements IPlayerHater {
 
 		@Override
 		public void onTitleChanged(String title) throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onTitleChanged(title);
-			}
+			sPlugin.onTitleChanged(title);
 		}
 
 		@Override
 		public void onSongFinished(int songTag, int reason)
 				throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onSongFinished(sPlayerHater.getSong(songTag), reason);
-			}
+			sPlugin.onSongFinished(sPlayerHater.getSong(songTag), reason);
 		}
 
 		@Override
 		public void onSongChanged(int songTag) throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onSongChanged(sPlayerHater.getSong(songTag));
-			}
+			sPlugin.onSongChanged(sPlayerHater.getSong(songTag));
 		}
 
 		@Override
 		public void onNextSongUnavailable() throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onNextSongUnavailable();
-			}
+			sPlugin.onNextSongUnavailable();
 		}
 
 		@Override
 		public void onNextSongAvailable(int songTag) throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onNextSongAvailable(sPlayerHater.getSong(songTag));
-			}
+			sPlugin.onNextSongAvailable(sPlayerHater.getSong(songTag));
 		}
 
 		@Override
 		public void onDurationChanged(int duration) throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onDurationChanged(duration);
-			}
+			sPlugin.onDurationChanged(duration);
 		}
 
 		@Override
 		public void onAudioStopped() throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onAudioStopped();
-			}
+			sPlugin.onAudioStopped();
 		}
 
 		@Override
 		public void onAudioStarted() throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onAudioStarted();
-			}
-
+			sPlugin.onAudioStarted();
 		}
 
 		@Override
 		public void onAudioResumed() throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onAudioResumed();
-			}
+			sPlugin.onAudioResumed();
 		}
 
 		@Override
 		public void onAudioPaused() throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onAudioPaused();
-			}
+			sPlugin.onAudioPaused();
 		}
 
 		@Override
 		public void onAudioLoading() throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onAudioLoading();
-			}
+			sPlugin.onAudioLoading();
 		}
 
 		@Override
 		public void onArtistChanged(String artist) throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onArtistChanged(artist);
-			}
+			sPlugin.onArtistChanged(artist);
 		}
 
 		@Override
 		public void onAlbumArtUriChanged(Uri uri) throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onAlbumArtChangedToUri(uri);
-			}
+			sPlugin.onAlbumArtChangedToUri(uri);
 		}
 
 		@Override
 		public void onAlbumArtResourceChanged(int albumArtResource)
 				throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onAlbumArtChanged(albumArtResource);
-			}
+			sPlugin.onAlbumArtChanged(albumArtResource);
 		}
 
 		@Override
 		public void onServiceBound(IPlayerHaterBinder binder)
 				throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onServiceBound(binder);
-			}
-			
+			sPlugin.onServiceBound(binder);
 		}
 
 		@Override
 		public void onIntentActivityChanged(PendingIntent intent)
 				throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onIntentActivityChanged(intent);
-			}
+			sPlugin.onIntentActivityChanged(intent);
 		}
 
 		@Override
 		public void onChangesComplete() throws RemoteException {
-			for (PlayerHaterPlugin plugin : sPlugins) {
-				plugin.onChangesComplete();
-			}
+			sPlugin.onChangesComplete();
 		}
 	};
 
@@ -280,8 +315,8 @@ public abstract class PlayerHater implements IPlayerHater {
 
 			try {
 				sBinder.setRemotePlugin(sBinderPlugin);
-			} catch (RemoteException e) { }
-			
+			} catch (RemoteException e) {}
+
 			sPlayerHater = BinderPlayerHater.get(sBinder);
 
 			if (sPendingAlbumArtType != null) {
@@ -293,13 +328,6 @@ public abstract class PlayerHater implements IPlayerHater {
 			}
 
 			// XXX
-			// for (PlayerHaterPlugin plugin : sPlugins) {
-			// phService.addPluginInstance(plugin);
-			// }
-
-			// XXX
-			// phService.getPlayerHater().setListener(sListener);
-
 			// if (sPendingErrorListener != null) {
 			// phService.getPlayerHater().setOnErrorListener(
 			// sPendingErrorListener);
@@ -344,16 +372,13 @@ public abstract class PlayerHater implements IPlayerHater {
 
 			if (sPlayQueue.getNowPlaying() != null) {
 				for (Song song : sPlayQueue.getSongsBefore()) {
-					Log.d(TAG, "Enqueueing: " + song);
 					sPlayerHater.enqueue(song);
 				}
 
 				Song firstSong = sPlayQueue.getNowPlaying();
-				Log.d(TAG, "Playing " + firstSong);
 				sPlayerHater.play(firstSong, sStartPosition);
 
 				for (Song song : sPlayQueue.getSongsAfter()) {
-					Log.d(TAG, "Enqueueing: " + song);
 					sPlayerHater.enqueue(song);
 				}
 
@@ -382,6 +407,19 @@ public abstract class PlayerHater implements IPlayerHater {
 		sHandles.add(handle);
 		if (sPlayerHater != null) {
 			handle.bind(sPlayerHater);
+		} else if (sApplicationContext != null) {
+			// This condition will occur once all prebound plugins are loaded.
+			
+			// We attempt to bind (but without the BIND_AUTO_CREATE flag), in
+			// case we previously disconnected
+			// but the service continued running.
+			// I really wish we had a #peekService here because it would be
+			// ideal.
+			if (sApplicationContext.bindService(
+					buildServiceIntent(sApplicationContext),
+					sServiceConnection, 0)) {
+				Log.d(TAG, "I guess we are starting the service again");
+			}
 		}
 	}
 }

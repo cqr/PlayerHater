@@ -47,7 +47,7 @@ public class RemotePlugin implements PlayerHaterPlugin {
 	public void onSongFinished(Song song, int reason) {
 		try {
 			mBinder.onSongFinished(((BasicSong)song).tag, reason);
-		} catch (RemoteException e) {}
+		} catch (RemoteException e) { }
 	}
 
 	@Override

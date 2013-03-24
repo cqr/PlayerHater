@@ -1,6 +1,5 @@
 package org.prx.android.playerhater.service;
 
-import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 
@@ -44,8 +43,6 @@ public interface PlayerHaterService {
 	public abstract void setOnErrorListener(OnErrorListener listener);
 
 	public abstract void setOnPreparedListener(OnPreparedListener listener);
-
-	public abstract void setListener(PlayerHaterListener listener);
 
 	public abstract Song getNowPlaying();
 

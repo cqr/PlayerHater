@@ -1,10 +1,10 @@
 package org.prx.android.playerhater.service;
 
 import org.prx.android.playerhater.PlayerHater;
-import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
+import org.prx.android.playerhater.playerhater.ServicePlayerHater;
 import org.prx.android.playerhater.plugins.RemotePlugin;
 import org.prx.android.playerhater.plugins.IRemotePlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
@@ -13,7 +13,6 @@ import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.Config;
 import org.prx.android.playerhater.util.PlayerListenerManager;
-import org.prx.android.playerhater.util.ServicePlayerHater;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -351,15 +350,6 @@ public abstract class AbsPlaybackService extends Service implements
 		mPlayerListenerManager.setOnBufferingUpdateListener(listener);
 	}
 
-	/* The Anointed One */
-
-	@Override
-	public void setListener(PlayerHaterListener listener) {
-		mPlayerHaterListener = listener;
-	}
-
-	/* END The Anointed One */
-
 	/* END Player Listeners */
 
 	/* Plug-In Stuff */
@@ -460,22 +450,13 @@ public abstract class AbsPlaybackService extends Service implements
 
 	protected void onStopped() {
 		mPlugin.onAudioStopped();
-		if (mPlayerHaterListener != null) {
-			mPlayerHaterListener.onStopped();
-		}
 	}
 
 	protected void onPaused() {
 		mPlugin.onAudioPaused();
-		if (mPlayerHaterListener != null) {
-			mPlayerHaterListener.onPaused(getNowPlaying());
-		}
 	}
 
 	protected void onLoading() {
-		if (mPlayerHaterListener != null) {
-			mPlayerHaterListener.onLoading(getNowPlaying());
-		}
 		mPlugin.onAudioLoading();
 	}
 

@@ -1,8 +1,9 @@
-package org.prx.android.playerhater.util;
+package org.prx.android.playerhater.playerhater;
 
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.plugins.PlayerHaterListenerPlugin;
 import org.prx.android.playerhater.service.PlayerHaterService;
 
 import android.app.Activity;
@@ -116,47 +117,40 @@ public class ServicePlayerHater extends PlayerHater {
 		return mService.getDuration();
 	}
 
-	@Override
-	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setOnCompletionListener(OnCompletionListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setOnInfoListener(OnInfoListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setOnErrorListener(OnErrorListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setOnPreparedListener(OnPreparedListener listener) {
-		// TODO Auto-generated method stub
-
-	}
+//	@Override
+//	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
+//		mService.setOnBufferingUpdateListener(listener);
+//	}
+//
+//	@Override
+//	public void setOnCompletionListener(OnCompletionListener listener) {
+//		mService.setOnCompletionListener(listener);
+//	}
+//
+//	@Override
+//	public void setOnInfoListener(OnInfoListener listener) {
+//		mService.setOnInfoListener(listener);
+//	}
+//
+//	@Override
+//	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
+//		mService.setOnSeekCompleteListener(listener);
+//	}
+//
+//	@Override
+//	public void setOnErrorListener(OnErrorListener listener) {
+//		mService.setOnErrorListener(listener);
+//	}
+//
+//	@Override
+//	public void setOnPreparedListener(OnPreparedListener listener) {
+//		mService.setOnPreparedListener(listener);
+//	}
 
 	@Override
 	@Deprecated
 	public void setListener(PlayerHaterListener listener) {
-		// TODO Auto-generated method stub
-
+		mService.addPluginInstance(new PlayerHaterListenerPlugin(listener));
 	}
 
 	@Override
