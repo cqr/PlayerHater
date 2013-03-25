@@ -246,7 +246,7 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 
 		if (to == Player.PAUSED || to == Player.PREPARED
 				|| to == Player.STOPPED) {
-			onPaused();
+			//onPaused();
 		}
 
 		if (to == Player.PREPARING) {

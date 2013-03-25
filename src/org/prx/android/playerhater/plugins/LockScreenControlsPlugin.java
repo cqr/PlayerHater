@@ -23,6 +23,8 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 			| RemoteControlClient.FLAG_KEY_MEDIA_STOP
 			| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
 			| RemoteControlClient.FLAG_KEY_MEDIA_NEXT;
+	
+	
 
 	@Override
 	public void onAudioStarted() {

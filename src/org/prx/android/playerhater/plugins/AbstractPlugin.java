@@ -8,6 +8,7 @@ import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 
 /**
  * A simple helper for writing {@linkplain PlayerHaterPlugin}s
@@ -37,6 +38,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	 */
 	@Override
 	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
+		Log.v(this.getClass().getSimpleName(), "PlayerHater Loaded");
 		mContext = context;
 		mPlayerHater = playerHater;
 	}
