@@ -92,8 +92,6 @@ public interface PlayerHaterService {
 
 	void setSongInfo(Song song);
 
-	void stopService();
-
 	public abstract void addPluginInstance(PlayerHaterPlugin plugin);
 
 	public abstract boolean skip();
@@ -101,5 +99,7 @@ public interface PlayerHaterService {
 	public abstract boolean skipBack();
 
 	public abstract void setTransportControlFlags(int transportControlFlags);
+
+	void stopService(Song[] songs);
 
 }

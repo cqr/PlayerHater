@@ -209,12 +209,15 @@ public abstract class PlayerHater implements IPlayerHater {
 	protected static final IRemotePlugin sBinderPlugin = new IRemotePlugin.Stub() {
 
 		@Override
-		public void onUnbindRequested() throws RemoteException {
-			sApplicationContext.unbindService(sServiceConnection);
-			sPlayerHater = null;
+		public void onUnbindRequested(int[] songTags) throws RemoteException {
+			for (int songTag : songTags) {
+				sPlayQueue.appendSong(sPlayerHater.getSong(songTag));
+			}
 			for (AutoBindHandle handle : sHandles) {
 				handle.unbind();
 			}
+			sApplicationContext.unbindService(sServiceConnection);
+			sPlayerHater = null;
 		}
 
 		@Override

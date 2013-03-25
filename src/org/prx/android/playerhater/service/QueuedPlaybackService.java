@@ -80,7 +80,7 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 	public boolean stop() {
 		if (getMediaPlayer().conditionalStop()) {
 			stopClockThread();
-			stopService();
+			stopService(mSongQueue.toArray());
 			return true;
 		}
 		return false;

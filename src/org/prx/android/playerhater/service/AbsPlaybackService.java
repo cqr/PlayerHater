@@ -264,10 +264,16 @@ public abstract class AbsPlaybackService extends Service implements
 	}
 
 	@Override
-	public void stopService() {
+	public void stopService(Song[] songs) {
 		onStopped();
+		int[] songTags = new int[songs.length-1];
+		int i = 0;
+		for (Song song : songs) {
+			songTags[i] = ((BasicSong)song).tag;
+			i++;
+		}
 		try {
-			mPluginBinder.onUnbindRequested();
+			mPluginBinder.onUnbindRequested(songTags);
 		} catch (Exception e) {}
 		super.stopSelf();
 	}

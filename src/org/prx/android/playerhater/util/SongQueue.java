@@ -161,4 +161,8 @@ public class SongQueue {
 		return mSongs.size();
 	}
 
+	public Song[] toArray() {
+		return mSongs.toArray(new Song[size()-1]);
+	}
+
 }

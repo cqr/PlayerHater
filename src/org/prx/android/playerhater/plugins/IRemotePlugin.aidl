@@ -5,7 +5,7 @@ import org.prx.android.playerhater.service.IPlayerHaterBinder;
 
 interface IRemotePlugin {
 
-	void onUnbindRequested();
+	void onUnbindRequested(in int[] songQueue);
 	
 	void onSongChanged(int songTag);
 	
