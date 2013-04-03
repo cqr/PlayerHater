@@ -18,10 +18,17 @@ public class BoundPlayerHater extends PlayerHater {
 	private final WeakReference<Context> mContext;
 	private PlayerHaterPlugin mPlugin;
 	private PlayerHater mPlayerHater;
+	private boolean mLoading = false;
 	private final AutoBindHandle mAutoBindHandle = new AutoBindHandle() {
+		
+		@Override
+		public void loading() {
+			mLoading = true;
+		}
 
 		@Override
 		public void bind(PlayerHater playerHater) {
+			mLoading = false;
 			BoundPlayerHater.this.bind(playerHater);
 		}
 
@@ -45,10 +52,6 @@ public class BoundPlayerHater extends PlayerHater {
 
 	protected void bind(PlayerHater playerHater) {
 		mPlayerHater = playerHater;
-		if (mPlugin != null && mPlayerHater instanceof BinderPlayerHater) {
-			mPlugin.onServiceBound(((BinderPlayerHater) mPlayerHater)
-					.getBinder());
-		}
 	}
 
 	protected void unbind() {
@@ -251,53 +254,54 @@ public class BoundPlayerHater extends PlayerHater {
 		return mPlayerHater.getDuration();
 	}
 
-//	@Override
-//	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
-//		sPendingBufferingListener = listener;
-//		if (mPlayerHater != null) {
-//			mPlayerHater.setOnBufferingUpdateListener(listener);
-//		}
-//	}
-//
-//	@Override
-//	public void setOnCompletionListener(OnCompletionListener listener) {
-//		sPendingCompleteListener = listener;
-//		if (mPlayerHater != null) {
-//			mPlayerHater.setOnCompletionListener(listener);
-//		}
-//	}
-//
-//	@Override
-//	public void setOnInfoListener(OnInfoListener listener) {
-//		sPendingInfoListener = listener;
-//		if (mPlayerHater != null) {
-//			mPlayerHater.setOnInfoListener(listener);
-//		}
-//	}
-//
-//	@Override
-//	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-//		sPendingSeekListener = listener;
-//		if (mPlayerHater != null) {
-//			mPlayerHater.setOnSeekCompleteListener(listener);
-//		}
-//	}
-//
-//	@Override
-//	public void setOnErrorListener(OnErrorListener listener) {
-//		sPendingErrorListener = listener;
-//		if (mPlayerHater != null) {
-//			mPlayerHater.setOnErrorListener(listener);
-//		}
-//	}
-//
-//	@Override
-//	public void setOnPreparedListener(OnPreparedListener listener) {
-//		sPendingPreparedListener = listener;
-//		if (mPlayerHater != null) {
-//			mPlayerHater.setOnPreparedListener(listener);
-//		}
-//	}
+	// @Override
+	// public void setOnBufferingUpdateListener(OnBufferingUpdateListener
+	// listener) {
+	// sPendingBufferingListener = listener;
+	// if (mPlayerHater != null) {
+	// mPlayerHater.setOnBufferingUpdateListener(listener);
+	// }
+	// }
+	//
+	// @Override
+	// public void setOnCompletionListener(OnCompletionListener listener) {
+	// sPendingCompleteListener = listener;
+	// if (mPlayerHater != null) {
+	// mPlayerHater.setOnCompletionListener(listener);
+	// }
+	// }
+	//
+	// @Override
+	// public void setOnInfoListener(OnInfoListener listener) {
+	// sPendingInfoListener = listener;
+	// if (mPlayerHater != null) {
+	// mPlayerHater.setOnInfoListener(listener);
+	// }
+	// }
+	//
+	// @Override
+	// public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
+	// sPendingSeekListener = listener;
+	// if (mPlayerHater != null) {
+	// mPlayerHater.setOnSeekCompleteListener(listener);
+	// }
+	// }
+	//
+	// @Override
+	// public void setOnErrorListener(OnErrorListener listener) {
+	// sPendingErrorListener = listener;
+	// if (mPlayerHater != null) {
+	// mPlayerHater.setOnErrorListener(listener);
+	// }
+	// }
+	//
+	// @Override
+	// public void setOnPreparedListener(OnPreparedListener listener) {
+	// sPendingPreparedListener = listener;
+	// if (mPlayerHater != null) {
+	// mPlayerHater.setOnPreparedListener(listener);
+	// }
+	// }
 
 	@Override
 	public Song nowPlaying() {
@@ -329,6 +333,9 @@ public class BoundPlayerHater extends PlayerHater {
 
 	@Override
 	public int getState() {
+		if (mLoading) {
+			return Player.PREPARING;
+		}
 		if (mPlayerHater == null) {
 			return Player.IDLE;
 		}
@@ -403,7 +410,7 @@ public class BoundPlayerHater extends PlayerHater {
 			mPlayerHater.skipBack();
 		}
 	}
-	
+
 	@Override
 	public void setTransportControlFlags(int transportControlFlags) {
 		if (mPlayerHater == null) {

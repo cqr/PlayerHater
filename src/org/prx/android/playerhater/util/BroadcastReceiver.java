@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.util.Log;
 import android.view.KeyEvent;
 
 public class BroadcastReceiver extends android.content.BroadcastReceiver implements RemoteControlButtonReceiver {
@@ -46,7 +45,6 @@ public class BroadcastReceiver extends android.content.BroadcastReceiver impleme
 	@Override
 	@SuppressLint("InlinedApi")
 	public void onReceive(Context context, Intent intent) {
-		Log.d(context.getPackageName() + "/BroadcastReceiver", "Got a button: " + intent.toString());
 		int keyCode = -1;
 		if (intent.getAction() != null) {
 			if (intent.getIntExtra("state", 0) == 0) {

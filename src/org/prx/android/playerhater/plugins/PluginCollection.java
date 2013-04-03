@@ -22,22 +22,22 @@ public class PluginCollection implements PlayerHaterPlugin {
 		mPluginTags = new SparseArray<PlayerHaterPlugin>();
 	}
 
-	public void add(PlayerHaterPlugin plugin) {
+	public synchronized void add(PlayerHaterPlugin plugin) {
 		add(plugin, 0);
 	}
 
-	public void add(PlayerHaterPlugin plugin, int tag) {
+	public synchronized void add(PlayerHaterPlugin plugin, int tag) {
 		if (tag != 0) {
 			mPluginTags.put(tag, plugin);
 		}
 		mPlugins.add(plugin);
 	}
 
-	public void remove(PlayerHaterPlugin plugin) {
+	public synchronized void remove(PlayerHaterPlugin plugin) {
 		mPlugins.remove(plugin);
 	}
 
-	public void remove(int tag) {
+	public synchronized void remove(int tag) {
 		if (tag != 0 && mPluginTags.get(tag) != null) {
 			mPlugins.remove(mPluginTags.get(tag));
 			mPluginTags.delete(tag);
@@ -45,124 +45,129 @@ public class PluginCollection implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onAudioStopped() {
+	public synchronized void onAudioStopped() {
 		for (PlayerHaterPlugin listener : mPlugins)
 			listener.onAudioStopped();
 	}
 
 	@Override
-	public void onTitleChanged(String title) {
+	public synchronized void onTitleChanged(String title) {
 		for (PlayerHaterPlugin listener : mPlugins)
 			listener.onTitleChanged(title);
 	}
 
 	@Override
-	public void onArtistChanged(String artist) {
+	public synchronized void onArtistChanged(String artist) {
 		for (PlayerHaterPlugin listener : mPlugins)
 			listener.onArtistChanged(artist);
 	}
 
 	@Override
-	public void onAlbumArtChanged(int resourceId) {
+	public synchronized void onAlbumArtChanged(int resourceId) {
 		for (PlayerHaterPlugin listener : mPlugins)
 			listener.onAlbumArtChanged(resourceId);
 	}
 
 	@Override
-	public void onAlbumArtChangedToUri(Uri url) {
+	public synchronized void onAlbumArtChangedToUri(Uri url) {
 		for (PlayerHaterPlugin listener : mPlugins)
 			listener.onAlbumArtChangedToUri(url);
 	}
 
 	@Override
-	public void onSongChanged(Song song) {
+	public synchronized void onSongChanged(Song song) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onSongChanged(song);
 	}
 
 	@Override
-	public void onDurationChanged(int duration) {
+	public synchronized void onDurationChanged(int duration) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onDurationChanged(duration);
 	}
 
 	@Override
-	public void onAudioLoading() {
+	public synchronized void onAudioLoading() {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onAudioLoading();
 	}
 
 	@Override
-	public void onAudioPaused() {
+	public synchronized void onAudioPaused() {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onAudioPaused();
 	}
 
 	@Override
-	public void onAudioResumed() {
+	public synchronized void onAudioResumed() {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onAudioResumed();
 	}
 
 	@Override
-	public void onAudioStarted() {
+	public synchronized void onAudioStarted() {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onAudioStarted();
 	}
 
 	@Override
-	public void onNextSongAvailable(Song nextSong) {
+	public synchronized void onNextSongAvailable(Song nextSong) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onNextSongAvailable(nextSong);
 	}
 
 	@Override
-	public void onNextSongUnavailable() {
+	public synchronized void onNextSongUnavailable() {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onNextSongUnavailable();
 	}
 
 	@Override
-	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
+	public synchronized void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onPlayerHaterLoaded(context, playerHater);
 	}
 
 	@Override
-	public void onServiceStopping() {
+	public synchronized void onServiceStopping() {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onServiceStopping();
 
 	}
 
 	@Override
-	public void onIntentActivityChanged(PendingIntent pending) {
+	public synchronized void onIntentActivityChanged(PendingIntent pending) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onIntentActivityChanged(pending);
 	}
 
 	@Override
-	public void onServiceBound(IPlayerHaterBinder binder) {
+	public synchronized void onServiceBound(IPlayerHaterBinder binder) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onServiceBound(binder);
 	}
 
 	@Override
-	public void onSongFinished(Song song, int reason) {
+	public synchronized void onSongFinished(Song song, int reason) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 				plugin.onSongFinished(song, reason);
 	}
 	
 	@Override
-	public void onTransportControlFlagsChanged(int transportControlFlags) {
+	public synchronized void onTransportControlFlagsChanged(int transportControlFlags) {
 		for (PlayerHaterPlugin plugin : mPlugins) 
 			plugin.onTransportControlFlagsChanged(transportControlFlags);
 	}
 
 	@Override
-	public void onChangesComplete() {
+	public synchronized void onChangesComplete() {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onChangesComplete();
+	}
+
+	public synchronized void removeAll() {
+		mPluginTags.clear();
+		mPlugins.clear();
 	}
 
 }

@@ -4,13 +4,13 @@ import android.media.MediaPlayer.OnCompletionListener;
 
 public class Gapless extends MediaPlayerDecorator {
 	
-	public static final Gapless gapless(MediaPlayerWithState mediaPlayer) {
+	public static final Gapless gapless(Player mediaPlayer) {
 		return new Gapless(mediaPlayer);
 	}
 
 	private final SetNextMediaPlayerCompat mMediaPlayerNexter;
 
-	public Gapless(MediaPlayerWithState stateManager) {
+	public Gapless(Player stateManager) {
 		super(stateManager);
 
 		if (android.os.Build.VERSION.SDK_INT >= 16) {
@@ -21,7 +21,7 @@ public class Gapless extends MediaPlayerDecorator {
 	}
 
 	@Override
-	public void setNextMediaPlayer(MediaPlayerWithState mediaPlayer) {
+	public void setNextMediaPlayer(Player mediaPlayer) {
 		mMediaPlayerNexter.setNextMediaPlayer(mediaPlayer);
 	}
 

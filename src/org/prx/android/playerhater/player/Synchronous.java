@@ -1,11 +1,11 @@
 package org.prx.android.playerhater.player;
 
+
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
-import android.util.Log;
 
 public class Synchronous extends MediaPlayerDecorator implements
 		OnPreparedListener, OnSeekCompleteListener {
@@ -14,7 +14,6 @@ public class Synchronous extends MediaPlayerDecorator implements
 		return new Synchronous(mediaPlayer);
 	}
 
-	private static final String TAG = "PlayerHater/AutoStart";
 	private boolean mShouldPlayWhenPrepared;
 	private int mShouldSkipWhenPrepared;
 	private OnPreparedListener mOnPreparedListener;
@@ -57,15 +56,20 @@ public class Synchronous extends MediaPlayerDecorator implements
 	public boolean prepare(Context context, Uri uri) {
 		mShouldPlayWhenPrepared = false;
 		mShouldSkipWhenPrepared = 0;
-		switch (mPlayer.getState()) {
+		switch (getState()) {
 		case IDLE:
 			try {
-				mPlayer.setDataSource(context, uri);
+				setDataSource(context, uri);
 			} catch (Exception e) {
 				return false;
 			}
 		case INITIALIZED:
-			mPlayer.prepareAsync();
+			try {
+				prepareAsync();
+			} catch (IllegalStateException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			break;
 		default:
 			reset();
@@ -74,7 +78,12 @@ public class Synchronous extends MediaPlayerDecorator implements
 			} catch (Exception e) {
 				return false;
 			}
-			prepareAsync();
+			try {
+				prepareAsync();
+			} catch (IllegalStateException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return true;
 	}
@@ -82,8 +91,12 @@ public class Synchronous extends MediaPlayerDecorator implements
 	@Override
 	public boolean prepareAndPlay(Context context, Uri uri, int position) {
 		if (prepare(context, uri)) {
-			mShouldPlayWhenPrepared = true;
-			mShouldSkipWhenPrepared = position;
+			if (position != 0) {
+				mShouldPlayWhenPrepared=true;
+				seekTo(position);
+			} else {
+				start();
+			}
 			return true;
 		} else {
 			return false;
@@ -97,7 +110,7 @@ public class Synchronous extends MediaPlayerDecorator implements
 		} else if (getState() == INITIALIZED) {
 			mShouldPlayWhenPrepared = true;
 			try {
-				prepare();
+				prepareAsync();
 			} catch (Exception e) {
 				return;
 			}
@@ -140,7 +153,6 @@ public class Synchronous extends MediaPlayerDecorator implements
 	public boolean conditionalPlay() {
 		int state = getState();
 		if (state == PREPARED || state == PAUSED || state == PLAYBACK_COMPLETED) {
-			Log.d(TAG, "I think the state is " + getStateName());
 			start();
 			return true;
 		} else if (state == PREPARING) {

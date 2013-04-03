@@ -14,20 +14,12 @@ import org.prx.android.playerhater.plugins.PluginCollection;
 import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.Config;
-import org.prx.android.playerhater.util.PlayerListenerManager;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.media.MediaPlayer.OnBufferingUpdateListener;
-import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnInfoListener;
-import android.media.MediaPlayer.OnPreparedListener;
-import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
@@ -39,10 +31,9 @@ public abstract class AbsPlaybackService extends Service implements
 		PlayerHaterService {
 
 	protected static final int REMOTE_PLUGIN = 2525;
-	protected String TAG;
+	public static String TAG;
 	protected BroadcastReceiver mBroadcastReceiver;
 	protected PlayerHaterPlugin mPlugin;
-	protected final PlayerListenerManager mPlayerListenerManager = new PlayerListenerManager();
 	private Config mConfig;
 	private PluginCollection mPluginCollection;
 	private final PlayerHater mPlayerHater = new ServicePlayerHater(this);
@@ -104,12 +95,13 @@ public abstract class AbsPlaybackService extends Service implements
 		public void setArtist(String artist) throws RemoteException {
 			AbsPlaybackService.this.setArtist(artist);
 		}
-		
+
 		@Override
 		public void setTransportControlFlags(int transportControlFlags)
 				throws RemoteException {
-			AbsPlaybackService.this.setTransportControlFlags(transportControlFlags);
-			
+			AbsPlaybackService.this
+					.setTransportControlFlags(transportControlFlags);
+
 		}
 
 		@Override
@@ -149,7 +141,7 @@ public abstract class AbsPlaybackService extends Service implements
 		public void setRemotePlugin(IRemotePlugin binder)
 				throws RemoteException {
 			mPluginCollection.remove(REMOTE_PLUGIN);
-			
+
 			if (binder != null) {
 				binder.onServiceBound(this);
 				mPluginBinder = binder;
@@ -246,6 +238,11 @@ public abstract class AbsPlaybackService extends Service implements
 		}
 		return mRemoteBinder;
 	}
+	
+	@Override
+	public void onRebind(Intent intent) {
+		Log.d(TAG, "And we have successfully rebound");
+	}
 
 	private void setConfig(Config config) {
 		mConfig = config;
@@ -264,12 +261,18 @@ public abstract class AbsPlaybackService extends Service implements
 	}
 
 	@Override
+	public boolean onUnbind(Intent intent) {
+		Log.d(TAG, "It looks like all clients have unbound.");
+		return true;
+	}
+
+	@Override
 	public void stopService(Song[] songs) {
 		onStopped();
-		int[] songTags = new int[songs.length-1];
+		int[] songTags = new int[songs.length - 1];
 		int i = 0;
 		for (Song song : songs) {
-			songTags[i] = ((BasicSong)song).tag;
+			songTags[i] = ((BasicSong) song).tag;
 			i++;
 		}
 		try {
@@ -339,40 +342,6 @@ public abstract class AbsPlaybackService extends Service implements
 
 	/* END Decomposed Player Methods */
 
-	/* Player Listeners */
-
-	@Override
-	public void setOnCompletionListener(OnCompletionListener listener) {
-		mPlayerListenerManager.setOnCompletionListener(listener);
-	}
-
-	@Override
-	public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-		mPlayerListenerManager.setOnSeekCompleteListener(listener);
-	}
-
-	@Override
-	public void setOnErrorListener(OnErrorListener listener) {
-		mPlayerListenerManager.setOnErrorListener(listener);
-	}
-
-	@Override
-	public void setOnPreparedListener(OnPreparedListener listener) {
-		mPlayerListenerManager.setOnPreparedListener(listener);
-	}
-
-	@Override
-	public void setOnInfoListener(OnInfoListener listener) {
-		mPlayerListenerManager.setOnInfoListener(listener);
-	}
-
-	@Override
-	public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
-		mPlayerListenerManager.setOnBufferingUpdateListener(listener);
-	}
-
-	/* END Player Listeners */
-
 	/* Plug-In Stuff */
 
 	@Override
@@ -404,7 +373,7 @@ public abstract class AbsPlaybackService extends Service implements
 	public void setAlbumArt(Uri url) {
 		mPlugin.onAlbumArtChangedToUri(url);
 	}
-	
+
 	@Override
 	public void setTransportControlFlags(int transportControlFlags) {
 		mPlugin.onTransportControlFlagsChanged(transportControlFlags);

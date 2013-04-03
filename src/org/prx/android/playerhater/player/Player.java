@@ -20,8 +20,8 @@ public interface Player extends MediaPlayerWithState {
 	
 	/* Gapless API */
 	
-	public abstract void setNextMediaPlayer(MediaPlayerWithState mediaPlayer);
-	
 	public abstract void skip();
+
+	void setNextMediaPlayer(Player mediaPlayer);
 
 }

@@ -13,6 +13,9 @@ import org.prx.android.playerhater.plugins.PluginCollection;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.util.Config;
 import org.prx.android.playerhater.util.SongQueue;
+import org.prx.android.playerhater.util.SongQueue.OnQeueuedSongsChangedListener;
+
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -30,6 +33,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+@SuppressLint("InlinedApi")
 public abstract class PlayerHater implements IPlayerHater {
 
 	public static final String TAG = "PLAYERHATER";
@@ -41,7 +45,8 @@ public abstract class PlayerHater implements IPlayerHater {
 	protected static int sStartPosition = 0;
 	private static Context sApplicationContext;
 	protected static final PluginCollection sPluginCollection = new PluginCollection();
-	protected static final PlayerHaterPlugin sPlugin = new BackgroundedPlugin(sPluginCollection);
+	protected static final PlayerHaterPlugin sPlugin = new BackgroundedPlugin(
+			sPluginCollection);
 	protected static String sPendingAlbumArtType;
 	protected static Uri sPendingAlbumArtUrl;
 	protected static OnErrorListener sPendingErrorListener;
@@ -60,6 +65,8 @@ public abstract class PlayerHater implements IPlayerHater {
 	protected static final String RESOURCE = "resource";
 	protected static final String URL = "url";
 	protected static int sPendingTransportControlFlags = -1;
+	protected static boolean sIsBound = false;
+
 	public static final String EXTRA_CONFIG = "config";
 
 	/**
@@ -140,6 +147,8 @@ public abstract class PlayerHater implements IPlayerHater {
 	public static void configure(Context context) {
 		context = context.getApplicationContext();
 		sConfig = new Config(context);
+		sPlayQueue.setQueuedSongsChangedListener(sSongsListener);
+		sPluginCollection.removeAll();
 		for (Class<? extends PlayerHaterPlugin> pluginClass : sConfig
 				.getPrebindPlugins()) {
 			try {
@@ -155,16 +164,23 @@ public abstract class PlayerHater implements IPlayerHater {
 		sApplicationContext = context;
 	}
 
+	@SuppressLint("InlinedApi")
 	protected static void startService() {
+		for (AutoBindHandle instance : sHandles) {
+			instance.loading();
+		}
+		sPlugin.onAudioLoading();
 		sApplicationContext.bindService(
 				buildServiceIntent(sApplicationContext), sServiceConnection,
-				Context.BIND_AUTO_CREATE);
+				Context.BIND_AUTO_CREATE | Context.BIND_NOT_FOREGROUND);
 	}
 
 	protected static interface AutoBindHandle {
 		public void bind(PlayerHater playerHater);
 
 		public void unbind();
+
+		void loading();
 	}
 
 	/**
@@ -201,10 +217,33 @@ public abstract class PlayerHater implements IPlayerHater {
 
 	protected static void release(AutoBindHandle handle) {
 		sHandles.remove(handle);
-		if (sHandles.size() < 1 && sPlayerHater != null) {
+		if (sHandles.size() < 1 && sIsBound) {
+			sIsBound = false;
 			sApplicationContext.unbindService(sServiceConnection);
 		}
 	}
+
+	protected static final OnQeueuedSongsChangedListener sSongsListener = new OnQeueuedSongsChangedListener() {
+
+		@Override
+		public void onNowPlayingChanged(Song nowPlaying) {
+			if (sPlayerHater == null) {
+				sPlugin.onSongChanged(nowPlaying);
+			}
+		}
+
+		@Override
+		public void onNextSongChanged(Song nextSong) {
+			if (sPlayerHater == null) {
+				if (nextSong != null) {
+					sPlugin.onNextSongAvailable(nextSong);
+				} else {
+					sPlugin.onNextSongUnavailable();
+				}
+			}
+		}
+
+	};
 
 	protected static final IRemotePlugin sBinderPlugin = new IRemotePlugin.Stub() {
 
@@ -291,7 +330,7 @@ public abstract class PlayerHater implements IPlayerHater {
 				throws RemoteException {
 			sPlugin.onAlbumArtChanged(albumArtResource);
 		}
-		
+
 		@Override
 		public void onTransportControlFlagsChanged(int transportControlFlags) {
 			sPlugin.onTransportControlFlagsChanged(transportControlFlags);
@@ -326,6 +365,7 @@ public abstract class PlayerHater implements IPlayerHater {
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			IPlayerHaterBinder sBinder = IPlayerHaterBinder.Stub
 					.asInterface(service);
+			sIsBound = true;
 
 			try {
 				sBinder.setRemotePlugin(sBinderPlugin);
@@ -341,37 +381,6 @@ public abstract class PlayerHater implements IPlayerHater {
 				}
 			}
 
-			// XXX
-			// if (sPendingErrorListener != null) {
-			// phService.getPlayerHater().setOnErrorListener(
-			// sPendingErrorListener);
-			// }
-			//
-			// if (sPendingSeekListener != null) {
-			// phService.getPlayerHater().setOnSeekCompleteListener(
-			// sPendingSeekListener);
-			// }
-			//
-			// if (sPendingPreparedListener != null) {
-			// phService.getPlayerHater().setOnPreparedListener(
-			// sPendingPreparedListener);
-			// }
-			//
-			// if (sPendingInfoListener != null) {
-			// phService.getPlayerHater().setOnInfoListener(
-			// sPendingInfoListener);
-			// }
-			//
-			// if (sPendingCompleteListener != null) {
-			// phService.getPlayerHater().setOnCompletionListener(
-			// sPendingCompleteListener);
-			// }
-			//
-			// if (sPendingBufferingListener != null) {
-			// phService.getPlayerHater().setOnBufferingUpdateListener(
-			// sPendingBufferingListener);
-			// }
-
 			if (sPendingNotificationTitle != null) {
 				sPlayerHater.setTitle(sPendingNotificationTitle);
 			}
@@ -383,9 +392,10 @@ public abstract class PlayerHater implements IPlayerHater {
 			if (sPendingNotificationIntentActivity != null) {
 				sPlayerHater.setActivity(sPendingNotificationIntentActivity);
 			}
-			
+
 			if (sPendingTransportControlFlags != -1) {
-				sPlayerHater.setTransportControlFlags(sPendingTransportControlFlags);
+				sPlayerHater
+						.setTransportControlFlags(sPendingTransportControlFlags);
 				sPendingTransportControlFlags = -1;
 			}
 
@@ -411,6 +421,7 @@ public abstract class PlayerHater implements IPlayerHater {
 
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
+			sIsBound = false;
 			BinderPlayerHater.detach();
 			sPlayerHater = null;
 			for (AutoBindHandle boundPlayer : sHandles) {
@@ -428,17 +439,15 @@ public abstract class PlayerHater implements IPlayerHater {
 			handle.bind(sPlayerHater);
 		} else if (sApplicationContext != null) {
 			// This condition will occur once all prebound plugins are loaded.
-			
+
 			// We attempt to bind (but without the BIND_AUTO_CREATE flag), in
 			// case we previously disconnected
 			// but the service continued running.
 			// I really wish we had a #peekService here because it would be
 			// ideal.
-			if (sApplicationContext.bindService(
+			sApplicationContext.bindService(
 					buildServiceIntent(sApplicationContext),
-					sServiceConnection, 0)) {
-				Log.d(TAG, "I guess we are starting the service again");
-			}
+					sServiceConnection, Context.BIND_NOT_FOREGROUND);
 		}
 	}
 }

@@ -79,10 +79,7 @@ public class BinderPlayerHater extends PlayerHater {
 		try {
 			if (enqueue(song)) {
 				if (skipTo(mBinder.getQueueLength())) {
-					Log.d(TAG, "Playing!");
-					if (play(startTime)) {
-						Log.d(TAG, "PLAYED!");
-					}
+					play(startTime);
 				}
 			}
 		} catch (RemoteException e) {
@@ -190,43 +187,6 @@ public class BinderPlayerHater extends PlayerHater {
 			return -1;
 		}
 	}
-
-	// @Override
-	// public void setOnBufferingUpdateListener(OnBufferingUpdateListener
-	// listener) {
-	// // TODO Auto-generated method stub
-	//
-	// }
-	//
-	// @Override
-	// public void setOnCompletionListener(OnCompletionListener listener) {
-	// // TODO Auto-generated method stub
-	//
-	// }
-	//
-	// @Override
-	// public void setOnInfoListener(OnInfoListener listener) {
-	// // TODO Auto-generated method stub
-	//
-	// }
-	//
-	// @Override
-	// public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
-	// // TODO Auto-generated method stub
-	//
-	// }
-	//
-	// @Override
-	// public void setOnErrorListener(OnErrorListener listener) {
-	// // TODO Auto-generated method stub
-	//
-	// }
-	//
-	// @Override
-	// public void setOnPreparedListener(OnPreparedListener listener) {
-	// // TODO Auto-generated method stub
-	//
-	// }
 
 	@Override
 	@Deprecated

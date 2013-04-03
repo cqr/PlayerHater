@@ -1,11 +1,18 @@
 package org.prx.android.playerhater.plugins;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.Player;
+import org.prx.android.playerhater.service.IPlayerHaterBinder;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 
 /**
  * A wrapper around the {@link PlayerHaterListener} interface allowing
@@ -22,6 +29,60 @@ import android.content.Context;
  * @author Chris Rhoden
  */
 public class PlayerHaterListenerPlugin extends AbstractPlugin {
+
+	private static final List<WeakReference<PlayerHaterListenerPlugin>> sInstances = new ArrayList<WeakReference<PlayerHaterListenerPlugin>>();
+
+	private static final int ADD = 1;
+	private static final int REM = 2;
+	private static final int TCK = 3;
+	
+	private synchronized static void addInstance(PlayerHaterListenerPlugin plugin) {
+		WeakReference<PlayerHaterListenerPlugin> ref = new WeakReference<PlayerHaterListenerPlugin>(
+				plugin);
+		sHandler.obtainMessage(ADD, ref).sendToTarget();
+	}
+
+	private static final Handler sHandler = new Handler() {
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void handleMessage(Message msg) {
+			switch(msg.what) {
+			case ADD:
+				sInstances.add((WeakReference<PlayerHaterListenerPlugin>) msg.obj);
+				break;
+			case REM:
+				sInstances.remove(msg.obj);
+				break;
+			case TCK:
+				for (WeakReference<PlayerHaterListenerPlugin> ref : sInstances) {
+					if (ref.get() != null) {
+						ref.get().onTick();
+					} else {
+						obtainMessage(REM, ref).sendToTarget();
+					}
+				}
+			}
+		}
+
+	};
+
+	private static final Thread sClockThread = new Thread() {
+
+		@Override
+		public void run() {
+			while (true) {
+				sHandler.removeMessages(TCK);
+				sHandler.sendEmptyMessage(TCK);
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					return;
+				}
+			}
+		}
+
+	};
 
 	private final PlayerHaterListener mListener;
 	private final boolean mEcho;
@@ -54,12 +115,25 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 	public PlayerHaterListenerPlugin(PlayerHaterListener listener, boolean echo) {
 		mListener = listener;
 		mEcho = echo;
+		addInstance(this);
+		if (!sClockThread.isAlive()) {
+			sClockThread.start();
+		}
 	}
 
 	@Override
 	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
 		super.onPlayerHaterLoaded(context, playerHater);
 		mSong = playerHater.nowPlaying();
+		if (mEcho) {
+			onChangesComplete();
+		}
+	}
+
+	@Override
+	public void onServiceBound(IPlayerHaterBinder binder) {
+		super.onServiceBound(binder);
+		mSong = getPlayerHater().nowPlaying();
 		if (mEcho) {
 			onChangesComplete();
 		}
@@ -84,6 +158,12 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 			} else {
 				mListener.onStopped();
 			}
+		}
+	}
+	
+	private void onTick() {
+		if (getPlayerHater().getState() == Player.STARTED) {
+			mListener.onPlaying(mSong, getPlayerHater().getCurrentPosition());
 		}
 	}
 }

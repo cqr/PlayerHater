@@ -2,6 +2,8 @@ package org.prx.android.playerhater.player;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.content.Context;
 import android.media.MediaPlayer;
@@ -13,38 +15,112 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		OnCompletionListener, OnErrorListener, OnInfoListener,
 		OnPreparedListener, OnSeekCompleteListener, MediaPlayerWithState {
 
+	private static Map<MediaPlayer, MediaPlayerWrapper> sPlayers = new HashMap<MediaPlayer, MediaPlayerWrapper>();
+
 	private MediaPlayer mMediaPlayer;
 
-	private static final String TAG = "MediaPlayerWrapper";
+	private static void registerSelf(MediaPlayer barePlayer,
+			MediaPlayerWrapper mediaPlayerWrapper) {
+		sPlayers.put(barePlayer, mediaPlayerWrapper);
+	}
 
-	private OnErrorListener mErrorListener;
-	private OnPreparedListener mPreparedListener;
-	private OnCompletionListener mCompletionListener;
-	private OnBufferingUpdateListener mBufferingUpdateListener;
-	private OnInfoListener mInfoListener;
-	private OnSeekCompleteListener mSeekCompleteListener;
+	private static MediaPlayerWrapper getWrapper(MediaPlayer barePlayer) {
+		return sPlayers.get(barePlayer);
+	}
+
+	private static final OnErrorListener sErrorListener = new OnErrorListener() {
+
+		@Override
+		public boolean onError(MediaPlayer arg0, int arg1, int arg2) {
+			return getWrapper(arg0).onError(arg0, arg1, arg2);
+		}
+
+	};
+
+	private static final OnPreparedListener sPreparedListener = new OnPreparedListener() {
+
+		@Override
+		public void onPrepared(MediaPlayer mp) {
+			getWrapper(mp).onPrepared(mp);
+		}
+
+	};
+
+	private static final OnCompletionListener sCompletionListener = new OnCompletionListener() {
+
+		@Override
+		public void onCompletion(MediaPlayer mp) {
+			getWrapper(mp).onCompletion(mp);
+		}
+
+	};
+
+	private static final OnBufferingUpdateListener sBufferingUpdateListener = new OnBufferingUpdateListener() {
+
+		@Override
+		public void onBufferingUpdate(MediaPlayer arg0, int arg1) {
+			getWrapper(arg0).onBufferingUpdate(arg0, arg1);
+		}
+
+	};
+
+	private static final OnInfoListener sInfoListener = new OnInfoListener() {
+
+		@Override
+		public boolean onInfo(MediaPlayer arg0, int arg1, int arg2) {
+			return getWrapper(arg0).onInfo(arg0, arg1, arg2);
+		}
+
+	};
+
+	private static final OnSeekCompleteListener sSeekCompleteListener = new OnSeekCompleteListener() {
+		@Override
+		public void onSeekComplete(MediaPlayer arg0) {
+			getWrapper(arg0).onSeekComplete(arg0);
+		}
+
+	};
+
+	public static class ListenerCollection {
+		public OnErrorListener errorListener;
+		public OnPreparedListener preparedListener;
+		public OnCompletionListener completionListener;
+		public OnBufferingUpdateListener bufferingUpdateListener;
+		public OnInfoListener infoListener;
+		public OnSeekCompleteListener seekCompleteListener;
+	}
+
+	private ListenerCollection mListenerCollection;
 
 	private int mState;
 	private int mPrevState;
 
 	public MediaPlayerWrapper() {
-		swapPlayer(new MediaPlayer(), IDLE);
+		swapPlayer(new MediaPlayer(), IDLE, new ListenerCollection());
+		getBarePlayer().setOnBufferingUpdateListener(sBufferingUpdateListener);
+		getBarePlayer().setOnCompletionListener(sCompletionListener);
+		getBarePlayer().setOnErrorListener(sErrorListener);
+		getBarePlayer().setOnInfoListener(sInfoListener);
+		getBarePlayer().setOnPreparedListener(sPreparedListener);
+		getBarePlayer().setOnSeekCompleteListener(sSeekCompleteListener);
 	}
 
 	@Override
-	public int getState() {
+	public synchronized int getState() {
 		return this.mState;
 	}
 
-	@Override
-	public String getStateName() {
-		switch (getState()) {
+	private synchronized void setState(int state) {
+		mState = state;
+	}
+
+	private synchronized String getStateName(int state) {
+		switch (state) {
 		case END:
 			return "end";
 		case ERROR:
@@ -66,81 +142,76 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		case STOPPED:
 			return "stopped";
 		}
-		throw new IllegalStateException("Impossible state index: " + getState());
+		throw new IllegalStateException("Impossible state index: " + state);
 	}
 
 	@Override
-	public void reset() {
-		this.mState = IDLE;
+	public synchronized String getStateName() {
+		return getStateName(getState());
+	}
+
+	@Override
+	public synchronized void reset() {
+		setState(IDLE);
 		this.mMediaPlayer.reset();
 	}
 
 	@Override
-	public void release() {
+	public synchronized void release() {
 		this.mMediaPlayer.release();
-		this.mState = END;
+		setState(END);
 	}
 
 	@Override
-	public void prepare() throws IOException, IllegalStateException {
-		if (this.mState == INITIALIZED || this.mState == STOPPED) {
-			this.mMediaPlayer.prepare();
-			this.mState = PREPARED;
-		} else {
-			Log.d(TAG, "state is " + this.mState);
-			throw (new IllegalStateException());
-		}
-	}
-
-	@Override
-	public void prepareAsync() throws IllegalStateException {
-		if (this.mState == INITIALIZED || this.mState == STOPPED) {
-			this.mMediaPlayer.prepareAsync();
-			this.mState = PREPARING;
+	public synchronized void prepareAsync() throws IllegalStateException {
+		if (getState() == INITIALIZED || getState() == STOPPED) {
+			mMediaPlayer.prepareAsync();
+			setState(PREPARING);
 		} else {
 			throw (new IllegalStateException());
 		}
 	}
 
 	@Override
-	public void start() throws IllegalStateException {
-		if (this.mState == PREPARED || this.mState == STARTED
-				|| this.mState == PAUSED || this.mState == PLAYBACK_COMPLETED) {
-			this.mMediaPlayer.start();
-			this.mState = STARTED;
+	public synchronized void start() throws IllegalStateException {
+		if (getState() == PREPARED || getState() == STARTED
+				|| getState() == PAUSED || getState() == PLAYBACK_COMPLETED) {
+			mMediaPlayer.start();
+			setState(STARTED);
 		} else {
 			throw (new IllegalStateException());
 		}
 	}
 
 	@Override
-	public void pause() throws IllegalStateException {
-		if (this.mState == STARTED || this.mState == PAUSED) {
-			this.mMediaPlayer.pause();
-			this.mState = PAUSED;
+	public synchronized void pause() throws IllegalStateException {
+		if (getState() == STARTED || getState() == PAUSED) {
+			mMediaPlayer.pause();
+			setState(PAUSED);
 		} else {
 			throw (new IllegalStateException());
 		}
 	}
 
 	@Override
-	public void stop() throws IllegalStateException {
-		if (this.mState == PREPARED || this.mState == STARTED
-				|| this.mState == STOPPED || this.mState == PAUSED
-				|| this.mState == PLAYBACK_COMPLETED) {
+	public synchronized void stop() throws IllegalStateException {
+		if (getState() == PREPARED || getState() == STARTED
+				|| this.getState() == STOPPED || this.getState() == PAUSED
+				|| this.getState() == PLAYBACK_COMPLETED) {
 			this.mMediaPlayer.stop();
-			this.mState = STOPPED;
+			setState(STOPPED);
 		} else {
 			throw (new IllegalStateException());
 		}
 	}
 
 	@Override
-	public void seekTo(int msec) {
-		if (this.mState == PREPARED || this.mState == STARTED
-				|| this.mState == PAUSED || this.mState == PLAYBACK_COMPLETED) {
-			this.mPrevState = this.mState;
-			this.mState = PREPARING;
+	public synchronized void seekTo(int msec) {
+		if (this.getState() == PREPARED || this.getState() == STARTED
+				|| this.getState() == PAUSED
+				|| this.getState() == PLAYBACK_COMPLETED) {
+			this.mPrevState = this.getState();
+			setState(PREPARING);
 			this.mMediaPlayer.seekTo(msec);
 		} else {
 			throw (new IllegalStateException());
@@ -148,174 +219,173 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	}
 
 	@Override
-	public boolean isPlaying() {
+	public synchronized boolean isPlaying() {
 		return this.mMediaPlayer.isPlaying();
 	}
 
 	@Override
-	public int getCurrentPosition() {
-		if (this.mState == STARTED || this.mState == PAUSED
-				|| this.mState == STOPPED || this.mState == PLAYBACK_COMPLETED) {
+	public synchronized int getCurrentPosition() {
+		if (this.getState() == STARTED || this.getState() == PAUSED
+				|| this.getState() == STOPPED
+				|| this.getState() == PLAYBACK_COMPLETED) {
 			return this.mMediaPlayer.getCurrentPosition();
 		}
 		return 0;
 	}
 
 	@Override
-	public int getDuration() {
-		if (this.mState == PREPARED || this.mState == STARTED
-				|| this.mState == PAUSED || this.mState == PLAYBACK_COMPLETED) {
+	public synchronized int getDuration() {
+		if (this.getState() == PREPARED || this.getState() == STARTED
+				|| this.getState() == PAUSED
+				|| this.getState() == PLAYBACK_COMPLETED) {
 			return this.mMediaPlayer.getDuration();
 		}
 		return 0;
 	}
 
 	@Override
-	public void setAudioStreamType(int streamtype) {
+	public synchronized void setAudioStreamType(int streamtype) {
 		this.mMediaPlayer.setAudioStreamType(streamtype);
 	}
 
 	@Override
-	public void setDataSource(Context context, Uri uri)
+	public synchronized void setDataSource(Context context, Uri uri)
 			throws IllegalStateException, IOException,
 			IllegalArgumentException, SecurityException {
 		try {
 			ParcelFileDescriptor fd = context.getContentResolver()
 					.openFileDescriptor(uri, "r");
 			this.mMediaPlayer.setDataSource(fd.getFileDescriptor());
-			this.mState = INITIALIZED;
+			setState(INITIALIZED);
 		} catch (FileNotFoundException e) {
 			this.mMediaPlayer.setDataSource(uri.toString());
-			this.mState = INITIALIZED;
+			setState(INITIALIZED);
 		}
 	}
 
 	@Override
-	public void setOnErrorListener(OnErrorListener errorListener) {
-		this.mErrorListener = errorListener;
+	public synchronized void setOnErrorListener(OnErrorListener errorListener) {
+		mListenerCollection.errorListener = errorListener;
 	}
 
 	@Override
-	public void setOnPreparedListener(OnPreparedListener preparedListener) {
-		this.mPreparedListener = preparedListener;
+	public synchronized void setOnPreparedListener(
+			OnPreparedListener preparedListener) {
+		mListenerCollection.preparedListener = preparedListener;
 	}
 
 	@Override
-	public void setOnBufferingUpdateListener(
+	public synchronized void setOnBufferingUpdateListener(
 			OnBufferingUpdateListener bufferingUpdateListener) {
-		this.mBufferingUpdateListener = bufferingUpdateListener;
+		mListenerCollection.bufferingUpdateListener = bufferingUpdateListener;
 	}
 
 	@Override
-	public void setOnCompletionListener(OnCompletionListener completionListener) {
-		this.mCompletionListener = completionListener;
+	public synchronized void setOnCompletionListener(
+			OnCompletionListener completionListener) {
+		mListenerCollection.completionListener = completionListener;
 	}
 
 	@Override
-	public void setOnInfoListener(OnInfoListener infoListener) {
-		this.mInfoListener = infoListener;
+	public synchronized void setOnInfoListener(OnInfoListener infoListener) {
+		mListenerCollection.infoListener = infoListener;
 	}
 
 	@Override
-	public void setOnSeekCompleteListener(
+	public synchronized void setOnSeekCompleteListener(
 			OnSeekCompleteListener seekCompleteListener) {
-		this.mSeekCompleteListener = seekCompleteListener;
+		mListenerCollection.seekCompleteListener = seekCompleteListener;
 	}
 
 	@Override
-	public void onBufferingUpdate(MediaPlayer mp, int percent) {
-		// Log.d(TAG, "Buffering Update");
-		if (this.mBufferingUpdateListener != null) {
-			this.mBufferingUpdateListener.onBufferingUpdate(mp, percent);
+	public synchronized void onBufferingUpdate(MediaPlayer mp, int percent) {
+		if (mListenerCollection.bufferingUpdateListener != null) {
+			mListenerCollection.bufferingUpdateListener.onBufferingUpdate(mp,
+					percent);
 		}
 	}
 
 	@Override
-	public void onCompletion(MediaPlayer mp) {
-		Log.d(TAG, "Completion");
-		this.mState = PLAYBACK_COMPLETED;
-		if (this.mCompletionListener != null) {
-			this.mCompletionListener.onCompletion(mp);
+	public synchronized void onCompletion(MediaPlayer mp) {
+		setState(PLAYBACK_COMPLETED);
+		if (mListenerCollection.completionListener != null) {
+			mListenerCollection.completionListener.onCompletion(mp);
 		}
 	}
 
 	@Override
-	public boolean onError(MediaPlayer mp, int what, int extra) {
-		Log.d(TAG, "Error");
-		this.mState = ERROR;
-		Boolean response = false;
-		if (this.mErrorListener != null) {
-			response = this.mErrorListener.onError(mp, what, extra);
-		}
-		return response;
-	}
-
-	@Override
-	public boolean onInfo(MediaPlayer mp, int what, int extra) {
-		Log.d(TAG, "info");
-		if (this.mInfoListener != null) {
-			return this.mInfoListener.onInfo(mp, what, extra);
+	public synchronized boolean onError(MediaPlayer mp, int what, int extra) {
+		setState(ERROR);
+		if (mListenerCollection.errorListener != null) {
+			return mListenerCollection.errorListener.onError(mp, what, extra);
 		}
 		return false;
 	}
 
 	@Override
-	public void onPrepared(MediaPlayer mp) {
-		this.mState = PREPARED;
-		if (this.mPreparedListener != null) {
-			this.mPreparedListener.onPrepared(mp);
+	public synchronized boolean onInfo(MediaPlayer mp, int what, int extra) {
+		if (mListenerCollection.infoListener != null) {
+			return mListenerCollection.infoListener.onInfo(mp, what, extra);
+		}
+		return false;
+	}
+
+	@Override
+	public synchronized void onPrepared(MediaPlayer mp) {
+		setState(PREPARED);
+		if (mListenerCollection.preparedListener != null) {
+			mListenerCollection.preparedListener.onPrepared(mp);
 		}
 	}
 
 	@Override
-	public void onSeekComplete(MediaPlayer mp) {
-		this.mState = this.mPrevState;
-		if (this.mSeekCompleteListener != null) {
-			this.mSeekCompleteListener.onSeekComplete(mp);
+	public synchronized void onSeekComplete(MediaPlayer mp) {
+		setState(mPrevState);
+		if (mListenerCollection.seekCompleteListener != null) {
+			mListenerCollection.seekCompleteListener.onSeekComplete(mp);
 		}
 	}
 
 	@Override
-	public void setVolume(float leftVolume, float rightVolume) {
+	public synchronized void setVolume(float leftVolume, float rightVolume) {
 		mMediaPlayer.setVolume(leftVolume, rightVolume);
 	}
 
 	@Override
-	public boolean equals(MediaPlayer mp) {
+	public synchronized boolean equals(MediaPlayer mp) {
 		return mp == mMediaPlayer;
 	}
 
 	@Override
-	public MediaPlayer getBarePlayer() {
+	public synchronized MediaPlayer getBarePlayer() {
 		return mMediaPlayer;
 	}
 
 	@Override
-	public MediaPlayer swapPlayer(MediaPlayer barePlayer, int state) {
+	public synchronized MediaPlayer swapPlayer(MediaPlayer barePlayer,
+			int state, ListenerCollection collection) {
 		MediaPlayer tmp = mMediaPlayer;
 		mMediaPlayer = barePlayer;
-		mState = state;
-		setListeners();
+		setState(state);
+		mListenerCollection = collection;
+		registerSelf(barePlayer, this);
 		return tmp;
 	}
 
 	@Override
-	public void swap(MediaPlayerWithState player) {
+	public synchronized void swap(MediaPlayerWithState player) {
 		int state = getState();
+		ListenerCollection listeners = getListeners();
 		MediaPlayer mediaPlayer = swapPlayer(player.getBarePlayer(),
-				player.getState());
-		player.swapPlayer(mediaPlayer, state);
+				player.getState(), player.getListeners());
+		player.swapPlayer(mediaPlayer, state, listeners);
 	}
 
-	private void setListeners() {
-		mMediaPlayer.setOnBufferingUpdateListener(this);
-		mMediaPlayer.setOnCompletionListener(this);
-		mMediaPlayer.setOnErrorListener(this);
-		mMediaPlayer.setOnInfoListener(this);
-		mMediaPlayer.setOnPreparedListener(this);
-		mMediaPlayer.setOnSeekCompleteListener(this);
+	@Override
+	public synchronized ListenerCollection getListeners() {
+		return mListenerCollection;
 	}
-	
+
 	@Override
 	public String toString() {
 		return mMediaPlayer.toString() + " (" + getStateName() + ")";

@@ -86,7 +86,7 @@ public class TransientPlayer {
 
 			try {
 				wrapper.setDataSource(c, uri);
-				wrapper.prepare();
+				wrapper.prepareAsync();
 			} catch (Exception e) {
 				e.printStackTrace();
 				return;

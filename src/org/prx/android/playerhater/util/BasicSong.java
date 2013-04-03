@@ -85,4 +85,9 @@ public class BasicSong implements Song {
 	public Uri getAlbumArt() {
 		return mAlbumArt;
 	}
+	
+	@Override
+	public String toString() {
+		return "BasicSong{ '" + getTitle() + "' by '" + getArtist() + "' (" + getUri() + ") }"; 
+	}
 }

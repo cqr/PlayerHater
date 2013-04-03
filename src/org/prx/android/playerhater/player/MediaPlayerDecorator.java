@@ -2,6 +2,8 @@ package org.prx.android.playerhater.player;
 
 import java.io.IOException;
 
+import org.prx.android.playerhater.player.MediaPlayerWrapper.ListenerCollection;
+
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -37,11 +39,6 @@ public abstract class MediaPlayerDecorator implements Player {
 	@Override
 	public void release() {
 		mPlayer.release();
-	}
-
-	@Override
-	public void prepare() throws IOException, IllegalStateException {
-		mPlayer.prepare();
 	}
 
 	@Override
@@ -133,7 +130,7 @@ public abstract class MediaPlayerDecorator implements Player {
 	}
 
 	@Override
-	public void setNextMediaPlayer(MediaPlayerWithState mediaPlayer) {
+	public void setNextMediaPlayer(Player mediaPlayer) {
 		if (mPlayer instanceof Player) {
 			((Player)mPlayer).setNextMediaPlayer(mediaPlayer);
 			return;
@@ -154,8 +151,13 @@ public abstract class MediaPlayerDecorator implements Player {
 	}
 	
 	@Override
-	public MediaPlayer swapPlayer(MediaPlayer barePlayer, int state) {
-		return mPlayer.swapPlayer(barePlayer, state);
+	public MediaPlayer swapPlayer(MediaPlayer barePlayer, int state, ListenerCollection collection) {
+		return mPlayer.swapPlayer(barePlayer, state, collection);
+	}
+	
+	@Override
+	public ListenerCollection getListeners() {
+		return mPlayer.getListeners();
 	}
 	
 	@Override

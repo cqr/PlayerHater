@@ -3,10 +3,7 @@ package org.prx.android.playerhater.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
-
-import android.util.Log;
 
 public class SongQueue {
 
@@ -126,14 +123,11 @@ public class SongQueue {
 	}
 
 	public boolean skipTo(int position) {
-		Log.d(PlayerHater.TAG, "skipping to " + position);
 		if (position <= mSongs.size()) {
-			Log.d(PlayerHater.TAG, "YES!");
 			mPlayheadPosition = position;
 			songOrderChanged();
 			return true;
 		}
-		Log.d(PlayerHater.TAG, "no.");
 		return false;
 	}
 

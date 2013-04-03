@@ -82,7 +82,7 @@
                 android:gravity="center"
                 android:padding="6dp"
                 android:scaleType="center"
-                android:src="@drawable/__player_hater_pause" />
+                android:src="@drawable/zzz_ph_bt_pause" />
 
             <ImageView
                 android:id="@+id/skip"

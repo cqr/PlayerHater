@@ -96,7 +96,6 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	protected void updateNotification() {
 		if (mIsVisible) {
-			Log.d(TAG, getNotification().toString());
 			mNotificationManager.notify(NOTIFICATION_NU, getNotification());
 		}
 	}

@@ -1,5 +1,7 @@
 package org.prx.android.playerhater.player;
 
+import org.prx.android.playerhater.player.MediaPlayerWrapper.ListenerCollection;
+
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
@@ -36,8 +38,8 @@ public class WakeLocked extends MediaPlayerDecorator {
 	}
 
 	@Override
-	public MediaPlayer swapPlayer(MediaPlayer mediaPlayer, int state) {
-		MediaPlayer mp = super.swapPlayer(mediaPlayer, state);
+	public MediaPlayer swapPlayer(MediaPlayer mediaPlayer, int state, ListenerCollection collection) {
+		MediaPlayer mp = super.swapPlayer(mediaPlayer, state, collection);
 		if (mEnabled) {
 			mediaPlayer.setWakeMode(mContext, WAKE_LOCK);
 		}
