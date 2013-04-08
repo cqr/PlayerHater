@@ -14,6 +14,8 @@ import org.prx.android.playerhater.plugins.PluginCollection;
 import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.Config;
+import org.prx.android.playerhater.util.Log;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Notification;
@@ -24,7 +26,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 import android.view.KeyEvent;
 
 public abstract class AbsPlaybackService extends Service implements
@@ -183,7 +184,7 @@ public abstract class AbsPlaybackService extends Service implements
 		@Override
 		public void startForeground(int notificationNu,
 				Notification notification) throws RemoteException {
-			Log.d(TAG, "Starting the notification");
+			Log.d("Starting the notification");
 			AbsPlaybackService.this.startForeground(notificationNu,
 					notification);
 		}
@@ -238,10 +239,10 @@ public abstract class AbsPlaybackService extends Service implements
 		}
 		return mRemoteBinder;
 	}
-	
+
 	@Override
 	public void onRebind(Intent intent) {
-		Log.d(TAG, "And we have successfully rebound");
+		Log.d("And we have successfully rebound");
 	}
 
 	private void setConfig(Config config) {
@@ -251,9 +252,8 @@ public abstract class AbsPlaybackService extends Service implements
 			try {
 				mPluginCollection.add(plugin.newInstance());
 			} catch (Exception e) {
-				Log.e(TAG,
-						"Could not instantiate plugin "
-								+ plugin.getCanonicalName(), e);
+				Log.e("Could not instantiate plugin "
+						+ plugin.getCanonicalName(), e);
 			}
 		}
 		mPlugin.onPlayerHaterLoaded(getApplicationContext(), mPlayerHater);
@@ -262,7 +262,7 @@ public abstract class AbsPlaybackService extends Service implements
 
 	@Override
 	public boolean onUnbind(Intent intent) {
-		Log.d(TAG, "It looks like all clients have unbound.");
+		Log.d("It looks like all clients have unbound.");
 		return true;
 	}
 

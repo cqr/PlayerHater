@@ -5,11 +5,11 @@ import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.util.BasicSong;
+import org.prx.android.playerhater.util.Log;
 
 import android.app.Activity;
 import android.net.Uri;
 import android.os.RemoteException;
-import android.util.Log;
 import android.util.SparseArray;
 
 public class BinderPlayerHater extends PlayerHater {
@@ -263,7 +263,7 @@ public class BinderPlayerHater extends PlayerHater {
 		// the service when it is sure that it will never send this tag again),
 		// but I am leaving it here for now. It is a leak, by its very
 		// definition, so probably should be removed soon.
-		Log.d("release", "Releasing a song " + songTag);
+		Log.d("Releasing a song " + songTag);
 		if (mSongs.get(songTag) != null) {
 			Song newSong = new BasicSong(mSongs.get(songTag));
 			mSongs.delete(songTag);

@@ -16,7 +16,6 @@ import android.content.res.Resources.NotFoundException;
 import android.content.res.XmlResourceParser;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 public class Config implements Parcelable {
 
@@ -39,6 +38,7 @@ public class Config implements Parcelable {
 				}
 			}
 		} catch (NameNotFoundException e) {
+			// If this happens, we can just use the default configuration.
 		}
 	}
 
@@ -48,7 +48,7 @@ public class Config implements Parcelable {
 
 	public Set<Class<? extends PlayerHaterPlugin>> getServicePlugins() {
 		for (String plugin : mPlugins) {
-			Log.d(PlayerHater.TAG, plugin);
+			Log.d(plugin);
 		}
 		return getPlugins(mPlugins);
 	}
@@ -62,7 +62,7 @@ public class Config implements Parcelable {
 				plugins.add((Class<? extends PlayerHaterPlugin>) Class
 						.forName(pluginName));
 			} catch (Exception e) {
-				Log.e(PlayerHater.TAG, "Can't load plugin " + pluginName, e);
+				Log.e("Can't load plugin " + pluginName, e);
 			}
 		}
 		return plugins;

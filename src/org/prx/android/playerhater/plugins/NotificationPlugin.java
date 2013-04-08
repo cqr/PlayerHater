@@ -2,6 +2,8 @@ package org.prx.android.playerhater.plugins;
 
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.R;
+import org.prx.android.playerhater.util.Log;
+
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -11,13 +13,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.RemoteException;
-import android.util.Log;
 
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
 public class NotificationPlugin extends AbstractPlugin {
 
 	protected static final int NOTIFICATION_NU = 0x974732;
-	private static final String TAG = "NotificationPlugin";
 	protected NotificationManager mNotificationManager;
 	protected PendingIntent mContentIntent;
 	protected String mNotificationTitle = "PlayerHater";
@@ -47,7 +47,7 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	@Override
 	public void onAudioStarted() {
-		Log.d(TAG, "audio is getting started");
+		Log.d("audio is getting started");
 		try {
 			getBinder().startForeground(NOTIFICATION_NU, getNotification());
 			mIsVisible = true;
