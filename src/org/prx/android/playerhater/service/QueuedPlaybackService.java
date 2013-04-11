@@ -121,18 +121,18 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 
 	/* Queue Methods */
 	@Override
-	public boolean enqueue(Song song) {
+	public synchronized boolean enqueue(Song song) {
 		mSongQueue.appendSong(song);
 		return true;
 	}
 
 	@Override
-	public boolean skipTo(int position) {
+	public synchronized boolean skipTo(int position) {
 		return mSongQueue.skipTo(position);
 	}
 
 	@Override
-	public void emptyQueue() {
+	public synchronized void emptyQueue() {
 		if (isPlaying() || isPaused()) {
 			Song nowPlayingSong = mSongQueue.getNowPlaying();
 			mSongQueue.empty();
@@ -143,19 +143,19 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 	}
 
 	@Override
-	public int getQueueLength() {
+	public synchronized int getQueueLength() {
 		return mSongQueue.size();
 	}
 
 	@Override
-	public void onNowPlayingChanged(Song nowPlaying) {
+	public synchronized void onNowPlayingChanged(Song nowPlaying) {
 		// getMediaPlayer().prepare(getApplicationContext(),
 		// nowPlaying.getUri());
 		mPlugin.onSongChanged(nowPlaying);
 	}
 
 	@Override
-	public void onNextSongChanged(Song nextSong) {
+	public synchronized void onNextSongChanged(Song nextSong) {
 		if (nextSong != null) {
 			getNextPlayer().prepare(getApplicationContext(), nextSong.getUri());
 			getMediaPlayer().setNextMediaPlayer(getNextPlayer());
@@ -171,7 +171,7 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 	/* Remote Control */
 
 	@Override
-	public void onRemoteControlButtonPressed(int button) {
+	public synchronized void onRemoteControlButtonPressed(int button) {
 		switch (button) {
 		case KeyEvent.KEYCODE_MEDIA_NEXT:
 			skip();
@@ -189,7 +189,7 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 	/* Listeners */
 
 	@Override
-	public void onCompletion(MediaPlayer mp) {
+	public synchronized void onCompletion(MediaPlayer mp) {
 		mPlugin.onSongFinished(getNowPlaying(), PlayerHater.TRACK_END);
 		mp.reset();
 		Player oldPlayer = mCurrentMediaPlayer;
@@ -204,21 +204,21 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 	/* Required abstract methods */
 
 	@Override
-	protected Player getMediaPlayer() {
+	protected synchronized Player getMediaPlayer() {
 		if (mCurrentMediaPlayer == null) {
 			mCurrentMediaPlayer = (Player) buildMediaPlayer();
 		}
 		return mCurrentMediaPlayer;
 	}
 
-	protected Player getNextPlayer() {
+	protected synchronized Player getNextPlayer() {
 		if (mNextPlayer == null) {
 			mNextPlayer = buildMediaPlayer();
 		}
 		return mNextPlayer;
 	}
 
-	protected Player buildMediaPlayer() {
+	protected synchronized Player buildMediaPlayer() {
 		Player newPlayer;
 		newPlayer = synchronous(new MediaPlayerWrapper());
 		newPlayer = wakeLocked(newPlayer, getApplicationContext());
@@ -227,7 +227,7 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 		return newPlayer;
 	}
 
-	public void onStateChanged(int from, int to) {
+	public synchronized void onStateChanged(int from, int to) {
 		if (to == Player.STARTED
 				&& (from == Player.INVALID_STATE || from == Player.PAUSED)) {
 			onResumed();
@@ -245,18 +245,18 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 		}
 	}
 
-	public void onTick() {
+	public synchronized void onTick() {
 		// XXX mPlugin.onTick();
 	}
 
-	private Thread getClockThread() {
+	private synchronized Thread getClockThread() {
 		if (mClockThread == null) {
 			mClockThread = new ClockThread(mHandler, TICK_DURATION);
 		}
 		return mClockThread;
 	}
 
-	private void startClockThread() {
+	private synchronized void startClockThread() {
 		// We send a tick immediately because it takes some time to start the
 		// thread;
 		mHandler.sendEmptyMessage(0);
@@ -264,7 +264,7 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 			getClockThread().start();
 	}
 
-	private void stopClockThread() {
+	private synchronized void stopClockThread() {
 		if (getClockThread().isAlive() && !getClockThread().isInterrupted()) {
 			getClockThread().interrupt();
 			mClockThread = null;
@@ -296,13 +296,13 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 	}
 
 	@Override
-	public boolean skip() {
+	public synchronized boolean skip() {
 		getMediaPlayer().skip();
 		return true;
 	}
 
 	@Override
-	public boolean skipBack() {
+	public synchronized boolean skipBack() {
 		if (getCurrentPosition() > 2000 || getNowPlaying() == mSongQueue.back()) {
 			super.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_PREVIOUS);
 		} else {

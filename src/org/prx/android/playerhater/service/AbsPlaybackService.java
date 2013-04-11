@@ -223,6 +223,7 @@ public abstract class AbsPlaybackService extends Service implements
 	@Override
 	public void onDestroy() {
 		onStopped();
+		mConfig = null;
 		mPlugin.onServiceStopping();
 		getMediaPlayer().release();
 		getBaseContext().unregisterReceiver(mBroadcastReceiver);
@@ -245,19 +246,21 @@ public abstract class AbsPlaybackService extends Service implements
 		Log.d("And we have successfully rebound");
 	}
 
-	private void setConfig(Config config) {
+	private synchronized void setConfig(Config config) {
 		mConfig = config;
-		for (Class<? extends PlayerHaterPlugin> plugin : mConfig
+		for (Class<? extends PlayerHaterPlugin> pluginKlass : mConfig
 				.getServicePlugins()) {
 			try {
-				mPluginCollection.add(plugin.newInstance());
+				PlayerHaterPlugin plugin = pluginKlass.newInstance();
+				plugin.onPlayerHaterLoaded(getApplicationContext(),
+						mPlayerHater);
+				plugin.onServiceBound(mRemoteBinder);
+				mPluginCollection.add(plugin);
 			} catch (Exception e) {
 				Log.e("Could not instantiate plugin "
-						+ plugin.getCanonicalName(), e);
+						+ pluginKlass.getCanonicalName(), e);
 			}
 		}
-		mPlugin.onPlayerHaterLoaded(getApplicationContext(), mPlayerHater);
-		mPlugin.onServiceBound(mRemoteBinder);
 	}
 
 	@Override
@@ -269,7 +272,7 @@ public abstract class AbsPlaybackService extends Service implements
 	@Override
 	public void stopService(Song[] songs) {
 		onStopped();
-		int[] songTags = new int[songs.length - 1];
+		int[] songTags = new int[songs.length];
 		int i = 0;
 		for (Song song : songs) {
 			songTags[i] = ((BasicSong) song).tag;

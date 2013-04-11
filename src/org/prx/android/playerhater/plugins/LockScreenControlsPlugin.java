@@ -23,8 +23,6 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 			| RemoteControlClient.FLAG_KEY_MEDIA_STOP
 			| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
 			| RemoteControlClient.FLAG_KEY_MEDIA_NEXT;
-	
-	
 
 	@Override
 	public void onAudioStarted() {
@@ -50,22 +48,25 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
 	@Override
 	public void onSongChanged(Song song) {
-
-		String imageUriScheme = song.getUri().getScheme();
 		Bitmap image = null;
+		
+		if (song.getAlbumArt() != null) {
+			String imageUriScheme = song.getAlbumArt().getScheme();
 
-		try {
-			if (imageUriScheme.equals(ContentResolver.SCHEME_CONTENT)
-					|| imageUriScheme
-							.equals(ContentResolver.SCHEME_ANDROID_RESOURCE)) {
-				image = BitmapFactory.decodeStream(getContext()
-						.getContentResolver().openInputStream(song.getUri()));
-			} else {
-				image = BitmapFactory.decodeStream(new URL(song.getUri()
-						.toString()).openStream());
-			}
-		} catch (Exception e) {}
+			try {
+				if (imageUriScheme.equals(ContentResolver.SCHEME_CONTENT)
+						|| imageUriScheme
+								.equals(ContentResolver.SCHEME_ANDROID_RESOURCE)) {
+					image = BitmapFactory.decodeStream(getContext()
+							.getContentResolver().openInputStream(
+									song.getAlbumArt()));
+				} else {
+					image = BitmapFactory.decodeStream(new URL(song
+							.getAlbumArt().toString()).openStream());
+				}
+			} catch (Exception e) {}
 
+		}
 		getRemoteControlClient()
 				.editMetadata(true)
 				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE,

@@ -24,7 +24,9 @@ public interface SetNextMediaPlayerCompat extends OnCompletionListener {
 
 		@Override
 		public void skip() {
-			mStateManager.conditionalStop();
+			if (!mStateManager.conditionalStop()) {
+				mStateManager.reset();
+			}
 			onCompletion(mStateManager.getBarePlayer());
 		}
 

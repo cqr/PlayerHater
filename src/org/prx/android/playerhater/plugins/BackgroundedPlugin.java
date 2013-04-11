@@ -100,6 +100,7 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 
 	@Override
 	public void onSongChanged(Song song) {
+		Thread.dumpStack();
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
 		mHandler.obtainTargettedMessage(SONG_CHANGED, song).sendToTarget();
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
