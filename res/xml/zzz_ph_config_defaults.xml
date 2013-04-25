@@ -2,6 +2,9 @@
 <config>
 
     <plugin
+        name="org.prx.android.playerhater.plugins.PebblePlugin"
+        enabled="true" />
+    <plugin
         name="org.prx.android.playerhater.plugins.NotificationPlugin"
         enabled="@bool/__playerhater_notification" />
     <plugin

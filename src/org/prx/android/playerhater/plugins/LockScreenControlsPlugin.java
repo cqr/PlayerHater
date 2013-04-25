@@ -18,6 +18,7 @@ import android.os.Build;
 public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
 	private RemoteControlClient mRemoteControlClient;
+	private Bitmap mAlbumArt;
 
 	private int mTransportControlFlags = RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
 			| RemoteControlClient.FLAG_KEY_MEDIA_STOP
@@ -48,25 +49,11 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
 	@Override
 	public void onSongChanged(Song song) {
-		Bitmap image = null;
-		
+
 		if (song.getAlbumArt() != null) {
-			String imageUriScheme = song.getAlbumArt().getScheme();
-
-			try {
-				if (imageUriScheme.equals(ContentResolver.SCHEME_CONTENT)
-						|| imageUriScheme
-								.equals(ContentResolver.SCHEME_ANDROID_RESOURCE)) {
-					image = BitmapFactory.decodeStream(getContext()
-							.getContentResolver().openInputStream(
-									song.getAlbumArt()));
-				} else {
-					image = BitmapFactory.decodeStream(new URL(song
-							.getAlbumArt().toString()).openStream());
-				}
-			} catch (Exception e) {}
-
+			onAlbumArtChangedToUri(song.getAlbumArt());
 		}
+
 		getRemoteControlClient()
 				.editMetadata(true)
 				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE,
@@ -75,7 +62,7 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 						song.getArtist())
 				.putBitmap(
 						RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
-						image).apply();
+						mAlbumArt).apply();
 	}
 
 	@Override
@@ -101,8 +88,7 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
 	@Override
 	public void onAlbumArtChanged(int resourceId) {
-		// TODO Auto-generated method stub
-
+		mAlbumArt = BitmapFactory.decodeResource(getContext().getResources(), resourceId);
 	}
 
 	@Override

@@ -28,8 +28,9 @@
             android:layout_weight="1"
             android:ellipsize="end"
             android:gravity="bottom"
-            android:maxLines="2"
-            android:paddingBottom="2dp" >
+            android:maxLines="1"
+            android:paddingBottom="2dp"
+            android:singleLine="true" >
 
             <requestFocus />
         </TextView>
@@ -43,8 +44,8 @@
             android:layout_marginLeft="8dp"
             android:layout_weight="1"
             android:ellipsize="end"
-            android:singleLine="true"
-            android:gravity="top" />
+            android:gravity="top"
+            android:singleLine="true" />
 
         <ImageView
             android:layout_width="match_parent"

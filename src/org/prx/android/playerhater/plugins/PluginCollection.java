@@ -22,6 +22,13 @@ public class PluginCollection implements PlayerHaterPlugin {
 		mPluginTags = new SparseArray<PlayerHaterPlugin>();
 	}
 
+	public PluginCollection(PlayerHaterPlugin... plugins) {
+		this();
+		for (PlayerHaterPlugin plugin : plugins) {
+			add(plugin);
+		}
+	}
+
 	public synchronized void add(PlayerHaterPlugin plugin) {
 		add(plugin, 0);
 	}
@@ -123,7 +130,8 @@ public class PluginCollection implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public synchronized void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
+	public synchronized void onPlayerHaterLoaded(Context context,
+			PlayerHater playerHater) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onPlayerHaterLoaded(context, playerHater);
 	}
@@ -150,12 +158,13 @@ public class PluginCollection implements PlayerHaterPlugin {
 	@Override
 	public synchronized void onSongFinished(Song song, int reason) {
 		for (PlayerHaterPlugin plugin : mPlugins)
-				plugin.onSongFinished(song, reason);
+			plugin.onSongFinished(song, reason);
 	}
-	
+
 	@Override
-	public synchronized void onTransportControlFlagsChanged(int transportControlFlags) {
-		for (PlayerHaterPlugin plugin : mPlugins) 
+	public synchronized void onTransportControlFlagsChanged(
+			int transportControlFlags) {
+		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onTransportControlFlagsChanged(transportControlFlags);
 	}
 

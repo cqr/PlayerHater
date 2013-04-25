@@ -1,5 +1,7 @@
 package org.prx.android.playerhater.plugins;
 
+import java.util.Calendar;
+
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.util.BroadcastReceiver;
@@ -172,7 +174,8 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 				.setSmallIcon(R.drawable.zzz_ph_ic_notification)
 				.setTicker("Playing: " + mNotificationTitle)
 				.setContent(getNotificationView())
-				.setContentIntent(mContentIntent);
+				.setContentIntent(mContentIntent).setOngoing(true).setWhen(0)
+				.setOnlyAlertOnce(true);
 	}
 
 	protected void setTextViewText(int id, String text) {

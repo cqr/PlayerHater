@@ -251,7 +251,14 @@ public class BinderPlayerHater extends PlayerHater {
 	}
 
 	public Song getSong(int nowPlayingTag) {
-		return mSongs.get(nowPlayingTag);
+		Song song = mSongs.get(nowPlayingTag);
+		if (song == null) {
+			stop();
+			emptyQueue();
+			return null;
+		} else {
+			return song;
+		}
 	}
 
 	public IPlayerHaterBinder getBinder() {

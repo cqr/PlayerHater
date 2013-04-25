@@ -119,7 +119,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		mState = state;
 	}
 
-	private synchronized String getStateName(int state) {
+	public static String getStateName(int state) {
 		switch (state) {
 		case END:
 			return "end";

@@ -38,7 +38,6 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	 */
 	@Override
 	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
-		Log.v("PlayerHater Loaded");
 		mContext = context;
 		mPlayerHater = playerHater;
 	}
