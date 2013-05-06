@@ -77,7 +77,7 @@ public class BinderPlayerHater extends PlayerHater {
 	@Override
 	public boolean play(Song song, int startTime) {
 		try {
-			if (enqueue(song)) {
+			if (enqueue(song) != -1) {
 				if (skipTo(mBinder.getQueueLength())) {
 					play(startTime);
 				}
@@ -98,12 +98,12 @@ public class BinderPlayerHater extends PlayerHater {
 	}
 
 	@Override
-	public boolean enqueue(Song song) {
+	public int enqueue(Song song) {
 		try {
 			return mBinder.enqueue(song.getUri(), song.getTitle(),
 					song.getArtist(), song.getAlbumArt(), tagSong(song));
 		} catch (RemoteException e) {
-			return false;
+			return -1;
 		}
 	}
 

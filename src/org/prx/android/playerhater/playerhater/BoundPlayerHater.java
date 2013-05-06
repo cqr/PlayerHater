@@ -366,12 +366,12 @@ public class BoundPlayerHater extends PlayerHater {
 	// }
 
 	@Override
-	public boolean enqueue(Song song) {
+	public int enqueue(Song song) {
 		if (mPlayerHater != null) {
 			return mPlayerHater.enqueue(song);
 		} else {
 			sPlayQueue.appendSong(song);
-			return true;
+			return sPlayQueue.size() - 1;
 		}
 	}
 

@@ -76,6 +76,16 @@ public interface MediaPlayerWithState {
 	 * the data loaded into it.
 	 */
 	public static final int PLAYBACK_COMPLETED = 8;
+	
+	/**
+	 * Internal state used for content:// URIs
+	 */
+	public static final int LOADING_CONTENT = -2;
+	
+	/**
+	 * Internal state used for content:// URIs
+	 */
+	public static final int PREPARING_CONTENT = -3;
 
 	/**
 	 * The state a {@linkplain MediaPlayer} is in when an error has occurred.

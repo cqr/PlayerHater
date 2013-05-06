@@ -84,9 +84,12 @@ public interface IPlayerHater {
 	 * 
 	 * @param song
 	 *            The {@linkplain Song} to add to the end of the queue.
-	 * @return {@code true}, always.
+	 * @return the queue position of the song, in relation to the playhead. If
+	 *         this song has been loaded into the now playing position, this
+	 *         will return 0. If the song will be played next, it will return 1,
+	 *         and so on.
 	 */
-	abstract public boolean enqueue(Song song);
+	abstract public int enqueue(Song song);
 
 	/**
 	 * Moves to a new position in the play queue.

@@ -41,7 +41,7 @@ public interface PlayerHaterService {
 
 	public abstract void setAlbumArt(Uri url);
 
-	public abstract boolean enqueue(Song song);
+	public abstract int enqueue(Song song);
 	
 	public abstract int getQueueLength();
 

@@ -25,8 +25,9 @@ public class SongQueue {
 		mListener = listener;
 	}
 
-	public void appendSong(Song song) {
+	public int appendSong(Song song) {
 		addSongAtPosition(song, mSongs.size());
+		return mSongs.size() - mPlayheadPosition;
 	}
 
 	public void addSongAtPosition(Song song, int position) {

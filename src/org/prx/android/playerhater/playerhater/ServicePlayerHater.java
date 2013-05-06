@@ -52,7 +52,7 @@ public class ServicePlayerHater extends PlayerHater {
 	}
 
 	@Override
-	public boolean enqueue(Song song) {
+	public int enqueue(Song song) {
 		return mService.enqueue(song);
 	}
 

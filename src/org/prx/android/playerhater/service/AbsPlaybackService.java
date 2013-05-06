@@ -44,12 +44,11 @@ public abstract class AbsPlaybackService extends Service implements
 	private final IPlayerHaterBinder.Stub mRemoteBinder = new IPlayerHaterBinder.Stub() {
 
 		@Override
-		public boolean enqueue(Uri uri, String title, String artist,
+		public int enqueue(Uri uri, String title, String artist,
 				Uri albumArt, int tag) throws RemoteException {
 			Song song = new BasicSong(uri, title, artist, albumArt, tag);
 			new PhantomSongReference(song, mSongReferenceQueue);
-			AbsPlaybackService.this.enqueue(song);
-			return true;
+			return AbsPlaybackService.this.enqueue(song);
 		}
 
 		@Override

@@ -28,6 +28,7 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 	private final SongQueue mSongQueue = new SongQueue();
 	private Player mCurrentMediaPlayer;
 	private Player mNextPlayer;
+	private boolean mSkipping = false;
 	private ClockThread mClockThread;
 	private final PlayerStateHandler mHandler = new PlayerStateHandler(this);
 	private OnCompletionListener mOnCompletionListener;
@@ -121,13 +122,13 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 
 	/* Queue Methods */
 	@Override
-	public synchronized boolean enqueue(Song song) {
-		mSongQueue.appendSong(song);
-		return true;
+	public synchronized int enqueue(Song song) {
+		return mSongQueue.appendSong(song);
 	}
 
 	@Override
 	public synchronized boolean skipTo(int position) {
+		mSkipping = true;
 		return mSongQueue.skipTo(position);
 	}
 
@@ -190,7 +191,12 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 
 	@Override
 	public synchronized void onCompletion(MediaPlayer mp) {
-		mPlugin.onSongFinished(getNowPlaying(), PlayerHater.TRACK_END);
+		if (mSkipping) {
+			mSkipping = false;
+			mPlugin.onSongFinished(getNowPlaying(), PlayerHater.SKIP_BUTTON);
+		} else {
+			mPlugin.onSongFinished(getNowPlaying(), PlayerHater.TRACK_END);
+		}
 		mp.reset();
 		Player oldPlayer = mCurrentMediaPlayer;
 		mCurrentMediaPlayer = getNextPlayer();
@@ -297,6 +303,7 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 
 	@Override
 	public synchronized boolean skip() {
+		mSkipping = true;
 		getMediaPlayer().skip();
 		return true;
 	}

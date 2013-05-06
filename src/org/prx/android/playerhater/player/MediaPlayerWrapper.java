@@ -128,6 +128,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		case IDLE:
 			return "idle";
 		case INITIALIZED:
+		case LOADING_CONTENT:
 			return "initialized";
 		case PAUSED:
 			return "paused";
@@ -136,6 +137,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		case PREPARED:
 			return "prepared";
 		case PREPARING:
+		case PREPARING_CONTENT:
 			return "preparing";
 		case STARTED:
 			return "started";
@@ -167,6 +169,8 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		if (getState() == INITIALIZED || getState() == STOPPED) {
 			mMediaPlayer.prepareAsync();
 			setState(PREPARING);
+		} else if (getState() == LOADING_CONTENT) {
+			setState(PREPARING_CONTENT);
 		} else {
 			throw (new IllegalStateException());
 		}
@@ -249,16 +253,57 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 	}
 
 	@Override
-	public synchronized void setDataSource(Context context, Uri uri)
+	public synchronized void setDataSource(final Context context, final Uri uri)
 			throws IllegalStateException, IOException,
 			IllegalArgumentException, SecurityException {
-		try {
-			ParcelFileDescriptor fd = context.getContentResolver()
-					.openFileDescriptor(uri, "r");
-			this.mMediaPlayer.setDataSource(fd.getFileDescriptor());
-			setState(INITIALIZED);
-		} catch (FileNotFoundException e) {
-			this.mMediaPlayer.setDataSource(uri.toString());
+		if (uri.getScheme().equals("content")) {
+			setState(LOADING_CONTENT);
+			(new Thread() {
+				@Override
+				public void run() {
+					try {
+						ParcelFileDescriptor fd = context.getContentResolver()
+								.openFileDescriptor(uri, "r");
+						mMediaPlayer.setDataSource(fd.getFileDescriptor());
+						if (MediaPlayerWrapper.this.getState() == PREPARING_CONTENT) {
+							setState(INITIALIZED);
+							prepareAsync();
+						} else {
+							setState(INITIALIZED);
+						}
+					} catch (IllegalArgumentException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IllegalStateException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						try {
+							mMediaPlayer.setDataSource(uri.toString());
+							if (MediaPlayerWrapper.this.getState() == PREPARING_CONTENT) {
+								setState(INITIALIZED);
+								prepareAsync();
+							} else {
+								setState(INITIALIZED);
+							}
+						} catch (IllegalArgumentException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (SecurityException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (IllegalStateException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}
+			}).start();
+		} else {
+			mMediaPlayer.setDataSource(uri.toString());
 			setState(INITIALIZED);
 		}
 	}
