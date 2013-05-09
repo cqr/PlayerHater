@@ -1,10 +1,7 @@
 package org.prx.android.playerhater.util;
 
 import org.prx.android.playerhater.BuildConfig;
-import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.service.AbsPlaybackService;
-
-import android.os.Looper;
 
 public class Log {
 

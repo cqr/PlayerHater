@@ -4,8 +4,6 @@ import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
-import org.prx.android.playerhater.util.Log;
-
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;

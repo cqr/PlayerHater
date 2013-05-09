@@ -318,4 +318,13 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 		}
 		return true;
 	}
+
+	@Override
+	public int getQueuePosition() {
+		int position =  mSongQueue.getPosition();
+		if (getMediaPlayer().getState() == Player.STARTED || getMediaPlayer().getCurrentPosition() != 0) {
+			position += 1;
+		}
+		return position;
+	}
 }

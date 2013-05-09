@@ -11,6 +11,7 @@ interface IPlayerHaterBinder {
 
 	int enqueue(in Uri uri, String title, String artist, in Uri albumArt, int tag);
 	int getQueueLength();
+	int getQueuePosition();
 	void emptyQueue();
 	boolean skipTo(int position);
 	boolean skip();

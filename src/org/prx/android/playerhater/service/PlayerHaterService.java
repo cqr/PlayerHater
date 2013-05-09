@@ -44,6 +44,8 @@ public interface PlayerHaterService {
 	public abstract int enqueue(Song song);
 	
 	public abstract int getQueueLength();
+	
+	public abstract int getQueuePosition();
 
 	public abstract boolean skipTo(int position);
 

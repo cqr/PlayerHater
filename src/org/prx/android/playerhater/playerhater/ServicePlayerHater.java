@@ -142,4 +142,14 @@ public class ServicePlayerHater extends PlayerHater {
 		mService.setTransportControlFlags(transportControlFlags);
 	}
 
+	@Override
+	public int getQueueLength() {
+		return mService.getQueueLength();
+	}
+
+	@Override
+	public int getQueuePosition() {
+		return mService.getQueuePosition();
+	}
+
 }

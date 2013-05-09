@@ -163,4 +163,8 @@ public class SongQueue {
 		return mSongs.toArray(new Song[size()-1]);
 	}
 
+	public int getPosition() {
+		return mPlayheadPosition - 1;
+	}
+
 }

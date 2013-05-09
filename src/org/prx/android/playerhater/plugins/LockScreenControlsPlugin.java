@@ -1,11 +1,8 @@
 package org.prx.android.playerhater.plugins;
 
-import java.net.URL;
-
 import org.prx.android.playerhater.Song;
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

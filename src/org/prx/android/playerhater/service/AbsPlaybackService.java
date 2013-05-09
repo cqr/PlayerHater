@@ -203,6 +203,11 @@ public abstract class AbsPlaybackService extends Service implements
 		public void unduck() throws RemoteException {
 			AbsPlaybackService.this.unduck();
 		}
+
+		@Override
+		public int getQueuePosition() throws RemoteException {
+			return AbsPlaybackService.this.getQueuePosition();
+		}
 	};
 
 	abstract Player getMediaPlayer();

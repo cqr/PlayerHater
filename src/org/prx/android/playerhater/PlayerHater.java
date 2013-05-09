@@ -45,8 +45,8 @@ public abstract class PlayerHater implements IPlayerHater {
 	protected static int sStartPosition = 0;
 	private static Context sApplicationContext;
 	protected static final PluginCollection sPluginCollection = new PluginCollection();
-	protected static final PlayerHaterPlugin sPlugin = new BackgroundedPlugin(
-			sPluginCollection);
+	protected static final PlayerHaterPlugin sPlugin = new BackgroundedPlugin(sPluginCollection);
+	
 	protected static String sPendingAlbumArtType;
 	protected static Uri sPendingAlbumArtUrl;
 	protected static OnErrorListener sPendingErrorListener;
@@ -66,6 +66,7 @@ public abstract class PlayerHater implements IPlayerHater {
 	protected static final String URL = "url";
 	protected static int sPendingTransportControlFlags = -1;
 	protected static boolean sIsBound = false;
+	protected static boolean sShouldPlayOnConnection = false;
 
 	public static final String EXTRA_CONFIG = "config";
 
@@ -405,10 +406,15 @@ public abstract class PlayerHater implements IPlayerHater {
 				}
 
 				Song firstSong = sPlayQueue.getNowPlaying();
-				sPlayerHater.play(firstSong, sStartPosition);
+				sPlayerHater.enqueue(firstSong);
 
 				for (Song song : sPlayQueue.getSongsAfter()) {
 					sPlayerHater.enqueue(song);
+				}
+				
+				if (sShouldPlayOnConnection) {
+					sPlayerHater.play(sStartPosition);
+					sShouldPlayOnConnection = false;
 				}
 
 				sPlayQueue.empty();

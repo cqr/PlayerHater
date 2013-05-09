@@ -3,7 +3,7 @@ package org.prx.android.playerhater.player;
 import android.media.MediaPlayer.OnCompletionListener;
 
 public class Gapless extends MediaPlayerDecorator {
-	
+
 	public static final Gapless gapless(Player mediaPlayer) {
 		return new Gapless(mediaPlayer);
 	}
@@ -13,11 +13,7 @@ public class Gapless extends MediaPlayerDecorator {
 	public Gapless(Player stateManager) {
 		super(stateManager);
 
-		if (android.os.Build.VERSION.SDK_INT >= 16 && false) {
-			mMediaPlayerNexter = new SetNextMediaPlayerCompat.Modern(stateManager);
-		} else {
-			mMediaPlayerNexter = new SetNextMediaPlayerCompat.Compat(stateManager);
-		}
+		mMediaPlayerNexter = new SetNextMediaPlayerCompat.Compat(stateManager);
 	}
 
 	@Override
@@ -29,7 +25,7 @@ public class Gapless extends MediaPlayerDecorator {
 	public void setOnCompletionListener(OnCompletionListener onCompletion) {
 		mMediaPlayerNexter.setOnCompletionListener(onCompletion);
 	}
-	
+
 	@Override
 	public void skip() {
 		mMediaPlayerNexter.skip();

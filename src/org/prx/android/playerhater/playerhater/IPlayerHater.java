@@ -303,4 +303,25 @@ public interface IPlayerHater {
 	 * @param transportControlFlags
 	 */
 	abstract public void setTransportControlFlags(int transportControlFlags);
+
+	/**
+	 * Returns the number of items in the queue.
+	 * 
+	 * @return the number of items currently in the queue.
+	 */
+	abstract public int getQueueLength();
+
+	/**
+	 * Returns the number of clips in the queue which are at least partially
+	 * behind the playhead.
+	 * <p>
+	 * If the currently enqueued track is stopped at the beginning of the track,
+	 * it is not considered in this calculation. If the player is paused or
+	 * playing or the playhead is partially over the "now playing" track, it
+	 * will be considered as part of this calculation.
+	 * 
+	 * @return the number of clips in the queue with are at least partially
+	 *         behind the playhead.
+	 */
+	abstract public int getQueuePosition();
 }

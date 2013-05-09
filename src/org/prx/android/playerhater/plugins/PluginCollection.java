@@ -84,7 +84,6 @@ public class PluginCollection implements PlayerHaterPlugin {
 
 	@Override
 	public synchronized void onSongChanged(Song song) {
-		Log.d("Sending songChanged to " + mPlugins.size() + " plugins");
 		for (PlayerHaterPlugin plugin : mPlugins) {
 			Log.d("Ok, songChanged " + plugin.getClass());
 			plugin.onSongChanged(song);

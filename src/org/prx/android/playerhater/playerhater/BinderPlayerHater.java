@@ -278,4 +278,22 @@ public class BinderPlayerHater extends PlayerHater {
 		}
 	}
 
+	@Override
+	public int getQueueLength() {
+		try {
+			return mBinder.getQueueLength();
+		} catch (RemoteException e) {
+			return -1;
+		}
+	}
+
+	@Override
+	public int getQueuePosition() {
+		try {
+			return mBinder.getQueuePosition();
+		} catch (RemoteException e) {
+			return -1;
+		}
+	}
+
 }

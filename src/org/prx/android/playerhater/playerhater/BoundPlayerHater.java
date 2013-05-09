@@ -62,13 +62,13 @@ public class BoundPlayerHater extends PlayerHater {
 		removeCurrentPlugin();
 		mPlugin = plugin;
 		if (mPlugin != null) {
-			sPluginCollection.add(plugin);
 			mPlugin.onPlayerHaterLoaded(mContext.get(), this);
 			if (mPlayerHater != null
 					&& mPlayerHater instanceof BinderPlayerHater) {
 				mPlugin.onServiceBound(((BinderPlayerHater) mPlayerHater)
 						.getBinder());
 			}
+			sPluginCollection.add(plugin);
 		}
 	}
 
@@ -141,6 +141,7 @@ public class BoundPlayerHater extends PlayerHater {
 		if (mPlayerHater == null) {
 			if (sPlayQueue.getNowPlaying() != null) {
 				sStartPosition = startTime;
+				sShouldPlayOnConnection = true;
 				startService();
 				return true;
 			} else {
@@ -185,6 +186,7 @@ public class BoundPlayerHater extends PlayerHater {
 			sStartPosition = startTime;
 			sPlayQueue.appendSong(song);
 			sPlayQueue.skipToEnd();
+			sShouldPlayOnConnection = true;
 			startService();
 			return true;
 		} else {
@@ -449,6 +451,24 @@ public class BoundPlayerHater extends PlayerHater {
 			setBoundPlugin(null);
 		} else {
 			setBoundPlugin(new PlayerHaterListenerPlugin(listener));
+		}
+	}
+
+	@Override
+	public int getQueueLength() {
+		if (mPlayerHater == null) {
+			return sPlayQueue.size();
+		} else {
+			return mPlayerHater.getQueueLength();
+		}
+	}
+
+	@Override
+	public int getQueuePosition() {
+		if (mPlayerHater == null) {
+			return sPlayQueue.getPosition();
+		} else {
+			return mPlayerHater.getQueuePosition();
 		}
 	}
 }

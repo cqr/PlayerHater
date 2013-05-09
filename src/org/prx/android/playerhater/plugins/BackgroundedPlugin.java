@@ -279,7 +279,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 
 		@Override
 		public Message obtainTargettedMessage(int what) {
-			Thread.dumpStack();
 			if (mOtherActions.contains(what)) {
 				return mOtherHandler.obtainMessage(what);
 			}
@@ -288,7 +287,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 
 		@Override
 		public Message obtainTargettedMessage(int what, Object obj) {
-			Thread.dumpStack();
 			if (mOtherActions.contains(what)) {
 				return mOtherHandler.obtainMessage(what, obj);
 			}
@@ -297,7 +295,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 
 		@Override
 		public Message obtainTargettedMessage(int what, int arg1, int arg2) {
-			Thread.dumpStack();
 			if (mOtherActions.contains(what)) {
 				return mOtherHandler.obtainMessage(what, arg1, arg2);
 			}
@@ -307,7 +304,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 		@Override
 		public Message obtainTargettedMessage(int what, int arg1, int arg2,
 				Object obj) {
-			Thread.dumpStack();
 			if (mOtherActions.contains(what)) {
 				return mOtherHandler.obtainMessage(what, arg1, arg2, obj);
 			}
@@ -316,7 +312,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 
 		@Override
 		public boolean sendTargettedEmptyMessage(int what) {
-			Thread.dumpStack();
 			if (mOtherActions.contains(what)) {
 				return mOtherHandler.sendEmptyMessage(what);
 			}
@@ -330,7 +325,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 
 		@Override
 		public void removeTargettedMessages(int what) {
-
 			if (mOtherActions.contains(what)) {
 				mOtherHandler.removeMessages(what);
 			} else {

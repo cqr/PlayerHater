@@ -1,7 +1,5 @@
 package org.prx.android.playerhater.plugins;
 
-import java.util.Calendar;
-
 import org.prx.android.playerhater.R;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.util.BroadcastReceiver;
