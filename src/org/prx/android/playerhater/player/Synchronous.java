@@ -64,6 +64,7 @@ public class Synchronous extends MediaPlayerDecorator implements
 				return false;
 			}
 		case INITIALIZED:
+		case LOADING_CONTENT:
 			try {
 				prepareAsync();
 			} catch (IllegalStateException e1) {
@@ -105,7 +106,7 @@ public class Synchronous extends MediaPlayerDecorator implements
 
 	@Override
 	public void start() {
-		if (getState() == PREPARING) {
+		if (getState() == PREPARING || getState() == PREPARING_CONTENT) {
 			mShouldPlayWhenPrepared = true;
 		} else if (getState() == INITIALIZED) {
 			mShouldPlayWhenPrepared = true;
@@ -122,7 +123,7 @@ public class Synchronous extends MediaPlayerDecorator implements
 	@Override
 	public void seekTo(int msec) {
 		int state = getState();
-		if (state == PREPARING || state == INITIALIZED) {
+		if (state == PREPARING || state == INITIALIZED || state == LOADING_CONTENT || state == PREPARING_CONTENT) {
 			mShouldSkipWhenPrepared = msec;
 			if (state == INITIALIZED) {
 				prepareAsync();
@@ -155,7 +156,7 @@ public class Synchronous extends MediaPlayerDecorator implements
 		if (state == PREPARED || state == PAUSED || state == PLAYBACK_COMPLETED) {
 			start();
 			return true;
-		} else if (state == PREPARING) {
+		} else if (state == PREPARING || state == PREPARING_CONTENT) {
 			mShouldPlayWhenPrepared = true;
 			return true;
 		}

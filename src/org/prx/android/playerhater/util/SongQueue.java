@@ -125,6 +125,9 @@ public class SongQueue {
 
 	public boolean skipTo(int position) {
 		if (position <= mSongs.size()) {
+			if (position < 0) {
+				position = mSongs.size() + position + 1;
+			}
 			mPlayheadPosition = position;
 			songOrderChanged();
 			return true;

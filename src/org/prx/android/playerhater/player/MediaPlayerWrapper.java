@@ -172,7 +172,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		} else if (getState() == LOADING_CONTENT) {
 			setState(PREPARING_CONTENT);
 		} else {
-			throw (new IllegalStateException());
+			throw illegalState("prepareAsync");
 		}
 	}
 
@@ -183,7 +183,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 			mMediaPlayer.start();
 			setState(STARTED);
 		} else {
-			throw (new IllegalStateException());
+			throw illegalState("start");
 		}
 	}
 
@@ -193,8 +193,14 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 			mMediaPlayer.pause();
 			setState(PAUSED);
 		} else {
-			throw (new IllegalStateException());
+			throw illegalState("pause");
 		}
+	}
+
+	private IllegalStateException illegalState(String methodName) {
+		IllegalStateException e = new IllegalStateException("Cannot call "+ methodName +" in the " + getStateName(getState()) + " state.");
+		e.printStackTrace();
+		return e;
 	}
 
 	@Override
@@ -205,7 +211,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 			this.mMediaPlayer.stop();
 			setState(STOPPED);
 		} else {
-			throw (new IllegalStateException());
+			throw illegalState("stop");
 		}
 	}
 
@@ -218,7 +224,7 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 			setState(PREPARING);
 			this.mMediaPlayer.seekTo(msec);
 		} else {
-			throw (new IllegalStateException());
+			throw illegalState("seekTo");
 		}
 	}
 

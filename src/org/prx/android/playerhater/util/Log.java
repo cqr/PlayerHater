@@ -2,23 +2,26 @@ package org.prx.android.playerhater.util;
 
 import org.prx.android.playerhater.BuildConfig;
 import org.prx.android.playerhater.PlayerHater;
+import org.prx.android.playerhater.service.AbsPlaybackService;
+
+import android.os.Looper;
 
 public class Log {
 
 	public static void v(String msg) {
 		if (BuildConfig.DEBUG) {
-			android.util.Log.v(PlayerHater.TAG, msg);
+			android.util.Log.v(AbsPlaybackService.TAG, msg);
 		}
 	}
 
 	public static void d(String msg) {
 		if (BuildConfig.DEBUG) {
-			android.util.Log.d(PlayerHater.TAG, msg);
+			android.util.Log.d(AbsPlaybackService.TAG, msg);
 		}
 	}
 
 	public static void e(String string, Exception e) {
-		android.util.Log.e(PlayerHater.TAG, string, e);
+		android.util.Log.e(AbsPlaybackService.TAG, string, e);
 	}
 
 }

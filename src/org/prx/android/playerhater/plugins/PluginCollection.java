@@ -6,6 +6,7 @@ import java.util.Set;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
+import org.prx.android.playerhater.util.Log;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -83,8 +84,11 @@ public class PluginCollection implements PlayerHaterPlugin {
 
 	@Override
 	public synchronized void onSongChanged(Song song) {
-		for (PlayerHaterPlugin plugin : mPlugins)
+		Log.d("Sending songChanged to " + mPlugins.size() + " plugins");
+		for (PlayerHaterPlugin plugin : mPlugins) {
+			Log.d("Ok, songChanged " + plugin.getClass());
 			plugin.onSongChanged(song);
+		}
 	}
 
 	@Override
@@ -172,6 +176,10 @@ public class PluginCollection implements PlayerHaterPlugin {
 	public synchronized void onChangesComplete() {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onChangesComplete();
+	}
+	
+	public int getSize() {
+		return mPlugins.size();
 	}
 
 	public synchronized void removeAll() {

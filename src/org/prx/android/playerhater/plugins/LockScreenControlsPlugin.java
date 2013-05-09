@@ -88,7 +88,10 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
 	@Override
 	public void onAlbumArtChanged(int resourceId) {
-		mAlbumArt = BitmapFactory.decodeResource(getContext().getResources(), resourceId);
+		if (getContext() != null) {
+			mAlbumArt = BitmapFactory.decodeResource(getContext()
+					.getResources(), resourceId);
+		}
 	}
 
 	@Override

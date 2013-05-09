@@ -32,7 +32,7 @@ public abstract class AbsPlaybackService extends Service implements
 		PlayerHaterService {
 
 	protected static final int REMOTE_PLUGIN = 2525;
-	public static String TAG;
+	public static String TAG = PlayerHater.TAG;
 	protected BroadcastReceiver mBroadcastReceiver;
 	protected PlayerHaterPlugin mPlugin;
 	private Config mConfig;
@@ -251,10 +251,12 @@ public abstract class AbsPlaybackService extends Service implements
 				.getServicePlugins()) {
 			try {
 				PlayerHaterPlugin plugin = pluginKlass.newInstance();
+				Log.d("Setting up a plugin " + pluginKlass);
 				plugin.onPlayerHaterLoaded(getApplicationContext(),
 						mPlayerHater);
 				plugin.onServiceBound(mRemoteBinder);
 				mPluginCollection.add(plugin);
+				Log.d("Plugins: " + mPluginCollection.getSize());
 			} catch (Exception e) {
 				Log.e("Could not instantiate plugin "
 						+ pluginKlass.getCanonicalName(), e);
