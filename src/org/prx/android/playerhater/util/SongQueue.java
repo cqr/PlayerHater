@@ -167,4 +167,14 @@ public class SongQueue {
 		return mPlayheadPosition - 1;
 	}
 
+	public boolean remove(int position) {
+		if (mSongs.size() < position) {
+			return false;
+		} else {
+			mSongs.remove(position - 1);
+			songOrderChanged();
+			return true;
+		}
+	}
+
 }

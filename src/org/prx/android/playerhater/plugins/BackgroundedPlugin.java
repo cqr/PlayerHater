@@ -72,8 +72,12 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 
 	@Override
 	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
-		mHandler.obtainTargettedMessage(PLAYER_HATER_LOADED,
-				new LoadedObject(context, playerHater)).sendToTarget();
+		if (shouldHandleMessage(PLAYER_HATER_LOADED)) {
+			mPlugin.onPlayerHaterLoaded(context, playerHater);
+		} else {
+			mHandler.obtainTargettedMessage(PLAYER_HATER_LOADED,
+					new LoadedObject(context, playerHater)).sendToTarget();
+		}
 	}
 
 	private static class LoadedObject {
@@ -101,124 +105,208 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	@Override
 	public void onSongChanged(Song song) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.obtainTargettedMessage(SONG_CHANGED, song).sendToTarget();
+		if (shouldHandleMessage(SONG_CHANGED)) {
+			mPlugin.onSongChanged(song);
+		} else {
+			mHandler.obtainTargettedMessage(SONG_CHANGED, song).sendToTarget();
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onDurationChanged(int duration) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.obtainTargettedMessage(DURATION_CHANGED, duration)
-				.sendToTarget();
+		if (shouldHandleMessage(DURATION_CHANGED)) {
+			mPlugin.onDurationChanged(duration);
+		} else {
+			mHandler.obtainTargettedMessage(DURATION_CHANGED, duration)
+					.sendToTarget();
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onAudioLoading() {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.sendTargettedEmptyMessage(AUDIO_LOADING);
+		if (shouldHandleMessage(AUDIO_LOADING)) {
+			mPlugin.onAudioLoading();
+		} else {
+			mHandler.sendTargettedEmptyMessage(AUDIO_LOADING);
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onAudioPaused() {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.sendTargettedEmptyMessage(PLAYBACK_PAUSED);
+		if (shouldHandleMessage(PLAYBACK_PAUSED)) {
+			mPlugin.onAudioPaused();
+		} else {
+			mHandler.sendTargettedEmptyMessage(PLAYBACK_PAUSED);
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onAudioResumed() {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.sendTargettedEmptyMessage(PLAYBACK_RESUMED);
+		if (shouldHandleMessage(PLAYBACK_RESUMED)) {
+			mPlugin.onAudioResumed();
+		} else {
+			mHandler.sendTargettedEmptyMessage(PLAYBACK_RESUMED);
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onAudioStarted() {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.sendTargettedEmptyMessage(PLAYBACK_STARTED);
+		if (shouldHandleMessage(PLAYBACK_STARTED)) {
+			mPlugin.onAudioStarted();
+		} else {
+			mHandler.sendTargettedEmptyMessage(PLAYBACK_STARTED);
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onAudioStopped() {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.sendTargettedEmptyMessage(PLAYBACK_STOPPED);
+		if (shouldHandleMessage(PLAYBACK_STOPPED)) {
+			mPlugin.onAudioStopped();
+		} else {
+			mHandler.sendTargettedEmptyMessage(PLAYBACK_STOPPED);
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onTitleChanged(String title) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.obtainTargettedMessage(TITLE_CHANGED, title).sendToTarget();
+		if (shouldHandleMessage(TITLE_CHANGED)) {
+			mPlugin.onTitleChanged(title);
+		} else {
+			mHandler.obtainTargettedMessage(TITLE_CHANGED, title)
+					.sendToTarget();
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onArtistChanged(String artist) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.obtainTargettedMessage(ARTIST_CHANGED, artist).sendToTarget();
+		if (shouldHandleMessage(ARTIST_CHANGED)) {
+			mPlugin.onArtistChanged(artist);
+		} else {
+			mHandler.obtainTargettedMessage(ARTIST_CHANGED, artist)
+					.sendToTarget();
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onAlbumArtChanged(int resourceId) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.obtainTargettedMessage(ART_CHANGED_INT, resourceId)
-				.sendToTarget();
+		if (shouldHandleMessage(ART_CHANGED_INT)) {
+			mPlugin.onAlbumArtChanged(resourceId);
+		} else {
+			mHandler.obtainTargettedMessage(ART_CHANGED_INT, resourceId)
+					.sendToTarget();
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onAlbumArtChangedToUri(Uri url) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.obtainTargettedMessage(ART_CHANGED_URI, url).sendToTarget();
+		if (shouldHandleMessage(ART_CHANGED_URI)) {
+			mPlugin.onAlbumArtChangedToUri(url);
+		} else {
+			mHandler.obtainTargettedMessage(ART_CHANGED_URI, url)
+					.sendToTarget();
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onNextSongAvailable(Song nextTrack) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.obtainTargettedMessage(NEXT_TRACK_AVAILABLE, nextTrack)
-				.sendToTarget();
+		if (shouldHandleMessage(NEXT_TRACK_AVAILABLE)) {
+			mPlugin.onNextSongAvailable(nextTrack);
+		} else {
+			mHandler.obtainTargettedMessage(NEXT_TRACK_AVAILABLE, nextTrack)
+					.sendToTarget();
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onNextSongUnavailable() {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.sendTargettedEmptyMessage(NEXT_TRACK_UNAVAILABLE);
+		if (shouldHandleMessage(NEXT_TRACK_UNAVAILABLE)) {
+			mPlugin.onNextSongUnavailable();
+		} else {
+			mHandler.sendTargettedEmptyMessage(NEXT_TRACK_UNAVAILABLE);
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onIntentActivityChanged(PendingIntent pending) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.obtainTargettedMessage(INTENT_CHANGED, pending).sendToTarget();
+		if (shouldHandleMessage(INTENT_CHANGED)) {
+			mPlugin.onIntentActivityChanged(pending);
+		} else {
+			mHandler.obtainTargettedMessage(INTENT_CHANGED, pending)
+					.sendToTarget();
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onServiceBound(IPlayerHaterBinder playerHater) {
-		mHandler.obtainTargettedMessage(SERVICE_BOUND, playerHater)
-				.sendToTarget();
+		if (shouldHandleMessage(SERVICE_BOUND)) {
+			mPlugin.onServiceBound(playerHater);
+		} else {
+			mHandler.obtainTargettedMessage(SERVICE_BOUND, playerHater)
+					.sendToTarget();
+		}
 	}
 
 	@Override
 	public void onSongFinished(Song song, int reason) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.obtainTargettedMessage(SONG_FINISHED, reason, 0, song)
-				.sendToTarget();
+		if (shouldHandleMessage(SONG_FINISHED)) {
+			mPlugin.onSongFinished(song, reason);
+		} else {
+			mHandler.obtainTargettedMessage(SONG_FINISHED, reason, 0, song)
+					.sendToTarget();
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
 	@Override
 	public void onTransportControlFlagsChanged(int transportControlFlags) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		mHandler.obtainTargettedMessage(TRANSPORT_CONTROL_FLAGS_CHANGED,
-				transportControlFlags, 0).sendToTarget();
+		if (shouldHandleMessage(TRANSPORT_CONTROL_FLAGS_CHANGED)) {
+			mPlugin.onTransportControlFlagsChanged(transportControlFlags);
+		} else {
+			mHandler.obtainTargettedMessage(TRANSPORT_CONTROL_FLAGS_CHANGED,
+					transportControlFlags, 0).sendToTarget();
+		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
+	}
+
+	private boolean shouldHandleMessage(int messageId) {
+		if (Looper.myLooper() == mLooper
+				&& mForegroundActions.contains(messageId)) {
+			return true;
+		} else if (Looper.myLooper() != mLooper
+				&& !mForegroundActions.contains(messageId)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	private static class TargetableHandler extends Handler {

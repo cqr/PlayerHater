@@ -296,4 +296,13 @@ public class BinderPlayerHater extends PlayerHater {
 		}
 	}
 
+	@Override
+	public boolean removeFromQueue(int position) {
+		try {
+			return mBinder.removeFromQueue(position);
+		} catch (RemoteException e) {
+			return false;
+		}
+	}
+
 }

@@ -1,6 +1,8 @@
 package org.prx.android.playerhater.player;
 
 
+import org.prx.android.playerhater.util.Log;
+
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -73,6 +75,7 @@ public class Synchronous extends MediaPlayerDecorator implements
 			}
 			break;
 		default:
+			Log.d("About to reset with state " + getStateName());
 			reset();
 			try {
 				setDataSource(context, uri);

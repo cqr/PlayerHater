@@ -471,4 +471,13 @@ public class BoundPlayerHater extends PlayerHater {
 			return mPlayerHater.getQueuePosition();
 		}
 	}
+
+	@Override
+	public boolean removeFromQueue(int position) {
+		if (mPlayerHater == null) {
+			return sPlayQueue.remove(position);
+		} else {
+			return mPlayerHater.removeFromQueue(position);
+		}
+	}
 }

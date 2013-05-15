@@ -38,15 +38,17 @@ public abstract class PlayerHater implements IPlayerHater {
 
 	public static final String TAG = "PLAYERHATER";
 
-	public static final int TRACK_END = 4;
-	public static final int SKIP_BUTTON = 5;
+	public static final int TRACK_END = 0x0000001;
+	public static final int SKIP_BUTTON = 0x0000010;
+	public static final int ERROR = 0x0000100;
 
 	protected static final SongQueue sPlayQueue = new SongQueue();
 	protected static int sStartPosition = 0;
 	private static Context sApplicationContext;
 	protected static final PluginCollection sPluginCollection = new PluginCollection();
-	protected static final PlayerHaterPlugin sPlugin = new BackgroundedPlugin(sPluginCollection);
-	
+	protected static final PlayerHaterPlugin sPlugin = new BackgroundedPlugin(
+			sPluginCollection);
+
 	protected static String sPendingAlbumArtType;
 	protected static Uri sPendingAlbumArtUrl;
 	protected static OnErrorListener sPendingErrorListener;
@@ -257,6 +259,7 @@ public abstract class PlayerHater implements IPlayerHater {
 				handle.unbind();
 			}
 			sApplicationContext.unbindService(sServiceConnection);
+			BinderPlayerHater.detach();
 			sPlayerHater = null;
 		}
 
@@ -411,9 +414,11 @@ public abstract class PlayerHater implements IPlayerHater {
 				for (Song song : sPlayQueue.getSongsAfter()) {
 					sPlayerHater.enqueue(song);
 				}
-				
+
 				if (sShouldPlayOnConnection) {
-					sPlayerHater.play(sStartPosition);
+					if (sPlayerHater.getQueueLength() > 0) {
+						sPlayerHater.play(sStartPosition);
+					}
 					sShouldPlayOnConnection = false;
 				}
 

@@ -84,4 +84,8 @@ public interface PlayerHaterService {
 
 	void stopService(Song[] songs);
 
+	public abstract boolean removeFromQueue(int position);
+	
+	public abstract void releaseMediaPlayer();
+
 }

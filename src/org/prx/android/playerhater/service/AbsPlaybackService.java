@@ -4,7 +4,6 @@ import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
-import org.prx.android.playerhater.player.MediaPlayerWithState;
 import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.playerhater.ServicePlayerHater;
 import org.prx.android.playerhater.plugins.RemotePlugin;
@@ -34,8 +33,9 @@ public abstract class AbsPlaybackService extends Service implements
 	protected static final int REMOTE_PLUGIN = 2525;
 	public static String TAG = PlayerHater.TAG;
 	protected BroadcastReceiver mBroadcastReceiver;
-	protected PlayerHaterPlugin mPlugin;
+	private PlayerHaterPlugin mPlugin;
 	private Config mConfig;
+	private boolean mIsCreated = false;
 	private PluginCollection mPluginCollection;
 	private final PlayerHater mPlayerHater = new ServicePlayerHater(this);
 	private IRemotePlugin mPluginBinder;
@@ -44,8 +44,8 @@ public abstract class AbsPlaybackService extends Service implements
 	private final IPlayerHaterBinder.Stub mRemoteBinder = new IPlayerHaterBinder.Stub() {
 
 		@Override
-		public int enqueue(Uri uri, String title, String artist,
-				Uri albumArt, int tag) throws RemoteException {
+		public int enqueue(Uri uri, String title, String artist, Uri albumArt,
+				int tag) throws RemoteException {
 			Song song = new BasicSong(uri, title, artist, albumArt, tag);
 			new PhantomSongReference(song, mSongReferenceQueue);
 			return AbsPlaybackService.this.enqueue(song);
@@ -140,12 +140,12 @@ public abstract class AbsPlaybackService extends Service implements
 		@Override
 		public void setRemotePlugin(IRemotePlugin binder)
 				throws RemoteException {
-			mPluginCollection.remove(REMOTE_PLUGIN);
+			getPluginCollection().remove(REMOTE_PLUGIN);
 
 			if (binder != null) {
 				binder.onServiceBound(this);
 				mPluginBinder = binder;
-				mPluginCollection.add(new RemotePlugin(binder), REMOTE_PLUGIN);
+				getPluginCollection().add(new RemotePlugin(binder), REMOTE_PLUGIN);
 			}
 		}
 
@@ -183,7 +183,6 @@ public abstract class AbsPlaybackService extends Service implements
 		@Override
 		public void startForeground(int notificationNu,
 				Notification notification) throws RemoteException {
-			Log.d("Starting the notification");
 			AbsPlaybackService.this.startForeground(notificationNu,
 					notification);
 		}
@@ -208,6 +207,11 @@ public abstract class AbsPlaybackService extends Service implements
 		public int getQueuePosition() throws RemoteException {
 			return AbsPlaybackService.this.getQueuePosition();
 		}
+
+		@Override
+		public boolean removeFromQueue(int position) throws RemoteException {
+			return AbsPlaybackService.this.removeFromQueue(position);
+		}
 	};
 
 	abstract Player getMediaPlayer();
@@ -216,10 +220,10 @@ public abstract class AbsPlaybackService extends Service implements
 
 	@Override
 	public void onCreate() {
+		super.onCreate();
+		mIsCreated = true;
 		TAG = getPackageName() + "/PH/" + getClass().getSimpleName();
 		mBroadcastReceiver = new BroadcastReceiver(this, mRemoteBinder);
-		mPluginCollection = new PluginCollection();
-		mPlugin = mPluginCollection;
 		Intent intent = new Intent(getBaseContext(), getClass());
 		getBaseContext().startService(intent);
 	}
@@ -227,15 +231,37 @@ public abstract class AbsPlaybackService extends Service implements
 	@Override
 	public void onDestroy() {
 		onStopped();
+		mIsCreated = false;
 		mConfig = null;
-		mPlugin.onServiceStopping();
-		getMediaPlayer().release();
+		getPlugin().onServiceStopping();
+		releaseMediaPlayer();
+		mPluginCollection = null;
+		mPlugin = null;
 		getBaseContext().unregisterReceiver(mBroadcastReceiver);
+		super.onDestroy();
+	}
+	
+	protected PlayerHaterPlugin getPlugin() {
+		if (mPlugin == null) {
+			mPlugin = getPluginCollection();
+		}
+		return mPlugin;
+	}
+	
+	private PluginCollection getPluginCollection() {
+		if (mPluginCollection == null) {
+			mPluginCollection = new PluginCollection();
+		}
+		return mPluginCollection;
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
+		if (!mIsCreated) {
+			onCreate();
+		}
 		if (mConfig == null) {
+			
 			Config config = intent.getExtras().getParcelable(
 					PlayerHater.EXTRA_CONFIG);
 			if (config != null) {
@@ -260,8 +286,8 @@ public abstract class AbsPlaybackService extends Service implements
 				plugin.onPlayerHaterLoaded(getApplicationContext(),
 						mPlayerHater);
 				plugin.onServiceBound(mRemoteBinder);
-				mPluginCollection.add(plugin);
-				Log.d("Plugins: " + mPluginCollection.getSize());
+				getPluginCollection().add(plugin);
+				Log.d("Plugins: " + getPluginCollection().getSize());
 			} catch (Exception e) {
 				Log.e("Could not instantiate plugin "
 						+ pluginKlass.getCanonicalName(), e);
@@ -306,9 +332,9 @@ public abstract class AbsPlaybackService extends Service implements
 
 	@Override
 	public boolean isLoading() {
-		MediaPlayerWithState mp = getMediaPlayer();
-		return (mp.getState() == Player.INITIALIZED
-				|| mp.getState() == Player.PREPARING || mp.getState() == Player.PREPARED);
+		int state = getState();
+		return (state == Player.INITIALIZED || state == Player.PREPARING
+				|| state == Player.PREPARED || state == Player.LOADING_CONTENT || state == Player.PREPARING_CONTENT);
 	}
 
 	@Override
@@ -355,37 +381,37 @@ public abstract class AbsPlaybackService extends Service implements
 
 	@Override
 	public void addPluginInstance(PlayerHaterPlugin plugin) {
-		mPluginCollection.add(plugin);
+		getPluginCollection().add(plugin);
 	}
 
 	@Override
 	public void setSongInfo(Song song) {
-		mPlugin.onSongChanged(song);
+		getPlugin().onSongChanged(song);
 	}
 
 	@Override
 	public void setTitle(String title) {
-		mPlugin.onTitleChanged(title);
+		getPlugin().onTitleChanged(title);
 	}
 
 	@Override
 	public void setArtist(String artist) {
-		mPlugin.onArtistChanged(artist);
+		getPlugin().onArtistChanged(artist);
 	}
 
 	@Override
 	public void setAlbumArt(int resourceId) {
-		mPlugin.onAlbumArtChanged(resourceId);
+		getPlugin().onAlbumArtChanged(resourceId);
 	}
 
 	@Override
 	public void setAlbumArt(Uri url) {
-		mPlugin.onAlbumArtChangedToUri(url);
+		getPlugin().onAlbumArtChangedToUri(url);
 	}
 
 	@Override
 	public void setTransportControlFlags(int transportControlFlags) {
-		mPlugin.onTransportControlFlagsChanged(transportControlFlags);
+		getPlugin().onTransportControlFlagsChanged(transportControlFlags);
 	}
 
 	@Override
@@ -396,7 +422,7 @@ public abstract class AbsPlaybackService extends Service implements
 				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent pending = PendingIntent.getActivity(getBaseContext(),
 				456, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-		mPlugin.onIntentActivityChanged(pending);
+		getPlugin().onIntentActivityChanged(pending);
 	}
 
 	/* END Plug-In Stuff */
@@ -453,25 +479,25 @@ public abstract class AbsPlaybackService extends Service implements
 	/* Events for Subclasses */
 
 	protected void onStopped() {
-		mPlugin.onAudioStopped();
+		getPlugin().onAudioStopped();
 	}
 
 	protected void onPaused() {
-		mPlugin.onAudioPaused();
+		getPlugin().onAudioPaused();
 	}
 
 	protected void onLoading() {
-		mPlugin.onAudioLoading();
+		getPlugin().onAudioLoading();
 	}
 
 	protected void onStarted() {
-		mPlugin.onAudioStarted();
-		mPlugin.onSongChanged(getNowPlaying());
-		mPlugin.onDurationChanged(getDuration());
+		getPlugin().onAudioStarted();
+		getPlugin().onSongChanged(getNowPlaying());
+		getPlugin().onDurationChanged(getDuration());
 	}
 
 	protected void onResumed() {
-		mPlugin.onAudioResumed();
+		getPlugin().onAudioResumed();
 		clearSongReferences();
 	}
 

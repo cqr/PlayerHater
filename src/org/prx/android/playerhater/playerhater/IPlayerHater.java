@@ -324,4 +324,15 @@ public interface IPlayerHater {
 	 *         behind the playhead.
 	 */
 	abstract public int getQueuePosition();
+
+	/**
+	 * Removes the element at {@code position} from the play queue.
+	 * 
+	 * @param position
+	 *            the (non-zero-indexed) position of the item in the queue to
+	 *            remove.
+	 * @return true if the operation was successful, false if there are fewer
+	 *         than {@code position} items in the play queue.
+	 */
+	abstract public boolean removeFromQueue(int position);
 }

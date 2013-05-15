@@ -152,4 +152,9 @@ public class ServicePlayerHater extends PlayerHater {
 		return mService.getQueuePosition();
 	}
 
+	@Override
+	public boolean removeFromQueue(int position) {
+		return mService.removeFromQueue(position);
+	}
+
 }
