@@ -16,7 +16,9 @@
 package org.prx.android.playerhater.service;
 
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.plugins.IRemotePlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
+import org.prx.android.playerhater.plugins.PluginCollection;
 
 import android.app.Activity;
 import android.app.Notification;
@@ -102,5 +104,11 @@ public interface PlayerHaterService {
 	public abstract boolean removeFromQueue(int position);
 	
 	public abstract void releaseMediaPlayer();
+
+	public abstract void removeRemotePlugin();
+
+	public abstract void setPluginBinder(IRemotePlugin binder);
+
+	public abstract PluginCollection getPluginCollection();
 
 }

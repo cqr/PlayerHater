@@ -15,13 +15,12 @@
  ******************************************************************************/
 package org.prx.android.playerhater.service;
 
-import java.lang.ref.PhantomReference;
-import java.lang.ref.ReferenceQueue;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.player.Player;
+import org.prx.android.playerhater.playerhater.PlayerHaterBinderStub;
 import org.prx.android.playerhater.playerhater.ServicePlayerHater;
-import org.prx.android.playerhater.plugins.RemotePlugin;
+import org.prx.android.playerhater.playerhater.ThreadsafePlayerHater;
 import org.prx.android.playerhater.plugins.IRemotePlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.plugins.PluginCollection;
@@ -30,204 +29,27 @@ import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.Config;
 import org.prx.android.playerhater.util.Log;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.view.KeyEvent;
 
 public abstract class AbsPlaybackService extends Service implements
 		PlayerHaterService {
 
-	protected static final int REMOTE_PLUGIN = 2525;
+	public static final int REMOTE_PLUGIN = 2525;
 	public static String TAG = PlayerHater.TAG;
 	protected BroadcastReceiver mBroadcastReceiver;
 	private PlayerHaterPlugin mPlugin;
 	private Config mConfig;
 	private boolean mIsCreated = false;
 	private PluginCollection mPluginCollection;
-	private final PlayerHater mPlayerHater = new ServicePlayerHater(this);
+	private final PlayerHater mPlayerHater = new ThreadsafePlayerHater(new ServicePlayerHater(this));
 	private IRemotePlugin mPluginBinder;
-	private ReferenceQueue<Song> mSongReferenceQueue = new ReferenceQueue<Song>();
-
-	private final IPlayerHaterBinder.Stub mRemoteBinder = new IPlayerHaterBinder.Stub() {
-
-		@Override
-		public int enqueue(Uri uri, String title, String artist, Uri albumArt,
-				int tag) throws RemoteException {
-			Song song = new BasicSong(uri, title, artist, albumArt, tag);
-			new PhantomSongReference(song, mSongReferenceQueue);
-			return AbsPlaybackService.this.enqueue(song);
-		}
-
-		@Override
-		public boolean skipTo(int position) throws RemoteException {
-			return AbsPlaybackService.this.skipTo(position);
-		}
-
-		@Override
-		public boolean pause() throws RemoteException {
-			return AbsPlaybackService.this.pause();
-		}
-
-		@Override
-		public boolean stop() throws RemoteException {
-			return AbsPlaybackService.this.stop();
-		}
-
-		@Override
-		public boolean play(int startTime) throws RemoteException {
-			return AbsPlaybackService.this.play(startTime);
-		}
-
-		@Override
-		public boolean seekTo(int startTime) throws RemoteException {
-			return AbsPlaybackService.this.seekTo(startTime);
-		}
-
-		@Override
-		public void setAlbumArtResource(int resourceId) throws RemoteException {
-			AbsPlaybackService.this.setAlbumArt(resourceId);
-		}
-
-		@Override
-		public void setAlbumArtUrl(Uri albumArt) throws RemoteException {
-			AbsPlaybackService.this.setAlbumArt(albumArt);
-		}
-
-		@Override
-		public void setTitle(String title) throws RemoteException {
-			AbsPlaybackService.this.setTitle(title);
-		}
-
-		@Override
-		public void setArtist(String artist) throws RemoteException {
-			AbsPlaybackService.this.setArtist(artist);
-		}
-
-		@Override
-		public void setTransportControlFlags(int transportControlFlags)
-				throws RemoteException {
-			AbsPlaybackService.this
-					.setTransportControlFlags(transportControlFlags);
-
-		}
-
-		@Override
-		public int getDuration() throws RemoteException {
-			return AbsPlaybackService.this.getDuration();
-		}
-
-		@Override
-		public int getCurrentPosition() throws RemoteException {
-			return AbsPlaybackService.this.getCurrentPosition();
-		}
-
-		@Override
-		public int getNowPlayingTag() throws RemoteException {
-			if (getNowPlaying() != null) {
-				return ((BasicSong) getNowPlaying()).tag;
-			}
-			return 0;
-		}
-
-		@Override
-		public boolean isPlaying() throws RemoteException {
-			return AbsPlaybackService.this.isPlaying();
-		}
-
-		@Override
-		public boolean isLoading() throws RemoteException {
-			return AbsPlaybackService.this.isLoading();
-		}
-
-		@Override
-		public int getState() throws RemoteException {
-			return AbsPlaybackService.this.getState();
-		}
-
-		@Override
-		public void setRemotePlugin(IRemotePlugin binder)
-				throws RemoteException {
-			getPluginCollection().remove(REMOTE_PLUGIN);
-
-			if (binder != null) {
-				binder.onServiceBound(this);
-				mPluginBinder = binder;
-				getPluginCollection().add(new RemotePlugin(binder), REMOTE_PLUGIN);
-			}
-		}
-
-		@Override
-		public int getQueueLength() throws RemoteException {
-			return AbsPlaybackService.this.getQueueLength();
-		}
-
-		@Override
-		public void emptyQueue() throws RemoteException {
-			AbsPlaybackService.this.emptyQueue();
-		}
-
-		@Override
-		public boolean skip() throws RemoteException {
-			return AbsPlaybackService.this.skip();
-		}
-
-		@Override
-		public boolean skipBack() throws RemoteException {
-			return AbsPlaybackService.this.skipBack();
-		}
-
-		@Override
-		public boolean resume() throws RemoteException {
-			return AbsPlaybackService.this.play();
-		}
-
-		@Override
-		public void onRemoteControlButtonPressed(int keyCode) {
-			AbsPlaybackService.this.onRemoteControlButtonPressed(keyCode);
-		}
-
-		@TargetApi(Build.VERSION_CODES.ECLAIR)
-		@Override
-		public void startForeground(int notificationNu,
-				Notification notification) throws RemoteException {
-			AbsPlaybackService.this.startForeground(notificationNu,
-					notification);
-		}
-
-		@TargetApi(Build.VERSION_CODES.ECLAIR)
-		@Override
-		public void stopForeground(boolean fact) throws RemoteException {
-			AbsPlaybackService.this.stopForeground(fact);
-		}
-
-		@Override
-		public void duck() throws RemoteException {
-			AbsPlaybackService.this.duck();
-		}
-
-		@Override
-		public void unduck() throws RemoteException {
-			AbsPlaybackService.this.unduck();
-		}
-
-		@Override
-		public int getQueuePosition() throws RemoteException {
-			return AbsPlaybackService.this.getQueuePosition();
-		}
-
-		@Override
-		public boolean removeFromQueue(int position) throws RemoteException {
-			return AbsPlaybackService.this.removeFromQueue(position);
-		}
-	};
+	private PlayerHaterBinderStub mRemoteBinder;
 
 	abstract Player getMediaPlayer();
 
@@ -238,6 +60,7 @@ public abstract class AbsPlaybackService extends Service implements
 		super.onCreate();
 		mIsCreated = true;
 		TAG = getPackageName() + "/PH/" + getClass().getSimpleName();
+		mRemoteBinder = new PlayerHaterBinderStub(this);
 		mBroadcastReceiver = new BroadcastReceiver(this, mRemoteBinder);
 		Intent intent = new Intent(getBaseContext(), getClass());
 		getBaseContext().startService(intent);
@@ -255,15 +78,16 @@ public abstract class AbsPlaybackService extends Service implements
 		getBaseContext().unregisterReceiver(mBroadcastReceiver);
 		super.onDestroy();
 	}
-	
+
 	protected PlayerHaterPlugin getPlugin() {
 		if (mPlugin == null) {
 			mPlugin = getPluginCollection();
 		}
 		return mPlugin;
 	}
-	
-	private PluginCollection getPluginCollection() {
+
+	@Override
+	public PluginCollection getPluginCollection() {
 		if (mPluginCollection == null) {
 			mPluginCollection = new PluginCollection();
 		}
@@ -276,7 +100,7 @@ public abstract class AbsPlaybackService extends Service implements
 			onCreate();
 		}
 		if (mConfig == null) {
-			
+
 			Config config = intent.getExtras().getParcelable(
 					PlayerHater.EXTRA_CONFIG);
 			if (config != null) {
@@ -513,28 +337,15 @@ public abstract class AbsPlaybackService extends Service implements
 
 	protected void onResumed() {
 		getPlugin().onAudioResumed();
-		clearSongReferences();
 	}
 
 	/* END Events for Subclasses */
 
-	private void clearSongReferences() {
-		PhantomSongReference ref = (PhantomSongReference) mSongReferenceQueue
-				.poll();
-		if (ref != null) {
-			try {
-				mPluginBinder.releaseSong(ref.tag);
-			} catch (RemoteException e) {}
-		}
+	public void removeRemotePlugin() {
+		getPluginCollection().remove(REMOTE_PLUGIN);
 	}
 
-	private static class PhantomSongReference extends PhantomReference<Song> {
-		public final int tag;
-
-		public PhantomSongReference(Song r, ReferenceQueue<? super Song> q) {
-			super(r, q);
-			tag = ((BasicSong) r).tag;
-		}
-
+	public void setPluginBinder(IRemotePlugin binder) {
+		mPluginBinder = binder;
 	}
 }

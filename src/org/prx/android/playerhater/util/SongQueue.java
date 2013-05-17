@@ -20,7 +20,35 @@ import java.util.List;
 
 import org.prx.android.playerhater.Song;
 
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
+
 public class SongQueue {
+	
+	private static final Handler sHandler;
+	private static final int CURRENT_SONG = 1;
+	private static final int NEXT_SONG = 2;
+	
+	static {
+		HandlerThread thread = new HandlerThread("SongQueue");
+		thread.start();
+		
+		sHandler = new Handler(thread.getLooper()) {
+			
+			@Override
+			public void handleMessage(Message msg) {
+				switch(msg.what) {
+				case CURRENT_SONG:
+					((SongQueue) msg.obj).sendSongChanged();
+					break;
+				case NEXT_SONG:
+					((SongQueue) msg.obj).sendNextSongChanged();
+				}
+			}
+			
+		};
+	}
 
 	public interface OnQeueuedSongsChangedListener {
 		public void onNowPlayingChanged(Song nowPlaying);
@@ -31,158 +59,171 @@ public class SongQueue {
 	private int mPlayheadPosition = -1;
 	private final List<Song> mSongs = new ArrayList<Song>();
 
+	private Object mPlayheadLock = new Object();
+
 	private Song mNextSongWas = null;
 	private Song mCurrentSongWas = null;
 	private OnQeueuedSongsChangedListener mListener;
 
-	public void setQueuedSongsChangedListener(
+	public synchronized void setQueuedSongsChangedListener(
 			OnQeueuedSongsChangedListener listener) {
 		mListener = listener;
 	}
 
-	public int appendSong(Song song) {
+	public synchronized int appendSong(Song song) {
 		addSongAtPosition(song, mSongs.size());
-		return mSongs.size() - mPlayheadPosition;
+		return mSongs.size() - getPlayheadPosition();
 	}
 
-	public void addSongAtPosition(Song song, int position) {
+	public synchronized void addSongAtPosition(Song song, int position) {
 		mSongs.add(position, song);
 		songOrderChanged();
 	}
 
-	public Song next() {
-		mPlayheadPosition += 1;
-		if (mPlayheadPosition > mSongs.size()) {
-			mPlayheadPosition = 1;
+	public synchronized Song next() {
+		return next(true);
+	}
+
+	public synchronized Song back() {
+		setPlayheadPosition(getPlayheadPosition() - 1);
+		if (getPlayheadPosition() <= 0) {
+			setPlayheadPosition(1);
 		}
 		songOrderChanged();
 		return getNowPlaying();
 	}
-	
-	public Song back() {
-		mPlayheadPosition -= 1;
-		if (mPlayheadPosition <= 0) {
-			mPlayheadPosition = 1;
-		}
-		songOrderChanged();
-		return getNowPlaying();
-	}
-	
-	public void skipToEnd() {
-		mPlayheadPosition = mSongs.size();
+
+	public synchronized void skipToEnd() {
+		setPlayheadPosition(mSongs.size());
 		songOrderChanged();
 	}
-	
-	public boolean isAtLastSong() {
-		return mPlayheadPosition == mSongs.size();
+
+	public synchronized boolean isAtLastSong() {
+		return getPlayheadPosition() == mSongs.size();
 	}
 
-	public Song getNowPlaying() {
-		if (mPlayheadPosition <= 0) {
+	public synchronized Song getNowPlaying() {
+		if (getPlayheadPosition() <= 0) {
 			return null;
 		}
-		return mSongs.get(mPlayheadPosition - 1);
+		return mSongs.get(getPlayheadPosition() - 1);
 	}
 
-	public Song peekNextSong() {
-		if (mPlayheadPosition == -1) {
+	public synchronized Song peekNextSong() {
+		if (getPlayheadPosition() == -1) {
 			return null;
 		}
-		if (mPlayheadPosition == mSongs.size()) {
+		if (getPlayheadPosition() >= size()) {
 			return null;
 		}
-		return mSongs.get(mPlayheadPosition);
+		try {
+			return mSongs.get(getPlayheadPosition());
+		} catch (IndexOutOfBoundsException e) {
+			return null;
+		}
 	}
 
-	public void empty() {
+	public synchronized void empty() {
 		mSongs.clear();
-		mPlayheadPosition = -1;
+		setPlayheadPosition(-1);
 		songOrderChanged();
 	}
 
 	private void songOrderChanged() {
+		songOrderChanged(true);
+	}
+
+	private void songOrderChanged(boolean notify) {
 		if (mSongs.size() > 0) {
-			if (mPlayheadPosition == -1) {
-				mPlayheadPosition = 1;
+			if (getPlayheadPosition() == -1) {
+				setPlayheadPosition(1);
 			}
 
 			if (mCurrentSongWas == null || mCurrentSongWas != getNowPlaying()) {
-				currentSongChanged();
+				currentSongChanged(notify);
 			}
 			if (mSongs.size() > 1) {
 				if (mNextSongWas == null || mNextSongWas != peekNextSong()) {
-					nextSongChanged();
+					nextSongChanged(notify);
 				}
 			} else if (mNextSongWas != null) {
-				nextSongChanged();
+				nextSongChanged(notify);
 			}
 		} else {
 			if (mCurrentSongWas != null) {
-				currentSongChanged();
+				currentSongChanged(notify);
 			}
 			if (mNextSongWas != null) {
-				nextSongChanged();
+				nextSongChanged(notify);
 			}
 		}
 	}
 
-	private void currentSongChanged() {
+	private void currentSongChanged(boolean notify) {
 		mCurrentSongWas = getNowPlaying();
-		if (mListener != null && mCurrentSongWas != null)
-			mListener.onNowPlayingChanged(mCurrentSongWas);
+		if (notify && mListener != null && mCurrentSongWas != null)
+			sHandler.obtainMessage(CURRENT_SONG, this).sendToTarget();
+	}
+	
+	private void sendSongChanged() {
+		mListener.onNowPlayingChanged(mCurrentSongWas);
 	}
 
-	private void nextSongChanged() {
+	private void nextSongChanged(boolean notify) {
 		mNextSongWas = peekNextSong();
-		if (mListener != null)
-			mListener.onNextSongChanged(mNextSongWas);
+		if (notify && mListener != null)
+			sHandler.obtainMessage(NEXT_SONG, this).sendToTarget();
+	}
+	
+	private void sendNextSongChanged() {
+		mListener.onNextSongChanged(mNextSongWas);
 	}
 
-	public boolean skipTo(int position) {
+	public synchronized boolean skipTo(int position) {
 		if (position <= mSongs.size()) {
 			if (position < 0) {
 				position = mSongs.size() + position + 1;
 			}
-			mPlayheadPosition = position;
+			setPlayheadPosition(position);
 			songOrderChanged();
 			return true;
 		}
 		return false;
 	}
 
-	public List<Song> getSongsBefore() {
+	public synchronized List<Song> getSongsBefore() {
 		List<Song> songs = new ArrayList<Song>();
-		if (mPlayheadPosition > 1) {
-			for (int i=1; i < mPlayheadPosition; i++) {
-				songs.add(mSongs.get(i-1));
-			}
-		}
-		return songs;
-	}
-	
-	public List<Song> getSongsAfter() {
-		List<Song> songs = new ArrayList<Song>();
-		if (mPlayheadPosition > 0 && !isAtLastSong()) {
-			for (int i=mPlayheadPosition+1; i <= mSongs.size(); i++) {
-				songs.add(mSongs.get(i-1));
+		if (getPlayheadPosition() > 1) {
+			for (int i = 1; i < getPlayheadPosition(); i++) {
+				songs.add(mSongs.get(i - 1));
 			}
 		}
 		return songs;
 	}
 
-	public int size() {
+	public synchronized List<Song> getSongsAfter() {
+		List<Song> songs = new ArrayList<Song>();
+		if (getPlayheadPosition() > 0 && !isAtLastSong()) {
+			for (int i = getPlayheadPosition() + 1; i <= mSongs.size(); i++) {
+				songs.add(mSongs.get(i - 1));
+			}
+		}
+		return songs;
+	}
+
+	public synchronized int size() {
 		return mSongs.size();
 	}
 
-	public Song[] toArray() {
-		return mSongs.toArray(new Song[size()-1]);
+	public synchronized Song[] toArray() {
+		return mSongs.toArray(new Song[size() - 1]);
 	}
 
-	public int getPosition() {
-		return mPlayheadPosition - 1;
+	public synchronized int getPosition() {
+		return getPlayheadPosition() - 1;
 	}
 
-	public boolean remove(int position) {
+	public synchronized boolean remove(int position) {
 		if (mSongs.size() < position) {
 			return false;
 		} else {
@@ -190,6 +231,32 @@ public class SongQueue {
 			songOrderChanged();
 			return true;
 		}
+	}
+
+	public synchronized void forward() {
+		setPlayheadPosition(getPlayheadPosition() + 1);
+		if (getPlayheadPosition() > mSongs.size()) {
+			setPlayheadPosition(1);
+		}
+		mCurrentSongWas = getNowPlaying();
+		nextSongChanged(true);
+	}
+
+	public synchronized Song next(boolean notifyChanges) {
+		setPlayheadPosition(getPlayheadPosition() + 1);
+		if (getPlayheadPosition() > mSongs.size()) {
+			setPlayheadPosition(1);
+		}
+		songOrderChanged(notifyChanges);
+		return getNowPlaying();
+	}
+
+	private int getPlayheadPosition() {
+		return mPlayheadPosition;
+	}
+
+	private void setPlayheadPosition(int playheadPosition) {
+		mPlayheadPosition = playheadPosition;
 	}
 
 }

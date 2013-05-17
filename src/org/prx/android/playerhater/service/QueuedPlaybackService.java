@@ -39,11 +39,12 @@ import android.view.KeyEvent;
 
 @SuppressWarnings("unused")
 public class QueuedPlaybackService extends AbsPlaybackService implements
-		OnQeueuedSongsChangedListener, OnCompletionListener, OnErrorListener {
+		OnQeueuedSongsChangedListener, OnCompletionListener {
 
 	private final SongQueue mSongQueue = new SongQueue();
 	private Player mCurrentMediaPlayer;
 	private Player mNextPlayer;
+	private boolean mRollingOver;
 	private PlayerHaterPlugin mPlugin;
 	private OnCompletionListener mOnCompletionListener;
 
@@ -196,7 +197,11 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 
 	@Override
 	public synchronized void onNowPlayingChanged(Song nowPlaying) {
-		play(nowPlaying, 0);
+		if (mRollingOver) {
+			mRollingOver = false;
+		} else {
+			play(nowPlaying, 0);
+		}
 		mPlugin.onSongChanged(nowPlaying);
 	}
 
@@ -229,9 +234,8 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 
 	@Override
 	public synchronized boolean skip() {
-		Song currentSong = getNowPlaying();
+		mPlugin.onSongFinished(getNowPlaying(), PlayerHater.SKIP_BUTTON);
 		mSongQueue.next();
-		mPlugin.onSongFinished(currentSong, PlayerHater.SKIP_BUTTON);
 		return true;
 	}
 
@@ -268,33 +272,33 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 
 	/* Listeners */
 
-	@Override
-	public boolean onError(MediaPlayer mediaPlayer, int arg1, int arg2) {
-		if (getMediaPlayer().equals(mediaPlayer)) {
-			mPlugin.onSongFinished(getNowPlaying(), PlayerHater.ERROR);
-			mediaPlayer.reset();
-			Player oldPlayer = mCurrentMediaPlayer;
-			mCurrentMediaPlayer = getNextPlayer();
-			mNextPlayer = oldPlayer;
-			mNextPlayer.reset();
-			mSongQueue.next();
-			return true;
-		} else if (getNextPlayer().equals(mediaPlayer)) {
-			mSongQueue.remove(mSongQueue.getPosition() + 1);
-			return true;
-		}
-		return false;
-	}
+//	@Override
+//	public boolean onError(MediaPlayer mediaPlayer, int arg1, int arg2) {
+//		// if (getMediaPlayer().equals(mediaPlayer)) {
+//		// mPlugin.onSongFinished(getNowPlaying(), PlayerHater.ERROR);
+//		// mediaPlayer.reset();
+//		// Player oldPlayer = mCurrentMediaPlayer;
+//		// mCurrentMediaPlayer = getNextPlayer();
+//		// mNextPlayer = oldPlayer;
+//		// mNextPlayer.reset();
+//		// mSongQueue.next();
+//		// return true;
+//		// } else if (getNextPlayer().equals(mediaPlayer)) {
+//		// mSongQueue.remove(mSongQueue.getPosition() + 1);
+//		// return true;
+//		// }
+//		return false;
+//	}
 
 	@Override
 	public synchronized void onCompletion(MediaPlayer mp) {
 		if (getMediaPlayer().equals(mp)) {
 			mPlugin.onSongFinished(getNowPlaying(), PlayerHater.TRACK_END);
-			mp.reset();
 			Player oldPlayer = mCurrentMediaPlayer;
 			mCurrentMediaPlayer = getNextPlayer();
 			mNextPlayer = oldPlayer;
 			mNextPlayer.reset();
+			mSongQueue.forward();
 		}
 	}
 
@@ -323,7 +327,7 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 		newPlayer = wakeLocked(newPlayer, getApplicationContext());
 		newPlayer = gapless(newPlayer);
 		newPlayer.setOnCompletionListener(this);
-		newPlayer.setOnErrorListener(this);
+//		newPlayer.setOnErrorListener(this);
 		return newPlayer;
 	}
 
