@@ -28,6 +28,7 @@ import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.Config;
 import org.prx.android.playerhater.util.Log;
+import org.prx.android.playerhater.util.RemoteSong;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -47,7 +48,8 @@ public abstract class AbsPlaybackService extends Service implements
 	private Config mConfig;
 	private boolean mIsCreated = false;
 	private PluginCollection mPluginCollection;
-	private final PlayerHater mPlayerHater = new ThreadsafePlayerHater(new ServicePlayerHater(this));
+	private final PlayerHater mPlayerHater = new ThreadsafePlayerHater(
+			new ServicePlayerHater(this));
 	private IRemotePlugin mPluginBinder;
 	private PlayerHaterBinderStub mRemoteBinder;
 
@@ -146,7 +148,7 @@ public abstract class AbsPlaybackService extends Service implements
 		int[] songTags = new int[songs.length];
 		int i = 0;
 		for (Song song : songs) {
-			songTags[i] = ((BasicSong) song).tag;
+			songTags[i] = ((RemoteSong) song).getTag();
 			i++;
 		}
 		try {

@@ -26,7 +26,6 @@ public class BasicSong implements Song {
 	private final String mArtist;
 	private final Uri mAlbumArt;
 	private final Bundle mBundle = new Bundle();
-	public int tag;
 
 	public static final String URL = "url";
 	public static final String ARTIST = "artist";
@@ -61,13 +60,9 @@ public class BasicSong implements Song {
 		mAlbumArt = albumArt;
 	}
 
-	public BasicSong(Uri url, String title, String artist, Uri albumArt, int tag) {
-		this(url, title, artist, albumArt);
-		this.tag = tag;
-	}
-
 	public BasicSong(Song song) {
-		this(song.getUri(), song.getTitle(), song.getArtist(), song.getAlbumArt());
+		this(song.getUri(), song.getTitle(), song.getArtist(), song
+				.getAlbumArt());
 	}
 
 	public Bundle putBundle(Bundle bundle) {
@@ -100,9 +95,10 @@ public class BasicSong implements Song {
 	public Uri getAlbumArt() {
 		return mAlbumArt;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "BasicSong{ '" + getTitle() + "' by '" + getArtist() + "' (" + getUri() + ") }"; 
+		return "BasicSong{ '" + getTitle() + "' by '" + getArtist() + "' ("
+				+ getUri() + ") }";
 	}
 }

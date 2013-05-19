@@ -19,7 +19,6 @@ import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.IRemotePlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.plugins.PluginCollection;
-
 import android.app.Activity;
 import android.app.Notification;
 import android.content.Context;
@@ -59,9 +58,9 @@ public interface PlayerHaterService {
 	public abstract void setAlbumArt(Uri url);
 
 	public abstract int enqueue(Song song);
-	
+
 	public abstract int getQueueLength();
-	
+
 	public abstract int getQueuePosition();
 
 	public abstract boolean skipTo(int position);
@@ -102,7 +101,7 @@ public interface PlayerHaterService {
 	void stopService(Song[] songs);
 
 	public abstract boolean removeFromQueue(int position);
-	
+
 	public abstract void releaseMediaPlayer();
 
 	public abstract void removeRemotePlugin();

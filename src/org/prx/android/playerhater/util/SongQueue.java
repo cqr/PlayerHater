@@ -25,20 +25,20 @@ import android.os.HandlerThread;
 import android.os.Message;
 
 public class SongQueue {
-	
+
 	private static final Handler sHandler;
 	private static final int CURRENT_SONG = 1;
 	private static final int NEXT_SONG = 2;
-	
+
 	static {
 		HandlerThread thread = new HandlerThread("SongQueue");
 		thread.start();
-		
+
 		sHandler = new Handler(thread.getLooper()) {
-			
+
 			@Override
 			public void handleMessage(Message msg) {
-				switch(msg.what) {
+				switch (msg.what) {
 				case CURRENT_SONG:
 					((SongQueue) msg.obj).sendSongChanged();
 					break;
@@ -46,7 +46,7 @@ public class SongQueue {
 					((SongQueue) msg.obj).sendNextSongChanged();
 				}
 			}
-			
+
 		};
 	}
 
@@ -58,8 +58,6 @@ public class SongQueue {
 
 	private int mPlayheadPosition = -1;
 	private final List<Song> mSongs = new ArrayList<Song>();
-
-	private Object mPlayheadLock = new Object();
 
 	private Song mNextSongWas = null;
 	private Song mCurrentSongWas = null;
@@ -164,7 +162,7 @@ public class SongQueue {
 		if (notify && mListener != null && mCurrentSongWas != null)
 			sHandler.obtainMessage(CURRENT_SONG, this).sendToTarget();
 	}
-	
+
 	private void sendSongChanged() {
 		mListener.onNowPlayingChanged(mCurrentSongWas);
 	}
@@ -174,7 +172,7 @@ public class SongQueue {
 		if (notify && mListener != null)
 			sHandler.obtainMessage(NEXT_SONG, this).sendToTarget();
 	}
-	
+
 	private void sendNextSongChanged() {
 		mListener.onNextSongChanged(mNextSongWas);
 	}
@@ -224,7 +222,7 @@ public class SongQueue {
 	}
 
 	public synchronized boolean remove(int position) {
-		if (mSongs.size() < position) {
+		if (position < 1 || mSongs.size() < position) {
 			return false;
 		} else {
 			mSongs.remove(position - 1);

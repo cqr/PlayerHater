@@ -313,15 +313,15 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	}
 
 	private boolean shouldHandleMessage(int messageId) {
-		if (Looper.myLooper() == mLooper
-				&& mForegroundActions.contains(messageId)) {
-			return true;
-		} else if (Looper.myLooper() != mLooper
-				&& !mForegroundActions.contains(messageId)) {
-			return true;
-		} else {
-			return false;
-		}
+		// if (Looper.myLooper() == mLooper
+		// && mForegroundActions.contains(messageId)) {
+		// return true;
+		// } else if (Looper.myLooper() != mLooper
+		// && !mForegroundActions.contains(messageId)) {
+		// return true;
+		// } else {
+		return false;
+		// }
 	}
 
 	private static class TargetableHandler extends Handler {

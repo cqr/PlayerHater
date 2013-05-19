@@ -6,7 +6,6 @@ import org.prx.android.playerhater.plugins.RemotePlugin;
 import org.prx.android.playerhater.service.AbsPlaybackService;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.service.PlayerHaterService;
-import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.RemoteSong;
 
 import android.annotation.TargetApi;
@@ -96,7 +95,7 @@ public class PlayerHaterBinderStub extends IPlayerHaterBinder.Stub {
 
 	@Override
 	public int getNowPlayingTag() throws RemoteException {
-		return ((BasicSong) mPlayerHater.nowPlaying()).tag;
+		return ((RemoteSong) mPlayerHater.nowPlaying()).getTag();
 	}
 
 	@Override

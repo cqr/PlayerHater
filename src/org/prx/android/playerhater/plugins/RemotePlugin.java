@@ -18,7 +18,7 @@ package org.prx.android.playerhater.plugins;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
-import org.prx.android.playerhater.util.BasicSong;
+import org.prx.android.playerhater.util.RemoteSong;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -54,14 +54,14 @@ public class RemotePlugin implements PlayerHaterPlugin {
 	@Override
 	public void onSongChanged(Song song) {
 		try {
-			mBinder.onSongChanged(((BasicSong) song).tag);
+			mBinder.onSongChanged(((RemoteSong) song).getTag());
 		} catch (RemoteException e) {}
 	}
 
 	@Override
 	public void onSongFinished(Song song, int reason) {
 		try {
-			mBinder.onSongFinished(((BasicSong) song).tag, reason);
+			mBinder.onSongFinished(((RemoteSong) song).getTag(), reason);
 		} catch (RemoteException e) {}
 	}
 
@@ -156,7 +156,7 @@ public class RemotePlugin implements PlayerHaterPlugin {
 	@Override
 	public void onNextSongAvailable(Song nextTrack) {
 		try {
-			mBinder.onNextSongAvailable(((BasicSong) nextTrack).tag);
+			mBinder.onNextSongAvailable(((RemoteSong) nextTrack).getTag());
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
