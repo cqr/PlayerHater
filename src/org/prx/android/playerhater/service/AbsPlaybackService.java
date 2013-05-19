@@ -24,7 +24,6 @@ import org.prx.android.playerhater.playerhater.ThreadsafePlayerHater;
 import org.prx.android.playerhater.plugins.IRemotePlugin;
 import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import org.prx.android.playerhater.plugins.PluginCollection;
-import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.BroadcastReceiver;
 import org.prx.android.playerhater.util.Config;
 import org.prx.android.playerhater.util.Log;
