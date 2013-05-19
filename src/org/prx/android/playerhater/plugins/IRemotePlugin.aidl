@@ -7,6 +7,14 @@ interface IRemotePlugin {
 
 	void onUnbindRequested(in int[] songQueue);
 	
+	String getSongTitle(int songTag);
+	
+	String getSongArtist(int songTag);
+	
+	Uri getSongAlbumArt(int songTag);
+	
+	Uri getSongUri(int songTag);
+	
 	void onSongChanged(int songTag);
 	
 	void onSongFinished(int songTag, int reason);

@@ -9,7 +9,7 @@ interface IPlayerHaterBinder {
 
 	void setRemotePlugin(IRemotePlugin binder);
 
-	int enqueue(in Uri uri, String title, String artist, in Uri albumArt, int tag);
+	int enqueue(int songTag);
 	int getQueueLength();
 	int getQueuePosition();
 	boolean removeFromQueue(int position);

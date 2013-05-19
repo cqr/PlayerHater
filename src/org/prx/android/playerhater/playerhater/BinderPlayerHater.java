@@ -115,8 +115,7 @@ public class BinderPlayerHater extends PlayerHater {
 	@Override
 	public int enqueue(Song song) {
 		try {
-			return mBinder.enqueue(song.getUri(), song.getTitle(),
-					song.getArtist(), song.getAlbumArt(), tagSong(song));
+			return mBinder.enqueue(tagSong(song));
 		} catch (RemoteException e) {
 			return -1;
 		}

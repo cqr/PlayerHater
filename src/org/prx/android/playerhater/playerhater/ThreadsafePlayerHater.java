@@ -11,6 +11,7 @@ import android.os.HandlerThread;
 public class ThreadsafePlayerHater extends PlayerHater {
 
 	private static HandlerThread sThread;
+	private static Handler sHandler;
 
 	private final PlayerHater mPlayerHater;
 	private final Handler mHandler;
@@ -22,7 +23,7 @@ public class ThreadsafePlayerHater extends PlayerHater {
 	public ThreadsafePlayerHater(PlayerHater playerHater, Handler handler) {
 		mPlayerHater = playerHater;
 		if (handler == null) {
-			handler = new Handler(getHandlerThread().getLooper());
+			handler = getDefaultHandler();
 		}
 		mHandler = handler;
 	}
@@ -33,6 +34,13 @@ public class ThreadsafePlayerHater extends PlayerHater {
 			sThread.start();
 		}
 		return sThread;
+	}
+
+	private static Handler getDefaultHandler() {
+		if (sHandler == null) {
+			sHandler = new Handler(getHandlerThread().getLooper());
+		}
+		return sHandler;
 	}
 
 	@Override

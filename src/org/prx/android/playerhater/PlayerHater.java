@@ -376,6 +376,26 @@ public abstract class PlayerHater implements IPlayerHater {
 		public void releaseSong(int songTag) throws RemoteException {
 			sPlayerHater.releaseSong(songTag);
 		}
+
+		@Override
+		public String getSongTitle(int songTag) throws RemoteException {
+			return sPlayerHater.getSong(songTag).getTitle();
+		}
+
+		@Override
+		public String getSongArtist(int songTag) throws RemoteException {
+			return sPlayerHater.getSong(songTag).getArtist();
+		}
+
+		@Override
+		public Uri getSongAlbumArt(int songTag) throws RemoteException {
+			return sPlayerHater.getSong(songTag).getAlbumArt();
+		}
+
+		@Override
+		public Uri getSongUri(int songTag) throws RemoteException {
+			return sPlayerHater.getSong(songTag).getUri();
+		}
 	};
 
 	protected static final ServiceConnection sServiceConnection = new ServiceConnection() {

@@ -1,16 +1,13 @@
 package org.prx.android.playerhater.playerhater;
 
-import java.lang.ref.PhantomReference;
-import java.lang.ref.ReferenceQueue;
-
 import org.prx.android.playerhater.PlayerHater;
-import org.prx.android.playerhater.Song;
 import org.prx.android.playerhater.plugins.IRemotePlugin;
 import org.prx.android.playerhater.plugins.RemotePlugin;
 import org.prx.android.playerhater.service.AbsPlaybackService;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.service.PlayerHaterService;
 import org.prx.android.playerhater.util.BasicSong;
+import org.prx.android.playerhater.util.RemoteSong;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
@@ -20,23 +17,19 @@ import android.os.RemoteException;
 
 public class PlayerHaterBinderStub extends IPlayerHaterBinder.Stub {
 
-	private final ReferenceQueue<Song> mSongReferenceQueue;
 	private final PlayerHater mPlayerHater;
 	private final PlayerHaterService mService;
+	private IRemotePlugin mSongHost;
 
 	public PlayerHaterBinderStub(PlayerHaterService service) {
 		mPlayerHater = new ThreadsafePlayerHater(
 				new ServicePlayerHater(service));
 		mService = service;
-		mSongReferenceQueue = new ReferenceQueue<Song>();
 	}
 
 	@Override
-	public int enqueue(Uri uri, String title, String artist, Uri albumArt,
-			int tag) throws RemoteException {
-		final Song song = new BasicSong(uri, title, artist, albumArt, tag);
-		new PhantomSongReference(song, mSongReferenceQueue);
-		return mPlayerHater.enqueue(song);
+	public int enqueue(int songTag) throws RemoteException {
+		return mPlayerHater.enqueue(new RemoteSong(mSongHost, songTag));
 	}
 
 	@Override
@@ -123,6 +116,8 @@ public class PlayerHaterBinderStub extends IPlayerHaterBinder.Stub {
 
 	@Override
 	public void setRemotePlugin(IRemotePlugin binder) throws RemoteException {
+		mSongHost = binder;
+
 		mService.removeRemotePlugin();
 
 		if (binder != null) {
@@ -196,17 +191,6 @@ public class PlayerHaterBinderStub extends IPlayerHaterBinder.Stub {
 	@Override
 	public boolean removeFromQueue(final int position) throws RemoteException {
 		return mPlayerHater.removeFromQueue(position);
-	}
-
-	private static class PhantomSongReference extends PhantomReference<Song> {
-		@SuppressWarnings("unused")
-		public final int tag;
-
-		public PhantomSongReference(Song r, ReferenceQueue<? super Song> q) {
-			super(r, q);
-			tag = ((BasicSong) r).tag;
-		}
-
 	}
 
 }
