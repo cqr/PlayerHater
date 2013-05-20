@@ -31,6 +31,8 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
 	private RemoteControlClient mRemoteControlClient;
 	private Bitmap mAlbumArt;
+	private String mArtist;
+	private String mTitle;
 
 	private int mTransportControlFlags = RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
 			| RemoteControlClient.FLAG_KEY_MEDIA_STOP
@@ -66,15 +68,8 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 			onAlbumArtChangedToUri(song.getAlbumArt());
 		}
 
-		getRemoteControlClient()
-				.editMetadata(true)
-				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE,
-						song.getTitle())
-				.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST,
-						song.getArtist())
-				.putBitmap(
-						RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
-						mAlbumArt).apply();
+		onTitleChanged(song.getTitle());
+		onArtistChanged(song.getArtist());
 	}
 
 	@Override
@@ -86,30 +81,38 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
 	@Override
 	public void onTitleChanged(String title) {
-		getRemoteControlClient().editMetadata(false)
-				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, title)
-				.apply();
+		mTitle = title;
 	}
 
 	@Override
 	public void onArtistChanged(String artist) {
-		getRemoteControlClient().editMetadata(false)
-				.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, artist)
-				.apply();
+		mArtist = artist;
 	}
 
 	@Override
 	public void onAlbumArtChanged(int resourceId) {
-		if (getContext() != null) {
-			mAlbumArt = BitmapFactory.decodeResource(getContext()
-					.getResources(), resourceId);
-		}
+		mAlbumArt = BitmapFactory.decodeResource(getContext().getResources(),
+				resourceId);
+		getRemoteControlClient().editMetadata(false).putBitmap(
+				RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
+				mAlbumArt);
 	}
 
 	@Override
 	public void onAlbumArtChangedToUri(Uri url) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void onChangesComplete() {
+		getRemoteControlClient()
+				.editMetadata(false)
+				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, mTitle)
+				.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, mArtist)
+				.putBitmap(
+						RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
+						mAlbumArt).apply();
 	}
 
 	private RemoteControlClient getRemoteControlClient() {

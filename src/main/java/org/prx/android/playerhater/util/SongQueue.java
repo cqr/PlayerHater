@@ -132,27 +132,31 @@ public class SongQueue {
 	}
 
 	private void songOrderChanged(boolean notify) {
+		songOrderChanged(notify, notify);
+	}
+
+	private void songOrderChanged(boolean notifyCurrent, boolean notifyNext) {
 		if (mSongs.size() > 0) {
 			if (getPlayheadPosition() == -1) {
 				setPlayheadPosition(1);
 			}
 
 			if (mCurrentSongWas == null || mCurrentSongWas != getNowPlaying()) {
-				currentSongChanged(notify);
+				currentSongChanged(notifyCurrent);
 			}
 			if (mSongs.size() > 1) {
 				if (mNextSongWas == null || mNextSongWas != peekNextSong()) {
-					nextSongChanged(notify);
+					nextSongChanged(notifyNext);
 				}
 			} else if (mNextSongWas != null) {
-				nextSongChanged(notify);
+				nextSongChanged(notifyNext);
 			}
 		} else {
 			if (mCurrentSongWas != null) {
-				currentSongChanged(notify);
+				currentSongChanged(notifyCurrent);
 			}
 			if (mNextSongWas != null) {
-				nextSongChanged(notify);
+				nextSongChanged(notifyNext);
 			}
 		}
 	}
@@ -236,8 +240,7 @@ public class SongQueue {
 		if (getPlayheadPosition() > mSongs.size()) {
 			setPlayheadPosition(1);
 		}
-		mCurrentSongWas = getNowPlaying();
-		nextSongChanged(true);
+		songOrderChanged(false, true);
 	}
 
 	public synchronized Song next(boolean notifyChanges) {
