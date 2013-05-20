@@ -8,3 +8,7 @@ local.properties
 .DS_Store
 .gradle
 build
+.idea
+gradle
+gradlew
+PlayerHater.iml
