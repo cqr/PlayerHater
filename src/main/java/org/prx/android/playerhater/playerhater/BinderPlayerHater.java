@@ -265,6 +265,9 @@ public class BinderPlayerHater extends PlayerHater {
 	}
 
 	public Song getSong(int nowPlayingTag) {
+		if (nowPlayingTag == -1) {
+			return null;
+		}
 		Song song = mSongs.get(nowPlayingTag);
 		if (song == null) {
 			stop();

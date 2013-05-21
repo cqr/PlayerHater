@@ -110,7 +110,12 @@ public class PlayerHaterBinderStub extends IPlayerHaterBinder.Stub {
 
 	@Override
 	public int getNowPlayingTag() throws RemoteException {
-		return ((RemoteSong) mPlayerHater.nowPlaying()).getTag();
+		RemoteSong song = (RemoteSong) mPlayerHater.nowPlaying();
+		if (song != null) {
+			return song.getTag();
+		} else {
+			return -1;
+		}
 	}
 
 	@Override
