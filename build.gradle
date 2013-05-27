@@ -1,3 +1,7 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'android-library'
+
 buildscript {
     repositories {
         mavenCentral()
@@ -6,12 +10,87 @@ buildscript {
         classpath 'com.android.tools.build:gradle:0.4'
     }
 }
-apply plugin: 'android-library'
 
-dependencies {
+signing {
+  sign configurations.archives
 }
 
 android {
     buildToolsVersion "17"
     compileSdkVersion 16
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+        authentication(userName: sonatypeUserName, password: sonatypePassword)
+      }
+        
+      pom.project {
+        version '2.1.0-SNAPSHOT'
+        artifactId 'android.playerhater'
+        groupId 'org.prx'
+
+        name 'PlayerHater'
+        description 'Android library for playing back longform audio such as music or podcasts with player controls.'
+        
+        url 'http://github.com/PRX/PlayerHater'
+
+        scm {
+          url 'https://github.com/PRX/PlayerHater/'
+          connection 'scm:git:git://github.com/PRX/PlayerHater.git'
+          developerConnection 'scm:git:git@github.com:PRX/PlayerHater.git'
+          tag 'HEAD'
+        }
+
+        developers {
+          developer {
+            name 'Chris Rhoden'
+            email 'carhoden@gmail.com'
+            id 'chrisrhoden'
+            url 'http://chrisrhoden.com'
+            timezone '-5'
+            roles {
+              role 'developer'
+            }
+          }
+          developer {
+            name 'Rebecca Nesson'
+            id 'rebeccanesson'
+            timezone '-5'
+            roles {
+              role 'developer'
+            }
+          }
+        }
+
+        organization {
+          name 'PRX'
+          url 'http://prx.org'
+        }
+
+        issueManagement {
+          system 'GitHub Issues'
+          url 'https://github.com/PRX/PlayerHater/issues'
+        }
+
+        licenses {
+          license {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
+          }
+        }
+
+        parent {
+          groupId 'org.sonatype.oss'
+          artifactId 'oss-parent'
+          version 7
+        }
+      }
+    }
+  }
 }
