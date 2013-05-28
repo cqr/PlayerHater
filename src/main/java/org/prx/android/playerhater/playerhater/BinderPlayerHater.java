@@ -18,6 +18,7 @@ package org.prx.android.playerhater.playerhater;
 import org.prx.android.playerhater.PlayerHater;
 import org.prx.android.playerhater.PlayerHaterListener;
 import org.prx.android.playerhater.Song;
+import org.prx.android.playerhater.player.Player;
 import org.prx.android.playerhater.service.IPlayerHaterBinder;
 import org.prx.android.playerhater.util.BasicSong;
 import org.prx.android.playerhater.util.Log;
@@ -244,7 +245,7 @@ public class BinderPlayerHater extends PlayerHater {
 		try {
 			return mBinder.getState();
 		} catch (RemoteException e) {
-			return -1;
+			return Player.ERROR;
 		}
 	}
 

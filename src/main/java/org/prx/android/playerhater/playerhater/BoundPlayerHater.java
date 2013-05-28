@@ -323,13 +323,11 @@ public class BoundPlayerHater extends PlayerHater {
 
 	@Override
 	public Song nowPlaying() {
-		if (sPlayQueue.getNowPlaying() != null) {
+		if (mPlayerHater != null) {
+			return mPlayerHater.nowPlaying();
+		} else {
 			return sPlayQueue.getNowPlaying();
-		} else if (mPlayerHater == null) {
-			Log.d(TAG, "can't get now playing because player hater is null"); 
-			return null;
 		}
-		return mPlayerHater.nowPlaying();
 	}
 
 	@Override

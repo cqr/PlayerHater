@@ -163,11 +163,6 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 
 	@Override
 	public void onChangesComplete() {
-		if (getPlayerHater().getState() != -1) { 
-			Log.d(MediaPlayerWrapper.getStateName(getPlayerHater().getState()));
-		} else { 
-			Log.d("impossible state"); 
-		}
 		switch (getPlayerHater().getState()) {
 		case Player.STARTED:
 			mListener.onPlaying(mSong, getPlayerHater().getCurrentPosition());

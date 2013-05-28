@@ -142,8 +142,9 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		case IDLE:
 			return "idle";
 		case INITIALIZED:
-		case LOADING_CONTENT:
 			return "initialized";
+		case LOADING_CONTENT:
+			return "loading content";
 		case PAUSED:
 			return "paused";
 		case PLAYBACK_COMPLETED:
