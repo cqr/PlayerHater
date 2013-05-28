@@ -15,7 +15,7 @@
   limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.prx.android.playerhater"
+    package="org.prx.playerhater"
     android:versionCode="2"
     android:versionName="2.0.0" >
     
@@ -25,7 +25,7 @@
         <service android:name=".PlaybackService" >
         </service>
 
-        <receiver android:name="org.prx.android.playerhater.util.BroadcastReceiver" >
+        <receiver android:name=".BroadcastReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
