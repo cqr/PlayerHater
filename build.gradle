@@ -31,7 +31,7 @@ uploadArchives {
         
       pom.project {
         version '2.1.0-SNAPSHOT'
-        artifactId 'android.playerhater'
+        artifactId 'playerhater'
         groupId 'org.prx'
 
         name 'PlayerHater'
