@@ -35,6 +35,7 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 
 @SuppressWarnings("unused")
@@ -97,6 +98,7 @@ public class QueuedPlaybackService extends AbsPlaybackService implements
 			mSongQueue.skipToEnd();
 		}
 
+		Log.d(TAG, "" + getNowPlaying().getTitle()); 
 		if (getMediaPlayer().prepareAndPlay(getApplicationContext(),
 				getNowPlaying().getUri(), position)) {
 			startClockThread();

@@ -27,6 +27,7 @@ import org.prx.android.playerhater.plugins.PlayerHaterPlugin;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 
 public class BoundPlayerHater extends PlayerHater {
 
@@ -325,6 +326,7 @@ public class BoundPlayerHater extends PlayerHater {
 		if (sPlayQueue.getNowPlaying() != null) {
 			return sPlayQueue.getNowPlaying();
 		} else if (mPlayerHater == null) {
+			Log.d(TAG, "can't get now playing because player hater is null"); 
 			return null;
 		}
 		return mPlayerHater.nowPlaying();

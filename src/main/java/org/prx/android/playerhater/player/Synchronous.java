@@ -16,6 +16,8 @@
 package org.prx.android.playerhater.player;
 
 
+import java.io.IOException;
+
 import org.prx.android.playerhater.util.Log;
 
 import android.content.Context;
@@ -33,8 +35,11 @@ public class Synchronous extends MediaPlayerDecorator implements
 
 	private boolean mShouldPlayWhenPrepared;
 	private int mShouldSkipWhenPrepared;
+	private boolean mShouldPrepareWhenPrepared; 
 	private OnPreparedListener mOnPreparedListener;
 	private OnSeekCompleteListener mOnSeekCompleteListener;
+	private Uri mDataSourceUri; 
+	private Context mPrepareContext; 
 
 	public Synchronous(MediaPlayerWithState player) {
 		super(player);
@@ -73,6 +78,9 @@ public class Synchronous extends MediaPlayerDecorator implements
 	public boolean prepare(Context context, Uri uri) {
 		mShouldPlayWhenPrepared = false;
 		mShouldSkipWhenPrepared = 0;
+		mShouldPrepareWhenPrepared = false; 
+		mDataSourceUri = uri; 
+		mPrepareContext = context; 
 		switch (getState()) {
 		case IDLE:
 			try {
@@ -89,6 +97,11 @@ public class Synchronous extends MediaPlayerDecorator implements
 				e1.printStackTrace();
 			}
 			break;
+		case PREPARING: 
+			if (!uri.equals(mDataSourceUri)) { 
+				mShouldPrepareWhenPrepared = true; 
+			}
+			break; 
 		default:
 			Log.d("About to reset with state " + getStateName());
 			reset();
@@ -124,7 +137,7 @@ public class Synchronous extends MediaPlayerDecorator implements
 
 	@Override
 	public void start() {
-		if (getState() == PREPARING || getState() == PREPARING_CONTENT) {
+		if (getState() == PREPARING || getState() == PREPARING_CONTENT || getState() == LOADING_CONTENT) {
 			mShouldPlayWhenPrepared = true;
 		} else if (getState() == INITIALIZED) {
 			mShouldPlayWhenPrepared = true;
@@ -203,6 +216,9 @@ public class Synchronous extends MediaPlayerDecorator implements
 		} else if (mShouldPlayWhenPrepared) {
 			start();
 			mShouldPlayWhenPrepared = false;
+		} else if (mShouldPrepareWhenPrepared) { 
+			prepare(mPrepareContext, mDataSourceUri);
+			mPrepareContext = null; 
 		}
 	}
 

@@ -151,8 +151,9 @@ public class MediaPlayerWrapper implements OnBufferingUpdateListener,
 		case PREPARED:
 			return "prepared";
 		case PREPARING:
+			return "preparing"; 
 		case PREPARING_CONTENT:
-			return "preparing";
+			return "preparing content";
 		case STARTED:
 			return "started";
 		case STOPPED:

@@ -63,7 +63,7 @@ public class PlayerHaterBinderStub extends IPlayerHaterBinder.Stub {
 
 	@Override
 	public boolean play(final int startTime) throws RemoteException {
-		return mPlayerHater.play();
+		return mPlayerHater.play(startTime);
 	}
 
 	@Override
