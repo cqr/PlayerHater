@@ -17,22 +17,22 @@
 <config>
 
     <plugin
-        name="org.prx.android.playerhater.plugins.PebblePlugin"
+        name="org.prx.playerhater.plugins.PebblePlugin"
         enabled="true" />
     <plugin
-        name="org.prx.android.playerhater.plugins.NotificationPlugin"
+        name="org.prx.playerhater.plugins.NotificationPlugin"
         enabled="@bool/__playerhater_notification" />
     <plugin
-        name="org.prx.android.playerhater.plugins.TouchableNotificationPlugin"
+        name="org.prx.playerhater.plugins.TouchableNotificationPlugin"
         enabled="@bool/__playerhater_touchable_notification" />
     <plugin
-        name="org.prx.android.playerhater.plugins.ExpandableNotificationPlugin"
+        name="org.prx.playerhater.plugins.ExpandableNotificationPlugin"
         enabled="@bool/__playerhater_expanding_notification" />
     <plugin
-        name="org.prx.android.playerhater.plugins.AudioFocusPlugin"
+        name="org.prx.playerhater.plugins.AudioFocusPlugin"
         enabled="@bool/__playerhater_audiofocus" />
     <plugin
-        name="org.prx.android.playerhater.plugins.LockScreenControlsPlugin"
+        name="org.prx.playerhater.plugins.LockScreenControlsPlugin"
         enabled="@bool/__playerhater_lockscreen" />
 
 </config>
