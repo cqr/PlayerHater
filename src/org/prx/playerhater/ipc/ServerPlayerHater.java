@@ -5,11 +5,12 @@ import org.prx.playerhater.Song;
 import org.prx.playerhater.songs.SongHost;
 import org.prx.playerhater.util.Log;
 
+import android.app.PendingIntent;
 import android.os.RemoteException;
 
 public class ServerPlayerHater extends PlayerHater {
 	
-	private static final String SERVER_ERROR = "ServerPlayerHater has gone away...";
+	private static final String SERVER_ERROR = "Server has gone away...";
 	
 	private final IPlayerHaterServer mServer;
 	
@@ -231,6 +232,16 @@ public class ServerPlayerHater extends PlayerHater {
 	public boolean removeFromQueue(int position) {
 		try {
 			return mServer.removeFromQueue(position);
+		} catch (RemoteException e) {
+			Log.e(SERVER_ERROR, e);
+			throw new IllegalStateException(SERVER_ERROR, e);
+		}
+	}
+
+	@Override
+	public void setPendingIntent(PendingIntent intent) {
+		try {
+			mServer.setPendingIntent(intent);
 		} catch (RemoteException e) {
 			Log.e(SERVER_ERROR, e);
 			throw new IllegalStateException(SERVER_ERROR, e);

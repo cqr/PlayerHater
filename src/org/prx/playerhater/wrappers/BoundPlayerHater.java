@@ -17,6 +17,7 @@ import org.prx.playerhater.songs.SongQueue;
 import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
 
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
@@ -33,6 +34,7 @@ public class BoundPlayerHater extends PlayerHater {
 	private static PlayerHaterPlugin sPlugin;
 	private static SongQueue sSongQueue;
 
+	private static PendingIntent sPendingPendingIntent;
 	private static int sPendingTransportControlFlags = -1;
 	private static int sStartSeekPosition = -1;
 
@@ -53,6 +55,10 @@ public class BoundPlayerHater extends PlayerHater {
 
 	private static void removeInstance(BoundPlayerHater instance) {
 		getInstances().remove(instance);
+	}
+	
+	private static void setPendingPendingIntent(PendingIntent intent) {
+		sPendingPendingIntent = intent;
 	}
 
 	private static PlayerHaterClient getPlayerHaterClient() {
@@ -116,10 +122,16 @@ public class BoundPlayerHater extends PlayerHater {
 				}
 
 				sPlayerHater = new ServerPlayerHater(server);
+				
+				if (sPendingPendingIntent != null) {
+					sPlayerHater.setPendingIntent(sPendingPendingIntent);
+					sPendingPendingIntent = null;
+				}
 
 				if (sPendingTransportControlFlags != -1) {
 					sPlayerHater
 							.setTransportControlFlags(sPendingTransportControlFlags);
+					sPendingTransportControlFlags = -1;
 				}
 				
 				if (getSongQueue().size() > 0) {
@@ -393,6 +405,15 @@ public class BoundPlayerHater extends PlayerHater {
 			return getSongQueue().remove(position);
 		} else {
 			return getPlayerHater().removeFromQueue(position);
+		}
+	}
+
+	@Override
+	public void setPendingIntent(PendingIntent intent) {
+		if (getPlayerHater() == null) {
+			setPendingPendingIntent(intent);
+		} else {
+			getPlayerHater().setPendingIntent(intent);
 		}
 	}
 }

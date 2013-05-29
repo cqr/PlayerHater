@@ -3,6 +3,7 @@ package org.prx.playerhater.ipc;
 import android.net.Uri;
 import org.prx.playerhater.ipc.IPlayerHaterClient;
 import android.app.Notification;
+import android.app.PendingIntent;
 
 interface IPlayerHaterServer {
 
@@ -37,6 +38,7 @@ interface IPlayerHaterServer {
     boolean isLoading();
     int getState();
     void setTransportControlFlags(int transportControlFlags);
+    void setPendingIntent(in PendingIntent intent);
     int getQueueLength();
     int getQueuePosition();
     boolean removeFromQueue(int position);

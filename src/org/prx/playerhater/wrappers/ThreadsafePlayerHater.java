@@ -17,6 +17,8 @@ package org.prx.playerhater.wrappers;
 
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.Song;
+
+import android.app.PendingIntent;
 import android.os.Handler;
 import android.os.HandlerThread;
 
@@ -378,6 +380,17 @@ public class ThreadsafePlayerHater extends PlayerHater {
 			@Override
 			protected Song run() {
 				return mPlayerHater.nowPlaying();
+			}
+		}.get();
+	}
+
+	@Override
+	public void setPendingIntent(final PendingIntent intent) {
+		new PlayerHaterTask<Void>(mHandler) {
+			@Override
+			protected Void run() {
+				mPlayerHater.setPendingIntent(intent);
+				return null;
 			}
 		}.get();
 	}
