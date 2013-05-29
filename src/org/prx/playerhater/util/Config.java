@@ -6,6 +6,7 @@ import java.util.Set;
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.R;
+import org.prx.playerhater.plugins.PluginCollection;
 
 import android.content.Context;
 import android.content.Intent;
@@ -35,8 +36,28 @@ public class Config implements Parcelable {
 		return sInstance;
 	}
 
+	public PluginCollection run(Context context, PlayerHater playerHater) {
+		PluginCollection collection = new PluginCollection();
+		return run(context, playerHater, collection);
+	}
+	
+	public PluginCollection run(Context context, PlayerHater playerHater, PluginCollection collection) {
+		for (Class<? extends PlayerHaterPlugin> pluginKlass : getPlugins()) {
+			try {
+				PlayerHaterPlugin plugin = pluginKlass.newInstance();
+				Log.d("Setting up a plugin " + pluginKlass);
+				plugin.onPlayerHaterLoaded(context,
+						playerHater);
+				collection.add(plugin);
+			} catch (Exception e) {
+				Log.e("Could not instantiate plugin "
+						+ pluginKlass.getCanonicalName(), e);
+			}
+		}
+		return collection;
+	}
+
 	private final Set<String> mPlugins = new HashSet<String>();
-	private final Set<String> mPreboundPlugins = new HashSet<String>();
 
 	private Config(Context context) {
 		XmlResourceParser parser = context.getResources().getXml(
@@ -58,11 +79,7 @@ public class Config implements Parcelable {
 		}
 	}
 
-	public Set<Class<? extends PlayerHaterPlugin>> getPrebindPlugins() {
-		return getPlugins(mPreboundPlugins);
-	}
-
-	public Set<Class<? extends PlayerHaterPlugin>> getServicePlugins() {
+	public Set<Class<? extends PlayerHaterPlugin>> getPlugins() {
 		for (String plugin : mPlugins) {
 			Log.d(plugin);
 		}
@@ -92,7 +109,6 @@ public class Config implements Parcelable {
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeStringArray(getPluginsArray());
-		dest.writeStringArray(getPreboundPluginsArray());
 	}
 
 	public static final Parcelable.Creator<Config> CREATOR = new Parcelable.Creator<Config>() {
@@ -113,23 +129,14 @@ public class Config implements Parcelable {
 
 	private Config(Parcel in) {
 		setPluginsArray(in.createStringArray());
-		setPreboundPluginsArray(in.createStringArray());
 	}
 
 	private String[] getPluginsArray() {
 		return mPlugins.toArray(new String[mPlugins.size() - 1]);
 	}
 
-	private String[] getPreboundPluginsArray() {
-		return mPreboundPlugins.toArray(new String[mPlugins.size() - 1]);
-	}
-
 	private void setPluginsArray(String[] plugins) {
 		setStringArray(plugins, mPlugins);
-	}
-
-	private void setPreboundPluginsArray(String[] plugins) {
-		setStringArray(plugins, mPreboundPlugins);
 	}
 
 	private void setStringArray(String[] stuff, Set<String> in) {
@@ -145,7 +152,6 @@ public class Config implements Parcelable {
 			parser.next();
 			int eventType = parser.getEventType();
 			boolean pluginEnabled = false;
-			boolean prebindPlugin = false;
 			boolean pluginDisabled = false;
 			String pluginName = null;
 			int currentTagType = INVALID_TAG;
@@ -159,8 +165,6 @@ public class Config implements Parcelable {
 					}
 					pluginEnabled = loadBooleanOrResourceBoolean(res, parser,
 							"enabled", true);
-					prebindPlugin = loadBooleanOrResourceBoolean(res, parser,
-							"prebind", false);
 					pluginDisabled = loadBooleanOrResourceBoolean(res, parser,
 							"disabled", false);
 
@@ -169,14 +173,9 @@ public class Config implements Parcelable {
 					switch (currentTagType) {
 					case PLUGIN:
 						if (pluginEnabled && pluginName != null) {
-							if (prebindPlugin) {
-								mPreboundPlugins.add(pluginName);
-							} else {
-								mPlugins.add(pluginName);
-							}
+							mPlugins.add(pluginName);
 						} else if (pluginDisabled && pluginName != null) {
 							mPlugins.remove(pluginName);
-							mPreboundPlugins.remove(pluginName);
 						}
 						break;
 					}

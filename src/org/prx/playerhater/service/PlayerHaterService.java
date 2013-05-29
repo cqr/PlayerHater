@@ -16,12 +16,10 @@
 package org.prx.playerhater.service;
 
 import org.prx.playerhater.BroadcastReceiver;
-import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.Song;
 import org.prx.playerhater.ipc.ClientPlugin;
 import org.prx.playerhater.ipc.IPlayerHaterClient;
-import org.prx.playerhater.ipc.PlayerHaterClient;
 import org.prx.playerhater.ipc.PlayerHaterServer;
 import org.prx.playerhater.mediaplayer.Player;
 import org.prx.playerhater.plugins.PluginCollection;
@@ -31,11 +29,8 @@ import org.prx.playerhater.util.IPlayerHater;
 import org.prx.playerhater.util.Log;
 import org.prx.playerhater.wrappers.ServicePlayerHater;
 
-import android.app.Activity;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.IBinder;
 import android.view.KeyEvent;
 
@@ -54,7 +49,11 @@ public abstract class PlayerHaterService extends Service implements
 	private ClientPlugin mClient;
 
 	public void setClient(IPlayerHaterClient client) {
+		if (mClient != null) {
+			getPluginCollection().remove(mClient);
+		}
 		mClient = new ClientPlugin(client);
+		getPluginCollection().add(mClient);
 		RemoteSong.setSongHost(client);
 	}
 
@@ -258,20 +257,7 @@ public abstract class PlayerHaterService extends Service implements
 	
 	private void setConfig(Config config) {
 		mConfig = config;
-		for (Class<? extends PlayerHaterPlugin> pluginKlass : mConfig
-				.getServicePlugins()) {
-			try {
-				PlayerHaterPlugin plugin = pluginKlass.newInstance();
-				Log.d("Setting up a plugin " + pluginKlass);
-				plugin.onPlayerHaterLoaded(getApplicationContext(),
-						mPlayerHater);
-				getPluginCollection().add(plugin);
-				Log.d("Plugins: " + getPluginCollection().getSize());
-			} catch (Exception e) {
-				Log.e("Could not instantiate plugin "
-						+ pluginKlass.getCanonicalName(), e);
-			}
-		}
+		mConfig.run(getApplicationContext(), mPlayerHater, getPluginCollection());
 	}
 
 	private Player getMediaPlayer() {
