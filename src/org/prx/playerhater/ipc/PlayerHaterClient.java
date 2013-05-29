@@ -2,6 +2,7 @@ package org.prx.playerhater.ipc;
 
 import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.songs.SongHost;
+import org.prx.playerhater.util.Log;
 
 import android.app.PendingIntent;
 import android.net.Uri;
@@ -18,6 +19,7 @@ public class PlayerHaterClient extends IPlayerHaterClient.Stub {
 
 	@Override
 	public void onSongChanged(int songTag) throws RemoteException {
+		Log.d("GOT CALLED " + songTag);
 		mPlugin.onSongChanged(SongHost.getSong(songTag));
 	}
 

@@ -21,6 +21,8 @@ import java.util.Set;
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.Song;
+import org.prx.playerhater.util.Log;
+
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
@@ -52,6 +54,7 @@ public class PluginCollection implements PlayerHaterPlugin {
 			mPluginTags.put(tag, plugin);
 		}
 		mPlugins.add(plugin);
+		Log.d(mPlugins.toString() + " has " + mPlugins.size());
 	}
 
 	public synchronized void remove(PlayerHaterPlugin plugin) {

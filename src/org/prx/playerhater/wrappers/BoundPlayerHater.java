@@ -13,8 +13,10 @@ import org.prx.playerhater.ipc.ServerPlayerHater;
 import org.prx.playerhater.mediaplayer.Player;
 import org.prx.playerhater.plugins.BackgroundedPlugin;
 import org.prx.playerhater.plugins.PluginCollection;
+import org.prx.playerhater.songs.RemoteSong;
 import org.prx.playerhater.songs.SongQueue;
 import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
+import org.prx.playerhater.util.Config;
 
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
@@ -51,12 +53,22 @@ public class BoundPlayerHater extends PlayerHater {
 
 	private static void addInstance(BoundPlayerHater instance) {
 		getInstances().add(instance);
+		if (getInstances().size() == 1) {
+			sApplicationContext.bindService(
+					buildServiceIntent(sApplicationContext),
+					sServiceConnection, Context.BIND_AUTO_CREATE
+							| Context.BIND_NOT_FOREGROUND);
+		}
 	}
 
 	private static void removeInstance(BoundPlayerHater instance) {
 		getInstances().remove(instance);
+		if (getInstances().size() < 1) {
+			sApplicationContext.unbindService(sServiceConnection);
+			sPlayerHater = null;
+		}
 	}
-	
+
 	private static void setPendingPendingIntent(PendingIntent intent) {
 		sPendingPendingIntent = intent;
 	}
@@ -113,7 +125,8 @@ public class BoundPlayerHater extends PlayerHater {
 			synchronized (BoundPlayerHater.class) {
 				IPlayerHaterServer server = IPlayerHaterServer.Stub
 						.asInterface(service);
-
+				
+				RemoteSong.setSongHost(server);
 				try {
 					server.setClient(getPlayerHaterClient());
 				} catch (RemoteException e) {
@@ -122,7 +135,7 @@ public class BoundPlayerHater extends PlayerHater {
 				}
 
 				sPlayerHater = new ServerPlayerHater(server);
-				
+
 				if (sPendingPendingIntent != null) {
 					sPlayerHater.setPendingIntent(sPendingPendingIntent);
 					sPendingPendingIntent = null;
@@ -133,17 +146,17 @@ public class BoundPlayerHater extends PlayerHater {
 							.setTransportControlFlags(sPendingTransportControlFlags);
 					sPendingTransportControlFlags = -1;
 				}
-				
+
 				if (getSongQueue().size() > 0) {
 					int position = getSongQueue().getPosition();
 					getSongQueue().skipTo(1);
-					while(!getSongQueue().isAtLastSong()) {
+					while (!getSongQueue().isAtLastSong()) {
 						sPlayerHater.enqueue(getSongQueue().getNowPlaying());
 						getSongQueue().remove(1);
 					}
 					sPlayerHater.skipTo(position);
 				}
-				
+
 				if (sStartSeekPosition != -1) {
 					sPlayerHater.seekTo(sStartSeekPosition);
 					sPlayerHater.play();
@@ -161,9 +174,7 @@ public class BoundPlayerHater extends PlayerHater {
 	@SuppressLint("InlinedApi")
 	private static void configureAndStart(Context context) {
 		sApplicationContext = context;
-		sApplicationContext.bindService(
-				buildServiceIntent(sApplicationContext), sServiceConnection,
-				Context.BIND_AUTO_CREATE | Context.BIND_NOT_FOREGROUND);
+		Config.getInstance(context);
 	}
 
 	private PlayerHaterPlugin mPlugin;
@@ -180,15 +191,18 @@ public class BoundPlayerHater extends PlayerHater {
 		addInstance(this);
 	}
 
-	public void setBoundPlugin(PlayerHaterPlugin plugin) {
+	@Override
+	public boolean setLocalPlugin(PlayerHaterPlugin plugin) {
 		removeCurrentPlugin();
 		mPlugin = plugin;
 		if (mPlugin != null) {
 			mPlugin.onPlayerHaterLoaded(mContext.get(), this);
 			getPluginCollection().add(plugin);
 		}
+		return true;
 	}
 
+	@Override
 	public boolean release() {
 		removeCurrentPlugin();
 		mContext.clear();

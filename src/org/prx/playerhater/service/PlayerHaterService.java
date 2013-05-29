@@ -22,6 +22,7 @@ import org.prx.playerhater.ipc.ClientPlugin;
 import org.prx.playerhater.ipc.IPlayerHaterClient;
 import org.prx.playerhater.ipc.PlayerHaterServer;
 import org.prx.playerhater.mediaplayer.Player;
+import org.prx.playerhater.mediaplayer.SynchronousPlayer;
 import org.prx.playerhater.plugins.PluginCollection;
 import org.prx.playerhater.songs.RemoteSong;
 import org.prx.playerhater.util.Config;
@@ -68,7 +69,6 @@ public abstract class PlayerHaterService extends Service implements
 	@Override
 	public void onDestroy() {
 		onStopped();
-		getBaseContext().unregisterReceiver(mBroadcastReceiver);
 		super.onDestroy();
 	}
 
@@ -259,8 +259,13 @@ public abstract class PlayerHaterService extends Service implements
 		mConfig = config;
 		mConfig.run(getApplicationContext(), mPlayerHater, getPluginCollection());
 	}
+	
+	private Player mMediaPlayer;
 
-	private Player getMediaPlayer() {
-		return null;
+	protected Player getMediaPlayer() {
+		if (mMediaPlayer == null) {
+			mMediaPlayer = new SynchronousPlayer();
+		}
+		return mMediaPlayer;
 	}
 }

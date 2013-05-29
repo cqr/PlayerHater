@@ -21,6 +21,10 @@ public abstract class PlayerHater implements IPlayerHater {
 	public boolean release() {
 		return false;
 	}
+	
+	public boolean setLocalPlugin(PlayerHaterPlugin plugin) {
+		return false;
+	}
 
 	/**
 	 * Constructs an {@linkplain Intent} which will start the appropriate
