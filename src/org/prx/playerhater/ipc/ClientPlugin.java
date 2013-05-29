@@ -11,13 +11,13 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.RemoteException;
 
-public class Client implements PlayerHaterPlugin {
+public class ClientPlugin implements PlayerHaterPlugin {
 
-	private static final String CLIENT_ERROR = "Client has gone away...";
+	private static final String CLIENT_ERROR = "ClientPlugin has gone away...";
 
 	private final IPlayerHaterClient mClient;
 
-	public Client(IPlayerHaterClient client) {
+	public ClientPlugin(IPlayerHaterClient client) {
 		mClient = client;
 	}
 
@@ -179,6 +179,16 @@ public class Client implements PlayerHaterPlugin {
 	public void onChangesComplete() {
 		try {
 			mClient.onChangesComplete();
+		} catch (RemoteException e) {
+			Log.e(CLIENT_ERROR, e);
+			throw new IllegalStateException(CLIENT_ERROR, e);
+		}
+	}
+
+	@Override
+	public void onAlbumTitleChanged(String albumTitle) {
+		try {
+			mClient.onAlbumTitleChanged(albumTitle);
 		} catch (RemoteException e) {
 			Log.e(CLIENT_ERROR, e);
 			throw new IllegalStateException(CLIENT_ERROR, e);

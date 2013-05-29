@@ -314,4 +314,6 @@ public interface PlayerHaterPlugin {
 	 * method is guaranteed, by default, to run on the UI thread.
 	 */
 	void onChangesComplete();
+
+	void onAlbumTitleChanged(String albumTitle);
 }

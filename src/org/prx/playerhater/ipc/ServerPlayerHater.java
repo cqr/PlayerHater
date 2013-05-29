@@ -7,13 +7,13 @@ import org.prx.playerhater.util.Log;
 
 import android.os.RemoteException;
 
-public class Server extends PlayerHater {
+public class ServerPlayerHater extends PlayerHater {
 	
-	private static final String SERVER_ERROR = "Server has gone away...";
+	private static final String SERVER_ERROR = "ServerPlayerHater has gone away...";
 	
 	private final IPlayerHaterServer mServer;
 	
-	public Server(IPlayerHaterServer server) {
+	public ServerPlayerHater(IPlayerHaterServer server) {
 		mServer = server;
 	}
 	

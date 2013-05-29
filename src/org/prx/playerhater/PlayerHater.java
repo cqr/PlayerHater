@@ -1,5 +1,6 @@
 package org.prx.playerhater;
 
+import org.prx.playerhater.wrappers.BoundPlayerHater;
 import org.prx.playerhater.util.Config;
 
 import android.content.Context;
@@ -7,6 +8,25 @@ import android.content.Intent;
 import android.util.Log;
 
 public abstract class PlayerHater {
+
+	/**
+	 * Constant to indicate that the reason for an onSongFinished() call is that
+	 * the song played to completion.
+	 */
+	public static final int SONG_END = 0x0000001;
+
+	/**
+	 * Constant to indicate that the reason for an onSongFinished() call is that
+	 * the skip button was pressed.
+	 */
+	public static final int SKIP_BUTTON = 0x0000010;
+
+	/**
+	 * Constant to indicate that the reason for an onSongFinished() call is that
+	 * there was an error playing the song.
+	 */
+	public static final int ERROR = 0x0000100;
+
 	/**
 	 * Pauses the player.
 	 * 
@@ -232,6 +252,18 @@ public abstract class PlayerHater {
 	abstract public boolean removeFromQueue(int position);
 
 	/**
+	 * Releases the {@linkplain ServiceConnection} which this instance is using
+	 * if this instance is backed by a {@linkplain ServiceConnection}
+	 * 
+	 * @return {@code true} if this instance was backed by a
+	 *         {@linkplain ServiceConnection} and should not be used anymore,
+	 *         {@code false} otherwise.
+	 */
+	public boolean release() {
+		return false;
+	}
+
+	/**
 	 * Constructs an {@linkplain Intent} which will start the appropriate
 	 * {@linkplain PlayerHaterService} as configured in the project's
 	 * AndroidManifest.xml file.
@@ -262,5 +294,24 @@ public abstract class PlayerHater {
 		}
 
 		return intent;
+	}
+
+	/**
+	 * Gets an instance of a {@linkplain BoundPlayerHater} which can be used to
+	 * interact with the playback service.
+	 * 
+	 * Calling this method will also invoke
+	 * {@linkplain PlayerHater#configure(Context)} if it has not yet been
+	 * called.
+	 * 
+	 * @since 2.1.0
+	 * 
+	 * @param context
+	 *            The context on which to bind the service.
+	 * @return an instance of PlayerHater which one can use to interact with the
+	 *         Playback Service.
+	 */
+	public static PlayerHater bind(Context context) {
+		return new BoundPlayerHater(context);
 	}
 }
