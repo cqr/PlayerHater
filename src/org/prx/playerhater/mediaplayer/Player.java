@@ -90,10 +90,6 @@ public abstract class Player {
 	 */
 	public static final int ERROR = 9;
 
-	public abstract int getState();
-
-	public abstract String getStateName();
-
 	public abstract void reset();
 
 	public abstract void release();
@@ -139,5 +135,38 @@ public abstract class Player {
 	public abstract void setVolume(float leftVolume, float rightVolume);
 
 	public abstract boolean equals(MediaPlayer mp);
+	
+	/* Stately API */
+	
+	public int getState() {
+		throw new IllegalStateException("This player isn't stately enough.");
+	}
+
+	public String getStateName() {
+		throw new IllegalStateException("This player isn't stately enough.");
+	}
+	
+	/* Synchronous API */
+
+	public boolean prepare(Context context, Uri uri) {
+		throw new IllegalStateException("This player isn't down with synchronous calls.");
+	}
+
+	public boolean prepareAndPlay(Context applicationContext, Uri uri,
+			int position) {
+		throw new IllegalStateException("This player isn't down with synchronous calls.");
+	}
+	
+	public boolean conditionalPause() {
+		throw new IllegalStateException("This player isn't down with synchronous calls.");
+	}
+
+	public boolean conditionalStop() {
+		throw new IllegalStateException("This player isn't down with synchronous calls.");
+	}
+	
+	public boolean conditionalPlay() {
+		throw new IllegalStateException("This player isn't down with synchronous calls.");
+	}
 
 }
