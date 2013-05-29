@@ -111,7 +111,7 @@ public class PlaybackService extends PlayerHaterService implements OnQueuedSongs
 
 	@Override
 	public void onNowPlayingChanged(Song nowPlaying) {
-		Log.d("new song is " + nowPlaying);
+		getMediaPlayer().prepare(getApplicationContext(), nowPlaying.getUri());
 		getPlugin().onSongChanged(nowPlaying);
 	}
 

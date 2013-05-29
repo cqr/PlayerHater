@@ -51,6 +51,7 @@ public class BoundPlayerHater extends PlayerHater {
 		return sInstances;
 	}
 
+	@SuppressLint("InlinedApi")
 	private static void addInstance(BoundPlayerHater instance) {
 		getInstances().add(instance);
 		if (getInstances().size() == 1) {
