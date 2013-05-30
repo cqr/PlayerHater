@@ -60,8 +60,12 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 
 	private synchronized void setState(int state) {
 		mState = state;
+		onStateChanged();
+	}
+	
+	protected void onStateChanged() {
 		if (mStateChangeListener != null) {
-			mStateChangeListener.onStateChanged(getBarePlayer(), state);
+			mStateChangeListener.onStateChanged(this, mState);
 		}
 	}
 

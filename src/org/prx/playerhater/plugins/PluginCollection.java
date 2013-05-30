@@ -16,6 +16,7 @@
 package org.prx.playerhater.plugins;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.prx.playerhater.PlayerHater;
@@ -152,9 +153,9 @@ public class PluginCollection implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onIntentActivityChanged(PendingIntent pending) {
+	public void onPendingIntentChanged(PendingIntent pending) {
 		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onIntentActivityChanged(pending);
+			plugin.onPendingIntentChanged(pending);
 	}
 
 	@Override
@@ -190,4 +191,17 @@ public class PluginCollection implements PlayerHaterPlugin {
 			plugin.onAlbumTitleChanged(albumTitle);
 	}
 
+	@Override
+	public synchronized String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("PluginCollection@").append(hashCode()).append("[ ");
+		Iterator<PlayerHaterPlugin> iter = mPlugins.iterator();
+		if (iter.hasNext()) {
+			sb.append(iter.next().toString());
+			while (iter.hasNext()) {
+				sb.append(", ").append(iter.next().toString());
+			}
+		}
+		return sb.append("]").toString();
+	}
 }

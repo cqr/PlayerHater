@@ -15,4 +15,31 @@
  ******************************************************************************/
 package org.prx.playerhater;
 
-public class BroadcastReceiver extends org.prx.playerhater.broadcast.Receiver {}
+import org.prx.playerhater.broadcast.Receiver;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.media.AudioManager;
+
+public class BroadcastReceiver extends Receiver {
+	private static Receiver sInstance;
+	
+	public static void register(Context context) {
+		BroadcastReceiver receiver = new BroadcastReceiver();
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(Intent.ACTION_HEADSET_PLUG);
+		filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+		filter.addAction(Intent.ACTION_MEDIA_BUTTON);
+		filter.setPriority(10000);
+		context.registerReceiver(receiver, filter);
+		sInstance = receiver;
+	}
+	
+	public static void release(Context context) {
+		if (sInstance != null) {
+			context.unregisterReceiver(sInstance);
+		}
+	}
+	
+}

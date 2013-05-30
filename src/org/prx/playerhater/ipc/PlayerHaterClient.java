@@ -102,7 +102,7 @@ public class PlayerHaterClient extends IPlayerHaterClient.Stub {
 	@Override
 	public void onIntentActivityChanged(PendingIntent intent)
 			throws RemoteException {
-		mPlugin.onIntentActivityChanged(intent);
+		mPlugin.onPendingIntentChanged(intent);
 	}
 
 	@Override

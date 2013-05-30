@@ -1,15 +1,11 @@
 package org.prx.playerhater;
 
-import org.prx.playerhater.mediaplayer.Player;
 import org.prx.playerhater.service.PlayerHaterService;
 import org.prx.playerhater.songs.SongQueue;
 import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
-import org.prx.playerhater.util.Log;
 
-import android.app.PendingIntent;
-import android.media.MediaPlayer;
-
-public class PlaybackService extends PlayerHaterService implements OnQueuedSongsChangedListener {
+public class PlaybackService extends PlayerHaterService implements
+		OnQueuedSongsChangedListener {
 
 	@Override
 	public boolean pause() {
@@ -18,8 +14,8 @@ public class PlaybackService extends PlayerHaterService implements OnQueuedSongs
 
 	@Override
 	public boolean stop() {
-		stopSelf();
-		return true;
+		onStopped();
+		return getMediaPlayer().conditionalStop();
 	}
 
 	@Override
@@ -37,7 +33,8 @@ public class PlaybackService extends PlayerHaterService implements OnQueuedSongs
 
 	@Override
 	public boolean play(Song song, int startTime) {
-		getMediaPlayer().prepareAndPlay(getApplicationContext(), song.getUri(), startTime);
+		getMediaPlayer().prepareAndPlay(getApplicationContext(), song.getUri(),
+				startTime);
 		return true;
 	}
 
@@ -49,7 +46,6 @@ public class PlaybackService extends PlayerHaterService implements OnQueuedSongs
 
 	@Override
 	public int enqueue(Song song) {
-		Log.d("COOL, ENQUEUEING " + song);
 		return getQueue().appendSong(song);
 	}
 
@@ -79,6 +75,7 @@ public class PlaybackService extends PlayerHaterService implements OnQueuedSongs
 	}
 
 	private SongQueue mQueue;
+
 	private SongQueue getQueue() {
 		if (mQueue == null) {
 			mQueue = new SongQueue();
@@ -88,55 +85,33 @@ public class PlaybackService extends PlayerHaterService implements OnQueuedSongs
 	}
 
 	@Override
-	public void setPendingIntent(PendingIntent intent) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public int getQueueLength() {
-		// TODO Auto-generated method stub
-		return 0;
+		return getQueue().size();
 	}
 
 	@Override
 	public int getQueuePosition() {
-		// TODO Auto-generated method stub
-		return 0;
+		return getQueue().getPosition();
 	}
 
 	@Override
 	public boolean removeFromQueue(int position) {
-		// TODO Auto-generated method stub
-		return false;
+		return getQueue().remove(position);
 	}
 
 	@Override
 	public void onNowPlayingChanged(Song nowPlaying) {
 		getMediaPlayer().prepare(getApplicationContext(), nowPlaying.getUri());
-		getPlugin().onSongChanged(nowPlaying);
+		onSongChanged();
 	}
 
 	@Override
 	public void onNextSongChanged(Song nextSong) {
-		if (nextSong != null)
-			getPlugin().onNextSongAvailable(nextSong);
-		else
-			getPlugin().onNextSongUnavailable();
+		onNextSongChanged();
 	}
-
+	
 	@Override
-	public void onStateChanged(MediaPlayer mediaPlayer, int state) {
-		Log.d(getMediaPlayer().getStateName());
-		Log.d("PLLLLLLLL" + state);
-		if (isLoading()) {
-			onLoading();
-		} else if (isPlaying()) {
-			onResumed();
-		} else if (state == Player.PAUSED) {
-			onPaused();
-		} else {
-			onStopped();
-		}
+	public Song getNextSong() {
+		return getQueue().getNextPlaying();
 	}
 }

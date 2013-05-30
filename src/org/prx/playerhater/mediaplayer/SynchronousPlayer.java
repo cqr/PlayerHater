@@ -61,6 +61,7 @@ public class SynchronousPlayer extends StatelyPlayer implements
 				return false;
 			}
 		case INITIALIZED:
+		case STOPPED:
 		case LOADING_CONTENT:
 			prepareAsync();
 			break;
@@ -107,7 +108,8 @@ public class SynchronousPlayer extends StatelyPlayer implements
 		if (getState() == PREPARING || getState() == PREPARING_CONTENT
 				|| getState() == LOADING_CONTENT) {
 			mShouldPlayWhenPrepared = true;
-		} else if (getState() == INITIALIZED) {
+			onStateChanged();
+		} else if (getState() == INITIALIZED || getState() == STOPPED) {
 			mShouldPlayWhenPrepared = true;
 			try {
 				prepareAsync();
@@ -122,10 +124,10 @@ public class SynchronousPlayer extends StatelyPlayer implements
 	@Override
 	public void seekTo(int msec) {
 		int state = getState();
-		if (state == PREPARING || state == INITIALIZED
+		if (state == PREPARING || state == INITIALIZED || state == STOPPED
 				|| state == LOADING_CONTENT || state == PREPARING_CONTENT) {
 			mShouldSkipWhenPrepared = msec;
-			if (state == INITIALIZED) {
+			if (state == INITIALIZED || state == STOPPED) {
 				prepareAsync();
 			}
 		} else if (state == PREPARED || state == PAUSED
@@ -140,7 +142,7 @@ public class SynchronousPlayer extends StatelyPlayer implements
 
 	@Override
 	public boolean conditionalPause() {
-		if (mShouldPlayWhenPrepared == true) {
+		if (mShouldPlayWhenPrepared) {
 			mShouldPlayWhenPrepared = false;
 			return true;
 		} else if (getState() == STARTED) {
@@ -152,19 +154,12 @@ public class SynchronousPlayer extends StatelyPlayer implements
 
 	@Override
 	public boolean conditionalPlay() {
-		Log.d("is playing? State is " + getStateName());
-		
-		int state = getState();
-		if (state == PREPARED || state == PAUSED || state == PLAYBACK_COMPLETED) {
+		try {
 			start();
-			return true;
-		} else if (state == PREPARING || state == PREPARING_CONTENT) {
-			mShouldPlayWhenPrepared = true;
-			return true;
-		} else {
-			Log.d("Not playing. State is " + getStateName());
+		} catch (Exception e) {
+			return false;
 		}
-		return false;
+		return true;
 	}
 
 	@Override
@@ -181,7 +176,7 @@ public class SynchronousPlayer extends StatelyPlayer implements
 		stop();
 		return true;
 	}
-	
+
 	@Override
 	public boolean isWaitingToPlay() {
 		return (mShouldSkipWhenPrepared != 0 | mShouldPlayWhenPrepared);

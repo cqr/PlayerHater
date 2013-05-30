@@ -22,6 +22,7 @@ import java.util.Set;
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.Song;
+import org.prx.playerhater.util.Log;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -261,10 +262,10 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	}
 
 	@Override
-	public void onIntentActivityChanged(PendingIntent pending) {
+	public void onPendingIntentChanged(PendingIntent pending) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
 		if (shouldHandleMessage(INTENT_CHANGED)) {
-			mPlugin.onIntentActivityChanged(pending);
+			mPlugin.onPendingIntentChanged(pending);
 		} else {
 			mHandler.obtainTargettedMessage(INTENT_CHANGED, pending)
 					.sendToTarget();
@@ -462,6 +463,8 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 
 	@Override
 	public boolean handleMessage(Message msg) {
+		Log.d("Backgrounded Plugin got " + msg.what);
+		Log.d("My plugin is " + mPlugin);
 		switch (msg.what) {
 		case CHANGES_COMPLETE_INTERNAL:
 			if (!mHandler.hasTargettedMessages(CHANGES_COMPLETE)) {
@@ -508,7 +511,7 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 			mPlugin.onAudioLoading();
 			break;
 		case INTENT_CHANGED:
-			mPlugin.onIntentActivityChanged((PendingIntent) msg.obj);
+			mPlugin.onPendingIntentChanged((PendingIntent) msg.obj);
 			break;
 		case SONG_FINISHED:
 			mPlugin.onSongFinished((Song) msg.obj, msg.arg1);

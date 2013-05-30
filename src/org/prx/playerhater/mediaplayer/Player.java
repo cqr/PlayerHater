@@ -15,7 +15,7 @@ import android.net.Uri;
 public abstract class Player {
 	
 	public static interface StateChangeListener {
-		public void onStateChanged(MediaPlayer mediaPlayer, int state);
+		public void onStateChanged(Player mediaPlayer, int state);
 	}
 	
 	/**

@@ -112,6 +112,10 @@ public class SongQueue {
 		return mSongs.get(getPlayheadPosition() - 1);
 	}
 
+	public synchronized Song getNextPlaying() {
+		return 	getNextSong();
+	}
+	
 	public synchronized void empty() {
 		mSongs.clear();
 		setPlayheadPosition(-1);
@@ -173,7 +177,7 @@ public class SongQueue {
 	}
 
 	private Song getNextSong() {
-		if (getPlayheadPosition() >= mSongs.size()) {
+		if (getPlayheadPosition() >= mSongs.size() || getPlayheadPosition() <= 0) {
 			return null;
 		} else {
 			return mSongs.get(getPlayheadPosition());
@@ -218,5 +222,4 @@ public class SongQueue {
 	public int getPosition() {
 		return getPlayheadPosition();
 	}
-
 }

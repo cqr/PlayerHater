@@ -153,15 +153,13 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 	@Override
 	public void onChangesComplete() {
 		switch (getPlayerHater().getState()) {
-		case Player.STARTED:
+		case PlayerHater.STATE_PLAYING:
 			if (mSong != null) {
 				mListener.onPlaying(mSong, getPlayerHater()
 						.getCurrentPosition());
 			}
 			break;
-		case Player.PREPARING:
-		case Player.LOADING_CONTENT:
-		case Player.PREPARING_CONTENT:
+		case PlayerHater.STATE_LOADING:
 			mListener.onLoading(mSong);
 			break;
 		default:
@@ -174,7 +172,7 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 	}
 
 	private void onTick() {
-		if (getPlayerHater().getState() == Player.STARTED) {
+		if (getPlayerHater().getState() == PlayerHater.STATE_PLAYING) {
 			mListener.onPlaying(getPlayerHater().nowPlaying(), getPlayerHater()
 					.getCurrentPosition());
 		}

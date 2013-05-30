@@ -7,30 +7,18 @@ import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.view.KeyEvent;
 
 public class Receiver extends BroadcastReceiver implements
 		RemoteControlButtonReceiver {
 
-	public static final String REMOTE_CONTROL_BUTTON = "org.prx.playerhater.REMOTE_CONTROL";
-
 	private static final HeadphoneButtonGestureHelper sGestureHelper = new HeadphoneButtonGestureHelper();
-
+	public static final String REMOTE_CONTROL_BUTTON = "org.prx.playerhater.REMOTE_CONTROL";
+	
 	public Receiver() {
 		super();
-	}
-
-	public Receiver(Context context) {
-		super();
 		sGestureHelper.setReceiver(this);
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(Intent.ACTION_HEADSET_PLUG);
-		filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-		filter.addAction(Intent.ACTION_MEDIA_BUTTON);
-		filter.setPriority(10000);
-		context.registerReceiver(this, filter);
 	}
 
 	@Override

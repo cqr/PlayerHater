@@ -15,9 +15,9 @@
  ******************************************************************************/
 package org.prx.playerhater.plugins;
 
+import org.prx.playerhater.BroadcastReceiver;
 import org.prx.playerhater.R;
 import org.prx.playerhater.Song;
-import org.prx.playerhater.broadcast.Receiver;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -161,7 +161,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	private PendingIntent getMediaButtonPendingIntent(int keycode) {
-		Intent intent = new Intent(getContext(), Receiver.class);
+		Intent intent = new Intent(getContext(), BroadcastReceiver.class);
 		intent.setAction(Intent.ACTION_MEDIA_BUTTON);
 		intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(
 				KeyEvent.ACTION_UP, keycode));

@@ -158,6 +158,7 @@ public class ServicePlayerHater extends ThreadsafePlayerHater {
 
 	public void stopForeground(boolean removeNotification) {
 		mService.stopForeground(removeNotification);
+		mService.quit();
 	}
 
 	public void duck() {

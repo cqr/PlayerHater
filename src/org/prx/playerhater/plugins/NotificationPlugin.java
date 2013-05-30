@@ -94,7 +94,7 @@ public class NotificationPlugin extends AbstractPlugin {
 		mNotificationTitle = notificationTitle;
 	}
 
-	public void onIntentActivityChanged(PendingIntent contentIntent) {
+	public void onPendingIntentChanged(PendingIntent contentIntent) {
 		mContentIntent = contentIntent;
 		if (mNotification != null) {
 			mNotification.contentIntent = mContentIntent;

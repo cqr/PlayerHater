@@ -307,7 +307,7 @@ public interface PlayerHaterPlugin {
 	 *            A pending intent that the plugin should use if it wants to
 	 *            resume the hosting application.
 	 */
-	void onIntentActivityChanged(PendingIntent intent);
+	void onPendingIntentChanged(PendingIntent intent);
 
 	/**
 	 * Called after one or more state-change callbacks have completed. This

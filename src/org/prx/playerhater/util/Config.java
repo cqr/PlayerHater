@@ -29,6 +29,10 @@ public class Config implements Parcelable {
 		}
 	}
 
+	public static Config fromIntent(Intent intent) {
+		return intent.getExtras().getParcelable(Config.EXTRA_CONFIG);
+	}
+
 	public static Config getInstance(Context context) {
 		if (sInstance == null) {
 			sInstance = new Config(context);
@@ -40,20 +44,20 @@ public class Config implements Parcelable {
 		PluginCollection collection = new PluginCollection();
 		return run(context, playerHater, collection);
 	}
-	
-	public PluginCollection run(Context context, PlayerHater playerHater, PluginCollection collection) {
+
+	public PluginCollection run(Context context, PlayerHater playerHater,
+			PluginCollection collection) {
 		for (Class<? extends PlayerHaterPlugin> pluginKlass : getPlugins()) {
 			try {
 				PlayerHaterPlugin plugin = pluginKlass.newInstance();
 				Log.d("Setting up a plugin " + pluginKlass);
-				plugin.onPlayerHaterLoaded(context,
-						playerHater);
 				collection.add(plugin);
 			} catch (Exception e) {
 				Log.e("Could not instantiate plugin "
 						+ pluginKlass.getCanonicalName(), e);
 			}
 		}
+		collection.onPlayerHaterLoaded(context, playerHater);
 		return collection;
 	}
 

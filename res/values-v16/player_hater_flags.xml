@@ -15,7 +15,6 @@
   limitations under the License.
 -->
 <resources>
-    <bool name="zzz_ph_notification">false</bool>
     <bool name="zzz_ph_touch_notification">false</bool>
     <bool name="zzz_ph_exp_notification">true</bool>
 </resources>

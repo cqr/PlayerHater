@@ -166,7 +166,7 @@ public class ClientPlugin implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onIntentActivityChanged(PendingIntent intent) {
+	public void onPendingIntentChanged(PendingIntent intent) {
 		try {
 			mClient.onIntentActivityChanged(intent);
 		} catch (RemoteException e) {

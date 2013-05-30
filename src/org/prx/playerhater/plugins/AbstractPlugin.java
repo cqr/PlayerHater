@@ -125,7 +125,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onIntentActivityChanged(PendingIntent pending) {
+	public void onPendingIntentChanged(PendingIntent pending) {
 	}
 
 	@Override

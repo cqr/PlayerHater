@@ -9,10 +9,11 @@ import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.Song;
 import org.prx.playerhater.ipc.IPlayerHaterServer;
 import org.prx.playerhater.ipc.PlayerHaterClient;
+import org.prx.playerhater.ipc.PlayerHaterServer;
 import org.prx.playerhater.ipc.ServerPlayerHater;
 import org.prx.playerhater.plugins.BackgroundedPlugin;
 import org.prx.playerhater.plugins.PluginCollection;
-import org.prx.playerhater.songs.RemoteSong;
+import org.prx.playerhater.songs.SongHost;
 import org.prx.playerhater.songs.SongQueue;
 import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
 import org.prx.playerhater.util.Config;
@@ -125,8 +126,10 @@ public class BoundPlayerHater extends PlayerHater {
 			synchronized (BoundPlayerHater.class) {
 				IPlayerHaterServer server = IPlayerHaterServer.Stub
 						.asInterface(service);
+				if (!(service instanceof PlayerHaterServer)) {
+					SongHost.setRemote(server);
+				}
 				
-				RemoteSong.setSongHost(server);
 				try {
 					server.setClient(getPlayerHaterClient());
 				} catch (RemoteException e) {
