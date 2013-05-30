@@ -1,11 +1,13 @@
 package org.prx.playerhater;
 
+import org.prx.playerhater.mediaplayer.Player;
 import org.prx.playerhater.service.PlayerHaterService;
 import org.prx.playerhater.songs.SongQueue;
 import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
 import org.prx.playerhater.util.Log;
 
 import android.app.PendingIntent;
+import android.media.MediaPlayer;
 
 public class PlaybackService extends PlayerHaterService implements OnQueuedSongsChangedListener {
 
@@ -123,4 +125,18 @@ public class PlaybackService extends PlayerHaterService implements OnQueuedSongs
 			getPlugin().onNextSongUnavailable();
 	}
 
+	@Override
+	public void onStateChanged(MediaPlayer mediaPlayer, int state) {
+		Log.d(getMediaPlayer().getStateName());
+		Log.d("PLLLLLLLL" + state);
+		if (isLoading()) {
+			onLoading();
+		} else if (isPlaying()) {
+			onResumed();
+		} else if (state == Player.PAUSED) {
+			onPaused();
+		} else {
+			onStopped();
+		}
+	}
 }

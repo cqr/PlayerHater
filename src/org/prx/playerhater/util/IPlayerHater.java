@@ -10,19 +10,24 @@ public interface IPlayerHater {
 	 * Constant to indicate that the reason for an onSongFinished() call is that
 	 * the song played to completion.
 	 */
-	public static final int SONG_END = 0x0000001;
+	public static final int FINISH_SONG_END = 0;
 
 	/**
 	 * Constant to indicate that the reason for an onSongFinished() call is that
 	 * the skip button was pressed.
 	 */
-	public static final int SKIP_BUTTON = 0x0000010;
+	public static final int FINISH_SKIP_BUTTON = 1;
 
 	/**
 	 * Constant to indicate that the reason for an onSongFinished() call is that
 	 * there was an error playing the song.
 	 */
-	public static final int ERROR = 0x0000100;
+	public static final int FINISH_ERROR = 2;
+
+	public static final int STATE_IDLE = 4;
+	public static final int STATE_LOADING = 8;
+	public static final int STATE_PLAYING = 16;
+	public static final int STATE_PAUSED = 32;
 
 	/**
 	 * Pauses the player.
@@ -190,20 +195,10 @@ public interface IPlayerHater {
 	abstract public boolean isLoading();
 
 	/**
-	 * Gets the state of the currently loaded
-	 * {@linkplain android.media.MediaPlayer MediaPlayer}, represented as an
-	 * int.
+	 * Gets the state of the PlayerHater, represented as an int.
 	 * 
-	 * @return One of: {@link MediaPlayerWithState#IDLE IDLE},
-	 *         {@link MediaPlayerWithState#INITIALIZED INITIALIZED},
-	 *         {@link MediaPlayerWithState#PREPARING PREPARING},
-	 *         {@link MediaPlayerWithState#PREPARED PREPARED},
-	 *         {@link MediaPlayerWithState#STARTED STARTED},
-	 *         {@link MediaPlayerWithState#PAUSED PAUSED},
-	 *         {@link MediaPlayerWithState#PLAYBACK_COMPLETED
-	 *         PLAYBACK_COMPLETED}, {@link MediaPlayerWithState#STOPPED STOPPED}
-	 *         , {@link MediaPlayerWithState#END END}, or
-	 *         {@link MediaPlayerWithState#ERROR ERROR}
+	 * @return One of: {@link PlayerHater.STATE_IDLE}, {@link PlayerHater.STATE_LOADING},
+	 *         {@link PlayerHater.STATE_PLAYING}, or {@link PlayerHater.STATE_PAUSED}
 	 */
 	abstract public int getState();
 
@@ -215,7 +210,7 @@ public interface IPlayerHater {
 	 * @param transportControlFlags
 	 */
 	abstract public void setTransportControlFlags(int transportControlFlags);
-	
+
 	/**
 	 * Sets the intent to be used by the plugins.
 	 */

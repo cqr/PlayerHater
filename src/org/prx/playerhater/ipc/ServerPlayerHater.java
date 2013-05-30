@@ -40,6 +40,7 @@ public class ServerPlayerHater extends PlayerHater {
 
 	@Override
 	public boolean play() {
+		Log.d("I am trying to call resume()");
 		try {
 			return mServer.resume();
 		} catch (RemoteException e) {

@@ -16,12 +16,14 @@
 package org.prx.playerhater.service;
 
 import org.prx.playerhater.BroadcastReceiver;
+import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.Song;
 import org.prx.playerhater.ipc.ClientPlugin;
 import org.prx.playerhater.ipc.IPlayerHaterClient;
 import org.prx.playerhater.ipc.PlayerHaterServer;
 import org.prx.playerhater.mediaplayer.Player;
+import org.prx.playerhater.mediaplayer.Player.StateChangeListener;
 import org.prx.playerhater.mediaplayer.SynchronousPlayer;
 import org.prx.playerhater.plugins.PluginCollection;
 import org.prx.playerhater.songs.RemoteSong;
@@ -36,7 +38,7 @@ import android.os.IBinder;
 import android.view.KeyEvent;
 
 public abstract class PlayerHaterService extends Service implements
-		IPlayerHater {
+		IPlayerHater, StateChangeListener {
 
 	public static final int REMOTE_PLUGIN = 2525;
 	protected BroadcastReceiver mBroadcastReceiver;
@@ -147,14 +149,21 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public boolean isLoading() {
-		int state = getState();
-		return (state == Player.INITIALIZED || state == Player.PREPARING
-				|| state == Player.PREPARED || state == Player.LOADING_CONTENT || state == Player.PREPARING_CONTENT);
+		return getMediaPlayer().isWaitingToPlay();
 	}
 
 	@Override
 	public int getState() {
-		return getMediaPlayer().getState();
+		if (isPlaying()){
+			return PlayerHater.STATE_PLAYING;
+		}
+		if (isLoading()) {
+			return PlayerHater.STATE_LOADING;
+		}
+		if (getMediaPlayer().getState() == Player.PAUSED) {
+			return PlayerHater.STATE_PAUSED;
+		}
+		return PlayerHater.STATE_IDLE;
 	}
 
 	@Override
@@ -265,6 +274,7 @@ public abstract class PlayerHaterService extends Service implements
 	protected Player getMediaPlayer() {
 		if (mMediaPlayer == null) {
 			mMediaPlayer = new SynchronousPlayer();
+			mMediaPlayer.setStateChangeListener(this);
 		}
 		return mMediaPlayer;
 	}

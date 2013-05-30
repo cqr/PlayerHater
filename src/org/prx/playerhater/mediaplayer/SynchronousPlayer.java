@@ -28,41 +28,22 @@ public class SynchronousPlayer extends StatelyPlayer implements
 
 	private boolean mShouldPlayWhenPrepared;
 	private int mShouldSkipWhenPrepared;
-	private OnPreparedListener mOnPreparedListener;
-	private OnSeekCompleteListener mOnSeekCompleteListener;
 	private Uri mShouldSetDataSourceUri;
 	private Context mShouldSetPrepareContext;
 
 	public SynchronousPlayer() {
 		super();
-		super.setOnPreparedListener(this);
-		super.setOnSeekCompleteListener(this);
-	}
-
-	@Override
-	public void setOnPreparedListener(OnPreparedListener preparedListener) {
-		mOnPreparedListener = preparedListener;
-	}
-
-	@Override
-	public void setOnSeekCompleteListener(
-			OnSeekCompleteListener seekCompleteListener) {
-		mOnSeekCompleteListener = seekCompleteListener;
 	}
 
 	@Override
 	public void onPrepared(MediaPlayer mp) {
+		super.onPrepared(mp);
 		startIfNecessary();
-		if (mOnPreparedListener != null) {
-			mOnPreparedListener.onPrepared(mp);
-		}
 	}
 
 	@Override
 	public void onSeekComplete(MediaPlayer mp) {
-		if (mOnSeekCompleteListener != null) {
-			mOnSeekCompleteListener.onSeekComplete(mp);
-		}
+		super.onSeekComplete(mp);
 		startIfNecessary();
 	}
 
@@ -171,6 +152,8 @@ public class SynchronousPlayer extends StatelyPlayer implements
 
 	@Override
 	public boolean conditionalPlay() {
+		Log.d("is playing? State is " + getStateName());
+		
 		int state = getState();
 		if (state == PREPARED || state == PAUSED || state == PLAYBACK_COMPLETED) {
 			start();
@@ -178,6 +161,8 @@ public class SynchronousPlayer extends StatelyPlayer implements
 		} else if (state == PREPARING || state == PREPARING_CONTENT) {
 			mShouldPlayWhenPrepared = true;
 			return true;
+		} else {
+			Log.d("Not playing. State is " + getStateName());
 		}
 		return false;
 	}
@@ -195,6 +180,11 @@ public class SynchronousPlayer extends StatelyPlayer implements
 		}
 		stop();
 		return true;
+	}
+	
+	@Override
+	public boolean isWaitingToPlay() {
+		return (mShouldSkipWhenPrepared != 0 | mShouldPlayWhenPrepared);
 	}
 
 	private void startIfNecessary() {

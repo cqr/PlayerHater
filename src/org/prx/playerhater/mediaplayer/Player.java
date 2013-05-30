@@ -14,6 +14,10 @@ import android.net.Uri;
 
 public abstract class Player {
 	
+	public static interface StateChangeListener {
+		public void onStateChanged(MediaPlayer mediaPlayer, int state);
+	}
+	
 	/**
 	 * An invalid state for a {@linkplain MediaPlayer} to be in.
 	 */
@@ -141,6 +145,10 @@ public abstract class Player {
 	public int getState() {
 		throw new IllegalStateException("This player isn't stately enough.");
 	}
+	
+	public void setStateChangeListener(StateChangeListener listener) {
+		throw new IllegalStateException("This player isn't stately enough.");
+	}
 
 	public String getStateName() {
 		throw new IllegalStateException("This player isn't stately enough.");
@@ -167,6 +175,10 @@ public abstract class Player {
 	
 	public boolean conditionalPlay() {
 		throw new IllegalStateException("This player isn't down with synchronous calls.");
+	}
+
+	public boolean isWaitingToPlay() {
+		return false;
 	}
 
 }

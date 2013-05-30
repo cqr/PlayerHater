@@ -20,6 +20,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		OnPreparedListener, OnSeekCompleteListener {
 
 	private MediaPlayer mMediaPlayer;
+	private StateChangeListener mStateChangeListener;
 
 	public static class ListenerCollection {
 		public OnErrorListener errorListener;
@@ -46,14 +47,22 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		getBarePlayer().setOnPreparedListener(this);
 		getBarePlayer().setOnSeekCompleteListener(this);
 	}
+	
+	@Override
+	public void setStateChangeListener(StateChangeListener listener) {
+		mStateChangeListener = listener;
+	}
 
 	@Override
 	public synchronized int getState() {
-		return this.mState;
+		return mState;
 	}
 
 	private synchronized void setState(int state) {
 		mState = state;
+		if (mStateChangeListener != null) {
+			mStateChangeListener.onStateChanged(getBarePlayer(), state);
+		}
 	}
 
 	public static String getStateName(int state) {

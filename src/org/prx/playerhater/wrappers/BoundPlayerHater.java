@@ -337,7 +337,7 @@ public class BoundPlayerHater extends PlayerHater {
 	@Override
 	public int getState() {
 		if (getPlayerHater() == null) {
-			return Player.IDLE;
+			return PlayerHater.STATE_LOADING;
 		}
 		return getPlayerHater().getState();
 	}

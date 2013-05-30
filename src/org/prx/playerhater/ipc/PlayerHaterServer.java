@@ -2,6 +2,7 @@ package org.prx.playerhater.ipc;
 
 import org.prx.playerhater.service.PlayerHaterService;
 import org.prx.playerhater.songs.SongHost;
+import org.prx.playerhater.util.Log;
 import org.prx.playerhater.wrappers.ServicePlayerHater;
 
 import android.app.Notification;
@@ -66,6 +67,7 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 
 	@Override
 	public boolean resume() throws RemoteException {
+		Log.d("Got it on the other side");
 		return mService.play();
 	}
 
