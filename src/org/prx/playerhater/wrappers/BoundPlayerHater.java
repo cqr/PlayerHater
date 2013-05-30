@@ -10,7 +10,6 @@ import org.prx.playerhater.Song;
 import org.prx.playerhater.ipc.IPlayerHaterServer;
 import org.prx.playerhater.ipc.PlayerHaterClient;
 import org.prx.playerhater.ipc.ServerPlayerHater;
-import org.prx.playerhater.mediaplayer.Player;
 import org.prx.playerhater.plugins.BackgroundedPlugin;
 import org.prx.playerhater.plugins.PluginCollection;
 import org.prx.playerhater.songs.RemoteSong;
