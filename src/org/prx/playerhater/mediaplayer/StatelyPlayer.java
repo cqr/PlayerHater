@@ -128,6 +128,8 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	private int mState;
 	private int mPrevState;
 
+	private boolean mInErrorCallback;
+
 	public StatelyPlayer() {
 		mMediaPlayer = new MediaPlayer();
 		setState(IDLE);
@@ -150,6 +152,10 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		return getPublicState(getInternalState());
 	}
 
+	public synchronized int getStateMask() {
+		return getState() | (isWaitingToPlay() ? WILL_PLAY : 0);
+	}
+
 	private synchronized int getInternalState() {
 		return mState;
 	}
@@ -170,13 +176,13 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 
 	private synchronized void setState(int state) {
 		mState = state;
+		mInErrorCallback = false;
 		onStateChanged();
 	}
 
 	protected void onStateChanged() {
 		if (mStateChangeListener != null) {
-			mStateChangeListener.onStateChanged(this, getState()
-					| (isWaitingToPlay() ? WILL_PLAY : 0));
+			mStateChangeListener.onStateChanged(this, getStateMask());
 		}
 	}
 
@@ -239,8 +245,10 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 			throw illegalState("prepareAsync");
 		}
 	}
-	
-	private static final int START_BITMASK = PREPARED | STARTED | PAUSED | PLAYBACK_COMPLETED;
+
+	private static final int START_BITMASK = PREPARED | STARTED | PAUSED
+			| PLAYBACK_COMPLETED;
+
 	@Override
 	public synchronized void start() throws IllegalStateException {
 		int state = getInternalState();
@@ -253,6 +261,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	}
 
 	private static final int PAUSE_BITMASK = STARTED | PAUSED;
+
 	@Override
 	public synchronized void pause() throws IllegalStateException {
 		int state = getInternalState();
@@ -264,7 +273,9 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		}
 	}
 
-	private static final int STOP_BITMASK = PREPARED | STARTED | STOPPED | PAUSED | PLAYBACK_COMPLETED;
+	private static final int STOP_BITMASK = PREPARED | STARTED | STOPPED
+			| PAUSED | PLAYBACK_COMPLETED;
+
 	@Override
 	public synchronized void stop() throws IllegalStateException {
 		int state = getInternalState();
@@ -276,7 +287,9 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		}
 	}
 
-	private static final int SEEK_TO_BITMASK = PREPARED | STARTED | PAUSED | PLAYBACK_COMPLETED;
+	private static final int SEEK_TO_BITMASK = PREPARED | STARTED | PAUSED
+			| PLAYBACK_COMPLETED;
+
 	@Override
 	public synchronized void seekTo(int msec) {
 		int state = getInternalState();
@@ -293,8 +306,10 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	public synchronized boolean isPlaying() {
 		return mMediaPlayer.isPlaying();
 	}
-	
-	private static final int GET_POSITION_BITMASK = STARTED | PAUSED | STOPPED | PLAYBACK_COMPLETED;
+
+	private static final int GET_POSITION_BITMASK = STARTED | PAUSED | STOPPED
+			| PLAYBACK_COMPLETED;
+
 	@Override
 	public synchronized int getCurrentPosition() {
 		int state = getInternalState();
@@ -304,7 +319,9 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		return 0;
 	}
 
-	private static final int GET_DURATION_BITMASK = PREPARED | STARTED | PAUSED | PLAYBACK_COMPLETED;
+	private static final int GET_DURATION_BITMASK = PREPARED | STARTED | PAUSED
+			| PLAYBACK_COMPLETED;
+
 	@Override
 	public synchronized int getDuration() {
 		int state = getInternalState();
@@ -401,18 +418,24 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 
 	@Override
 	public synchronized void onCompletion(MediaPlayer mp) {
-		setState(PLAYBACK_COMPLETED);
 		if (mListenerCollection.completionListener != null) {
 			mListenerCollection.completionListener.onCompletion(mp);
 		}
+		setState(PLAYBACK_COMPLETED);
 	}
 
 	@Override
 	public synchronized boolean onError(MediaPlayer mp, int what, int extra) {
-		setState(ERROR);
 		if (mListenerCollection.errorListener != null) {
-			return mListenerCollection.errorListener.onError(mp, what, extra);
+			mInErrorCallback = true;
+			if (mListenerCollection.errorListener.onError(mp, what, extra)) {
+				if (mInErrorCallback) {
+					setState(ERROR);
+				}
+				return true;
+			}
 		}
+		setState(ERROR);
 		return false;
 	}
 
@@ -426,10 +449,10 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 
 	@Override
 	public synchronized void onPrepared(MediaPlayer mp) {
-		setState(PREPARED);
 		if (mListenerCollection.preparedListener != null) {
 			mListenerCollection.preparedListener.onPrepared(mp);
 		}
+		setState(PREPARED);
 	}
 
 	@Override
@@ -458,7 +481,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	public String toString() {
 		return mMediaPlayer.toString() + " (" + getStateName() + ")";
 	}
-	
+
 	private IllegalStateException illegalState(String methodName) {
 		IllegalStateException e = new IllegalStateException("Cannot call "
 				+ methodName + " in the " + getStateName(getState())

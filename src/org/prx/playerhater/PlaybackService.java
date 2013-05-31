@@ -5,6 +5,7 @@ import org.prx.playerhater.mediaplayer.SynchronousPlayer;
 import org.prx.playerhater.service.PlayerHaterService;
 import org.prx.playerhater.songs.SongQueue;
 import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
+import org.prx.playerhater.util.Log;
 
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -43,12 +44,14 @@ public class PlaybackService extends PlayerHaterService implements
 
 	@Override
 	public boolean skipTo(int position) {
+		startTransaction();
 		onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
 		return getQueue().skipTo(position);
 	}
 
 	@Override
 	public void skip() {
+		startTransaction();
 		onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
 		getQueue().next();
 	}
@@ -56,6 +59,7 @@ public class PlaybackService extends PlayerHaterService implements
 	@Override
 	public void skipBack() {
 		if (getCurrentPosition() < 2000) {
+			startTransaction();
 			onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
 			getQueue().back();
 		} else {
@@ -100,16 +104,22 @@ public class PlaybackService extends PlayerHaterService implements
 
 	@Override
 	public void onNowPlayingChanged(Song nowPlaying, Song was) {
-		boolean willContinuePlaying = isPlaying();
-		SynchronousPlayer player = mMediaPlayerPool.getPlayer(
-				getApplicationContext(), nowPlaying.getUri());
+		startTransaction();
+		Log.d("Currently in state " + getState());
 		if (was == null) {
-			mMediaPlayerPool.recycle(swapMediaPlayer(player,
-					willContinuePlaying));
+			mMediaPlayerPool.recycle(peekMediaPlayer());
 		} else {
-			mMediaPlayerPool.recycle(
-					swapMediaPlayer(player, willContinuePlaying), was.getUri());
+			mMediaPlayerPool.recycle(peekMediaPlayer(), was.getUri());
 		}
+		Log.d("Currently in state " + getState());
+		setMediaPlayer(mMediaPlayerPool.getPlayer(getApplicationContext(),
+				nowPlaying.getUri()));
+		Log.d("Currently in state " + getState());
+		if (isPlaying()) {
+			getMediaPlayer().start();
+		}
+		Log.d("Currently in state " + getState());
+		commitTransaction();
 		onSongChanged();
 	}
 
@@ -125,6 +135,7 @@ public class PlaybackService extends PlayerHaterService implements
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		if (peekMediaPlayer() != null && peekMediaPlayer().equals(mp)) {
+			startTransaction();
 			onSongFinished(PlayerHater.FINISH_SONG_END);
 			getQueue().next();
 		}
@@ -133,6 +144,7 @@ public class PlaybackService extends PlayerHaterService implements
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		if (peekMediaPlayer() != null && peekMediaPlayer().equals(mp)) {
+			startTransaction();
 			onSongFinished(PlayerHater.FINISH_ERROR);
 			getQueue().next();
 			return true;

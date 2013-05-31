@@ -13,11 +13,11 @@ import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
 public abstract class Player {
-	
+
 	public static interface StateChangeListener {
 		public void onStateChanged(Player mediaPlayer, int state);
 	}
-	
+
 	public abstract void reset();
 
 	public abstract void release();
@@ -63,13 +63,13 @@ public abstract class Player {
 	public abstract void setVolume(float leftVolume, float rightVolume);
 
 	public abstract boolean equals(MediaPlayer mp);
-	
+
 	/* Stately API */
-	
+
 	public int getState() {
 		throw new IllegalStateException("This player isn't stately enough.");
 	}
-	
+
 	public void setStateChangeListener(StateChangeListener listener) {
 		throw new IllegalStateException("This player isn't stately enough.");
 	}
@@ -77,32 +77,41 @@ public abstract class Player {
 	public String getStateName() {
 		throw new IllegalStateException("This player isn't stately enough.");
 	}
-	
+
 	/* Synchronous API */
 
 	public boolean prepare(Context context, Uri uri) {
-		throw new IllegalStateException("This player isn't down with synchronous calls.");
+		throw new IllegalStateException(
+				"This player isn't down with synchronous calls.");
 	}
 
 	public boolean prepareAndPlay(Context applicationContext, Uri uri,
 			int position) {
-		throw new IllegalStateException("This player isn't down with synchronous calls.");
+		throw new IllegalStateException(
+				"This player isn't down with synchronous calls.");
 	}
-	
+
 	public boolean conditionalPause() {
-		throw new IllegalStateException("This player isn't down with synchronous calls.");
+		throw new IllegalStateException(
+				"This player isn't down with synchronous calls.");
 	}
 
 	public boolean conditionalStop() {
-		throw new IllegalStateException("This player isn't down with synchronous calls.");
+		throw new IllegalStateException(
+				"This player isn't down with synchronous calls.");
 	}
-	
+
 	public boolean conditionalPlay() {
-		throw new IllegalStateException("This player isn't down with synchronous calls.");
+		throw new IllegalStateException(
+				"This player isn't down with synchronous calls.");
 	}
 
 	public boolean isWaitingToPlay() {
 		return false;
+	}
+
+	public int getStateMask() {
+		return getState();
 	}
 
 }

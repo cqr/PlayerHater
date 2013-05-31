@@ -24,6 +24,8 @@ public interface IPlayerHater {
 	 */
 	public static final int FINISH_ERROR = 2;
 
+	public static final int STATE_INVALID = -1;
+	
 	public static final int STATE_IDLE = 4;
 	public static final int STATE_LOADING = 8;
 	public static final int STATE_PLAYING = 16;

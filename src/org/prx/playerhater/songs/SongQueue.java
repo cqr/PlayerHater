@@ -29,7 +29,7 @@ public class SongQueue {
 	private static Handler sHandler;
 	private static final int CURRENT_SONG = 1;
 	private static final int NEXT_SONG = 2;
-	
+
 	private static Handler getHandler() {
 		if (sHandler == null) {
 			HandlerThread thread = new HandlerThread("SongQueue");
@@ -52,11 +52,11 @@ public class SongQueue {
 		}
 		return sHandler;
 	}
-	
+
 	private static class SongMessage {
 		private final SongQueue queue;
 		private final Song song;
-		
+
 		public SongMessage(SongQueue songQueue, Song theSong) {
 			queue = songQueue;
 			song = theSong;
@@ -126,9 +126,9 @@ public class SongQueue {
 	}
 
 	public synchronized Song getNextPlaying() {
-		return 	getNextSong();
+		return getNextSong();
 	}
-	
+
 	public synchronized void empty() {
 		mSongs.clear();
 		setPlayheadPosition(-1);
@@ -171,7 +171,8 @@ public class SongQueue {
 
 	private void currentSongChanged(boolean notify) {
 		if (notify && mListener != null)
-			getHandler().obtainMessage(CURRENT_SONG, new SongMessage(this, mCurrentSongWas)).sendToTarget();
+			getHandler().obtainMessage(CURRENT_SONG,
+					new SongMessage(this, mCurrentSongWas)).sendToTarget();
 		mCurrentSongWas = getNowPlaying();
 	}
 
@@ -181,7 +182,8 @@ public class SongQueue {
 
 	private void nextSongChanged(boolean notify) {
 		if (notify && mListener != null)
-			getHandler().obtainMessage(NEXT_SONG, new SongMessage(this, mNextSongWas)).sendToTarget();
+			getHandler().obtainMessage(NEXT_SONG,
+					new SongMessage(this, mNextSongWas)).sendToTarget();
 		mNextSongWas = getNextSong();
 	}
 
@@ -190,7 +192,8 @@ public class SongQueue {
 	}
 
 	private Song getNextSong() {
-		if (getPlayheadPosition() >= mSongs.size() || getPlayheadPosition() <= 0) {
+		if (getPlayheadPosition() >= mSongs.size()
+				|| getPlayheadPosition() <= 0) {
 			return null;
 		} else {
 			return mSongs.get(getPlayheadPosition());
@@ -218,6 +221,12 @@ public class SongQueue {
 			return false;
 		} else {
 			mSongs.remove(position - 1);
+			if (position < getPlayheadPosition()) {
+				setPlayheadPosition(getPlayheadPosition() - 1);
+			}
+			if (getPlayheadPosition() >= mSongs.size()) {
+				setPlayheadPosition(mSongs.size() >= 1 ? -1 : 1);
+			}
 			songOrderChanged();
 			return true;
 		}

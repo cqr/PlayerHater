@@ -28,7 +28,7 @@ public class PlayerStateWatcher implements StateChangeListener {
 		}
 		mMediaPlayer = player;
 		mMediaPlayer.setStateChangeListener(this);
-		onStateChanged(mMediaPlayer, mMediaPlayer.getState());
+		onStateChanged(mMediaPlayer, mMediaPlayer.getStateMask());
 	}
 
 	public void setListener(PlayerHaterStateListener listener) {

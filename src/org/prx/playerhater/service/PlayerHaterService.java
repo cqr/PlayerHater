@@ -187,7 +187,11 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public int getState() {
-		return mPlayerStateWatcher.getCurrentState();
+		if (mInTransaction != PlayerHater.STATE_INVALID) {
+			return mInTransaction;
+		} else {
+			return mLastState;
+		}
 	}
 
 	@Override
@@ -313,7 +317,7 @@ public abstract class PlayerHaterService extends Service implements
 		getPlugin().onSongChanged(nowPlaying());
 		getPlugin().onDurationChanged(getDuration());
 	}
-	
+
 	protected void onSongFinished(int reason) {
 		if (nowPlaying() != null) {
 			getPlugin().onSongFinished(nowPlaying(), reason);
@@ -355,28 +359,51 @@ public abstract class PlayerHaterService extends Service implements
 	 * #onStateChanged(int)
 	 */
 
-	private int mLastState = -1;
+	private int mLastState = PlayerHater.STATE_IDLE;
+	private int mInTransaction = PlayerHater.STATE_INVALID;
+
+	protected boolean startTransaction() {
+		if (mInTransaction == PlayerHater.STATE_INVALID) {
+			Log.d("Starting transaction in state " + mLastState);
+			mInTransaction = mLastState;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	protected void commitTransaction() {
+		if (mInTransaction != PlayerHater.STATE_INVALID) {
+			int nextState = mLastState;
+			mLastState = mInTransaction;
+			mInTransaction = PlayerHater.STATE_INVALID;
+			Log.d("Committing transaction (" + mLastState + " => " + nextState +")");
+			onStateChanged(nextState);
+		}
+	}
 
 	@Override
 	public void onStateChanged(int state) {
 		if (!selfStarted() && state != PlayerHater.STATE_IDLE) {
 			startSelf();
 		}
-		switch (state) {
-		case PlayerHater.STATE_IDLE:
-			onStopped();
-			break;
-		case PlayerHater.STATE_LOADING:
-			onLoading();
-			break;
-		case PlayerHater.STATE_PAUSED:
-			onPaused();
-			break;
-		case PlayerHater.STATE_PLAYING:
-			if (mLastState == PlayerHater.STATE_PAUSED) {
-				onResumed();
-			} else {
-				onStarted();
+		if (mInTransaction == PlayerHater.STATE_INVALID) {
+			switch (state) {
+			case PlayerHater.STATE_IDLE:
+				onStopped();
+				break;
+			case PlayerHater.STATE_LOADING:
+				onLoading();
+				break;
+			case PlayerHater.STATE_PAUSED:
+				onPaused();
+				break;
+			case PlayerHater.STATE_PLAYING:
+				if (mLastState == PlayerHater.STATE_PAUSED) {
+					onResumed();
+				} else {
+					onStarted();
+				}
 			}
 		}
 		mLastState = state;
@@ -394,21 +421,27 @@ public abstract class PlayerHaterService extends Service implements
 		}
 		return mMediaPlayer;
 	}
-	
+
 	protected SynchronousPlayer peekMediaPlayer() {
 		return mMediaPlayer;
 	}
 
 	protected void setMediaPlayer(SynchronousPlayer mediaPlayer) {
+		boolean myTransaction = startTransaction();
 		mPlayerStateWatcher.setMediaPlayer(mediaPlayer);
 		mMediaPlayer = mediaPlayer;
+		if (myTransaction) {
+			commitTransaction();
+		}
 	}
-	
+
 	protected SynchronousPlayer swapMediaPlayer(SynchronousPlayer mediaPlayer) {
 		return swapMediaPlayer(mediaPlayer, false);
 	}
-	
-	protected SynchronousPlayer swapMediaPlayer(SynchronousPlayer mediaPlayer, boolean play) {
+
+	protected SynchronousPlayer swapMediaPlayer(SynchronousPlayer mediaPlayer,
+			boolean play) {
+		boolean myTransaction = startTransaction();
 		SynchronousPlayer oldPlayer = peekMediaPlayer();
 		if (oldPlayer != null) {
 			oldPlayer.conditionalPause();
@@ -417,9 +450,11 @@ public abstract class PlayerHaterService extends Service implements
 			mediaPlayer.start();
 		}
 		setMediaPlayer(mediaPlayer);
+		if (myTransaction) {
+			commitTransaction();
+		}
 		return oldPlayer;
 	}
-
 
 	protected SynchronousPlayer buildMediaPlayer() {
 		SynchronousPlayer player = new SynchronousPlayer();
