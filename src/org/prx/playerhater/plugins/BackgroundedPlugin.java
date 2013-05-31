@@ -22,7 +22,6 @@ import java.util.Set;
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.Song;
-import org.prx.playerhater.util.Log;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -463,8 +462,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 
 	@Override
 	public boolean handleMessage(Message msg) {
-		Log.d("Backgrounded Plugin got " + msg.what);
-		Log.d("My plugin is " + mPlugin);
 		switch (msg.what) {
 		case CHANGES_COMPLETE_INTERNAL:
 			if (!mHandler.hasTargettedMessages(CHANGES_COMPLETE)) {

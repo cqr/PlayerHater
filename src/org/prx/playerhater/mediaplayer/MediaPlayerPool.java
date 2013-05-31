@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.prx.playerhater.util.Log;
+
 import android.content.Context;
 import android.net.Uri;
 
@@ -27,67 +30,90 @@ public class MediaPlayerPool {
 		}
 	}
 
-	public void prepare(Context context, Uri uri) {
+	public synchronized void prepare(Context context, Uri uri) {
+		Log.d("Being asked to prepare " + uri);
 		if (mMediaPlayers.containsKey(uri)) {
+			Log.d(".... but it's already prepared. Returning.");
 			return;
 		} else {
 			SynchronousPlayer player = getPlayer();
+			Log.d(".... preparing player with " + uri);
 			player.prepare(context, uri);
 			addPlayer(player, uri);
 		}
 	}
 
-	public SynchronousPlayer getPlayer(Context context, Uri uri) {
+	public synchronized SynchronousPlayer getPlayer(Context context, Uri uri) {
+		Log.d("Getting a player for " + uri);
 		if (mMediaPlayers.containsKey(uri)) {
+			Log.d("It was waiting for us.");
 			mRequests.remove(uri);
 			return mMediaPlayers.remove(uri);
 		} else {
 			SynchronousPlayer player = getPlayer();
+			Log.d("Preparing " + uri);
 			player.prepare(context, uri);
 			return player;
 		}
 	}
 
-	public void recycle(SynchronousPlayer player) {
+	public synchronized void recycle(SynchronousPlayer player) {
 		if (player != null) {
+			Log.d("Adding a player to the idle pool");
 			player.reset();
 			mIdlePlayers.add(player);
 		}
 	}
 
-	public void recycle(SynchronousPlayer player, Uri prepared) {
+	public synchronized void recycle(SynchronousPlayer player, Uri prepared) {
 		if (player != null) {
+			if (prepared == null) {
+				recycle(player);
+				return;
+			}
+			Log.d("Got an apparently prepared player for " + prepared);
 			if (mMediaPlayers.containsKey(prepared)) {
+				Log.d("but we already have another player for that uri, so we're scrapping it.");
 				recycle(player);
 			} else {
+				Log.d("Let's see what kind of shape it's in.");
 				switch (player.getState()) {
 				case StatelyPlayer.IDLE:
 				case StatelyPlayer.ERROR:
+					Log.d("Unusable, resetting and scrapping");
 					recycle(player);
 					return;
 				case StatelyPlayer.END:
+					Log.d("Released? What the hell?");
 					return;
 				case StatelyPlayer.INITIALIZED:
 				case StatelyPlayer.STOPPED:
+					Log.d("Waiting for a call to prepare - doing so.");
 					player.prepareAsync();
 					break;
 				case StatelyPlayer.STARTED:
+					Log.d("Playing? Pausing it.");
 					player.pause();
 				case StatelyPlayer.PAUSED:
+					Log.d("Skipping to the beginning...");
 					player.seekTo(0);
 				}
-				mRequests.add(mRequests.size(), prepared);
-				mMediaPlayers.put(prepared, player);
+				addPlayer(player, prepared);
 			}
 		}
 	}
 
-	private SynchronousPlayer getPlayer() {
+	private synchronized SynchronousPlayer getPlayer() {
+		Log.d("Trying to get a new player.");
 		if (mIdlePlayers.size() > 0) {
+			Log.d("Grabbing an idle player.");
 			return mIdlePlayers.remove(0);
 		} else if (mRequests.size() > 0) {
-			SynchronousPlayer player = mMediaPlayers.remove(mRequests
-					.remove(mRequests.size() - 1));
+			Log.d("Grabbing our least recently used player.");
+			Uri leastRecentReq = mRequests.remove(mRequests.size() - 1);
+			Log.d("Which is " + leastRecentReq);
+			SynchronousPlayer player = mMediaPlayers.remove(leastRecentReq);
+			Log.d("Resetting");
 			player.reset();
 			return player;
 		} else {
@@ -96,7 +122,8 @@ public class MediaPlayerPool {
 		}
 	}
 
-	private void addPlayer(SynchronousPlayer player, Uri uri) {
+	private synchronized void addPlayer(SynchronousPlayer player, Uri uri) {
+		Log.d("Adding a player to the pile of prepared ones for " + uri);
 		mRequests.remove(uri);
 		mRequests.add(0, uri);
 		mMediaPlayers.put(uri, player);

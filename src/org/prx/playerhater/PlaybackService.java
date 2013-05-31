@@ -105,20 +105,14 @@ public class PlaybackService extends PlayerHaterService implements
 	@Override
 	public void onNowPlayingChanged(Song nowPlaying, Song was) {
 		startTransaction();
-		Log.d("Currently in state " + getState());
-		if (was == null) {
-			mMediaPlayerPool.recycle(peekMediaPlayer());
-		} else {
-			mMediaPlayerPool.recycle(peekMediaPlayer(), was.getUri());
+		if (peekMediaPlayer() != null) {
+			mMediaPlayerPool.recycle(peekMediaPlayer(), was == null ? null : was.getUri());
 		}
-		Log.d("Currently in state " + getState());
 		setMediaPlayer(mMediaPlayerPool.getPlayer(getApplicationContext(),
 				nowPlaying.getUri()));
-		Log.d("Currently in state " + getState());
 		if (isPlaying()) {
 			getMediaPlayer().start();
 		}
-		Log.d("Currently in state " + getState());
 		commitTransaction();
 		onSongChanged();
 	}
@@ -136,6 +130,9 @@ public class PlaybackService extends PlayerHaterService implements
 	public void onCompletion(MediaPlayer mp) {
 		if (peekMediaPlayer() != null && peekMediaPlayer().equals(mp)) {
 			startTransaction();
+			SynchronousPlayer player = peekMediaPlayer();
+			setMediaPlayer(null);
+			mMediaPlayerPool.recycle(player, nowPlaying().getUri());
 			onSongFinished(PlayerHater.FINISH_SONG_END);
 			getQueue().next();
 		}
@@ -145,6 +142,9 @@ public class PlaybackService extends PlayerHaterService implements
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		if (peekMediaPlayer() != null && peekMediaPlayer().equals(mp)) {
 			startTransaction();
+			SynchronousPlayer player = peekMediaPlayer();
+			setMediaPlayer(null);
+			mMediaPlayerPool.recycle(player, nowPlaying().getUri());
 			onSongFinished(PlayerHater.FINISH_ERROR);
 			getQueue().next();
 			return true;
