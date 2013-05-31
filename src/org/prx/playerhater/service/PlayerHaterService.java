@@ -23,7 +23,6 @@ import org.prx.playerhater.ipc.ClientPlugin;
 import org.prx.playerhater.ipc.IPlayerHaterClient;
 import org.prx.playerhater.ipc.PlayerHaterClient;
 import org.prx.playerhater.ipc.PlayerHaterServer;
-import org.prx.playerhater.mediaplayer.Player;
 import org.prx.playerhater.mediaplayer.SynchronousPlayer;
 import org.prx.playerhater.plugins.BackgroundedPlugin;
 import org.prx.playerhater.plugins.PluginCollection;
@@ -64,7 +63,7 @@ public abstract class PlayerHaterService extends Service implements
 		}
 		if (client != null) {
 			mClient = new ClientPlugin(client);
-			
+
 			if (nowPlaying() != null) {
 				mClient.onSongChanged(nowPlaying());
 			}
@@ -87,9 +86,9 @@ public abstract class PlayerHaterService extends Service implements
 				mClient.onAudioPaused();
 				break;
 			}
-			
+
 			getPluginCollection().add(mClient);
-			
+
 			// If we're running remotely, set up the remote song host.
 			// If this condition returns false, that indicates that
 			// the two sides of the transaction are happening on the
@@ -178,26 +177,17 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public boolean isPlaying() {
-		return (getMediaPlayer().getState() == Player.STARTED);
+		return (getState() & PlayerHater.STATE_PLAYING) != 0;
 	}
 
 	@Override
 	public boolean isLoading() {
-		return getMediaPlayer().isWaitingToPlay();
+		return (getState() & PlayerHater.STATE_LOADING) != 0;
 	}
 
 	@Override
 	public int getState() {
-		if (isPlaying()) {
-			return PlayerHater.STATE_PLAYING;
-		}
-		if (isLoading()) {
-			return PlayerHater.STATE_LOADING;
-		}
-		if (getMediaPlayer().getState() == Player.PAUSED) {
-			return PlayerHater.STATE_PAUSED;
-		}
-		return PlayerHater.STATE_IDLE;
+		return mPlayerStateWatcher.getCurrentState();
 	}
 
 	@Override
@@ -213,6 +203,30 @@ public abstract class PlayerHaterService extends Service implements
 	/* END Player State Methods */
 
 	/* Generic Player Controls */
+
+	@Override
+	public boolean pause() {
+		return getMediaPlayer().conditionalPause();
+	}
+
+	@Override
+	public boolean stop() {
+		onStopped();
+		return getMediaPlayer().conditionalStop();
+	}
+
+	@Override
+	public boolean play() {
+		return getMediaPlayer().conditionalPlay();
+	}
+
+	@Override
+	public boolean play(int startTime) {
+		getMediaPlayer().conditionalPause();
+		getMediaPlayer().seekTo(startTime);
+		getMediaPlayer().conditionalPlay();
+		return true;
+	}
 
 	public void duck() {
 		getMediaPlayer().setVolume(0.1f, 0.1f);
@@ -263,7 +277,10 @@ public abstract class PlayerHaterService extends Service implements
 			stop();
 			break;
 		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-			seekTo(0);
+			skipBack();
+			break;
+		case KeyEvent.KEYCODE_MEDIA_NEXT:
+			skip();
 			break;
 		}
 	}
@@ -295,6 +312,12 @@ public abstract class PlayerHaterService extends Service implements
 	protected void onSongChanged() {
 		getPlugin().onSongChanged(nowPlaying());
 		getPlugin().onDurationChanged(getDuration());
+	}
+	
+	protected void onSongFinished(int reason) {
+		if (nowPlaying() != null) {
+			getPlugin().onSongFinished(nowPlaying(), reason);
+		}
 	}
 
 	public abstract Song getNextSong();
@@ -363,22 +386,43 @@ public abstract class PlayerHaterService extends Service implements
 	// For dealing with
 	// MediaPlayers.
 
-	private Player mMediaPlayer;
+	private SynchronousPlayer mMediaPlayer;
 
-	protected Player getMediaPlayer() {
+	protected SynchronousPlayer getMediaPlayer() {
 		if (mMediaPlayer == null) {
 			setMediaPlayer(buildMediaPlayer());
 		}
 		return mMediaPlayer;
 	}
+	
+	protected SynchronousPlayer peekMediaPlayer() {
+		return mMediaPlayer;
+	}
 
-	protected void setMediaPlayer(Player mediaPlayer) {
+	protected void setMediaPlayer(SynchronousPlayer mediaPlayer) {
 		mPlayerStateWatcher.setMediaPlayer(mediaPlayer);
 		mMediaPlayer = mediaPlayer;
 	}
+	
+	protected SynchronousPlayer swapMediaPlayer(SynchronousPlayer mediaPlayer) {
+		return swapMediaPlayer(mediaPlayer, false);
+	}
+	
+	protected SynchronousPlayer swapMediaPlayer(SynchronousPlayer mediaPlayer, boolean play) {
+		SynchronousPlayer oldPlayer = peekMediaPlayer();
+		if (oldPlayer != null) {
+			oldPlayer.conditionalPause();
+		}
+		if (play) {
+			mediaPlayer.start();
+		}
+		setMediaPlayer(mediaPlayer);
+		return oldPlayer;
+	}
 
-	protected Player buildMediaPlayer() {
-		Player player = new SynchronousPlayer();
+
+	protected SynchronousPlayer buildMediaPlayer() {
+		SynchronousPlayer player = new SynchronousPlayer();
 		return player;
 	}
 

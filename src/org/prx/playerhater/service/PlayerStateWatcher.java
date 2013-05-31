@@ -3,6 +3,7 @@ package org.prx.playerhater.service;
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.mediaplayer.Player;
 import org.prx.playerhater.mediaplayer.Player.StateChangeListener;
+import org.prx.playerhater.mediaplayer.StatelyPlayer;
 
 public class PlayerStateWatcher implements StateChangeListener {
 	private int mCurrentState = PlayerHater.STATE_IDLE;
@@ -36,35 +37,38 @@ public class PlayerStateWatcher implements StateChangeListener {
 	}
 
 	@Override
-	public void onStateChanged(Player mediaPlayer, int state) {
+	public synchronized void onStateChanged(Player mediaPlayer, int state) {
+		boolean willPlay = StatelyPlayer.willPlay(state);
+		state = StatelyPlayer.mediaPlayerState(state);
+		
 		switch (state) {
-		case Player.STOPPED:
-		case Player.END:
-		case Player.ERROR:
-		case Player.IDLE:
-		case Player.INITIALIZED:
-		case Player.PLAYBACK_COMPLETED:
-			setCurrentState(PlayerHater.STATE_IDLE);
-			break;
-		case Player.LOADING_CONTENT:
-		case Player.PREPARING:
-		case Player.PREPARED:
-		case Player.PREPARING_CONTENT:
-			if (mediaPlayer.isWaitingToPlay()) {
+		case StatelyPlayer.STOPPED:
+		case StatelyPlayer.END:
+		case StatelyPlayer.ERROR:
+		case StatelyPlayer.IDLE:
+		case StatelyPlayer.INITIALIZED:
+		case StatelyPlayer.PLAYBACK_COMPLETED:
+		case StatelyPlayer.PREPARING:
+		case StatelyPlayer.PREPARED:
+			if (willPlay) {
 				setCurrentState(PlayerHater.STATE_LOADING);
 			} else {
 				setCurrentState(PlayerHater.STATE_IDLE);
 			}
 			break;
-		case Player.PAUSED:
+		case StatelyPlayer.PAUSED:
 			setCurrentState(PlayerHater.STATE_PAUSED);
 			break;
-		case Player.STARTED:
+		case StatelyPlayer.STARTED:
 			setCurrentState(PlayerHater.STATE_PLAYING);
 			break;
 		default:
 			throw new IllegalStateException("Illegal State: " + state);
 		}
+	}
+	
+	public synchronized int getCurrentState() {
+		return mCurrentState;
 	}
 
 	private void setCurrentState(int currentState) {

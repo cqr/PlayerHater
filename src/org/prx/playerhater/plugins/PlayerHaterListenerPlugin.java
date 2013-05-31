@@ -22,7 +22,6 @@ import java.util.List;
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.PlayerHaterListener;
 import org.prx.playerhater.Song;
-import org.prx.playerhater.mediaplayer.Player;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;

@@ -19,6 +19,98 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		OnCompletionListener, OnErrorListener, OnInfoListener,
 		OnPreparedListener, OnSeekCompleteListener {
 
+	/**
+	 * An invalid state for a {@linkplain MediaPlayer} to be in.
+	 */
+	public static final int INVALID_STATE = -1;
+
+	/**
+	 * The state a {@linkplain MediaPlayer} is in when initialized. Nothing is
+	 * loaded into the player.
+	 */
+	public static final int IDLE = 0;
+
+	/**
+	 * The state a {@linkplain MediaPlayer} enters after
+	 * {@linkplain MediaPlayer#release()} is called on it. This
+	 * {@linkplain MediaPlayer} will be unusable until {@linkplain #reset()} is
+	 * called on it.
+	 */
+	public static final int END = 1;
+
+	/**
+	 * The state a {@linkplain MediaPlayer} is in when
+	 * {@linkplain #setDataSource(Context, Uri)} is called on it.
+	 */
+	public static final int INITIALIZED = 2;
+
+	/**
+	 * The state a {@linkplain MediaPlayer} is in when
+	 * {@linkplain #prepareAsync()} is called on it.
+	 */
+	public static final int PREPARING = 4;
+
+	/**
+	 * The state a {@linkplain MediaPlayer} is in when
+	 * {@linkplain #prepareAsync()} is complete or when {{@link #prepare()} is
+	 * called.
+	 */
+	public static final int PREPARED = 8;
+
+	/**
+	 * The state a {@linkplain MediaPlayer} is in when playing.
+	 */
+	public static final int STARTED = 16;
+
+	/**
+	 * The state a {@linkplain MediaPlayer} is in when {{@link #stop()} is
+	 * called.
+	 */
+	public static final int STOPPED = 32;
+
+	/**
+	 * The state a {@linkplain MediaPlayer} is in when {{@link #pause()} is
+	 * called.
+	 */
+	public static final int PAUSED = 64;
+
+	/**
+	 * The state a {@linkplain MediaPlayer} is in when it has reached the end of
+	 * the data loaded into it.
+	 */
+	public static final int PLAYBACK_COMPLETED = 128;
+
+	/**
+	 * Internal state used for content:// URIs
+	 */
+	public static final int LOADING_CONTENT = -256;
+
+	/**
+	 * Internal state used for content:// URIs
+	 */
+	public static final int PREPARING_CONTENT = -512;
+
+	/**
+	 * The state a {@linkplain MediaPlayer} is in when an error has occurred.
+	 */
+	public static final int ERROR = 1024;
+
+	/**
+	 * Used in a statemask to indicate that the player is getting ready to play.
+	 */
+	public static final int WILL_PLAY = 65536;
+
+	public static boolean willPlay(int stateMask) {
+		return (stateMask & WILL_PLAY) == WILL_PLAY;
+	}
+
+	public static int mediaPlayerState(int stateMask) {
+		if (willPlay(stateMask)) {
+			stateMask &= ~WILL_PLAY;
+		}
+		return stateMask;
+	}
+
 	private MediaPlayer mMediaPlayer;
 	private StateChangeListener mStateChangeListener;
 
@@ -47,7 +139,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		getBarePlayer().setOnPreparedListener(this);
 		getBarePlayer().setOnSeekCompleteListener(this);
 	}
-	
+
 	@Override
 	public void setStateChangeListener(StateChangeListener listener) {
 		mStateChangeListener = listener;
@@ -55,17 +147,36 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 
 	@Override
 	public synchronized int getState() {
+		return getPublicState(getInternalState());
+	}
+
+	private synchronized int getInternalState() {
 		return mState;
+	}
+
+	private int getPublicState(int internalState) {
+		if (internalState >= 0) {
+			return internalState;
+		}
+		switch (internalState) {
+		case PREPARING_CONTENT:
+			return PREPARING;
+		case LOADING_CONTENT:
+			return INITIALIZED;
+		default:
+			return INVALID_STATE;
+		}
 	}
 
 	private synchronized void setState(int state) {
 		mState = state;
 		onStateChanged();
 	}
-	
+
 	protected void onStateChanged() {
 		if (mStateChangeListener != null) {
-			mStateChangeListener.onStateChanged(this, mState);
+			mStateChangeListener.onStateChanged(this, getState()
+					| (isWaitingToPlay() ? WILL_PLAY : 0));
 		}
 	}
 
@@ -80,7 +191,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		case INITIALIZED:
 			return "initialized";
 		case LOADING_CONTENT:
-			return "loading content";
+			return "initialized(content uri)";
 		case PAUSED:
 			return "paused";
 		case PLAYBACK_COMPLETED:
@@ -90,7 +201,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		case PREPARING:
 			return "preparing";
 		case PREPARING_CONTENT:
-			return "preparing content";
+			return "preparing(content uri)";
 		case STARTED:
 			return "started";
 		case STOPPED:
@@ -101,37 +212,39 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 
 	@Override
 	public synchronized String getStateName() {
-		return getStateName(getState());
+		return getStateName(getInternalState());
 	}
 
 	@Override
 	public synchronized void reset() {
 		setState(IDLE);
-		this.mMediaPlayer.reset();
+		mMediaPlayer.reset();
 	}
 
 	@Override
 	public synchronized void release() {
-		this.mMediaPlayer.release();
+		mMediaPlayer.release();
 		setState(END);
 	}
 
 	@Override
 	public synchronized void prepareAsync() throws IllegalStateException {
-		if (getState() == INITIALIZED || getState() == STOPPED) {
+		int state = getInternalState();
+		if ((state & (INITIALIZED | STOPPED)) != 0) {
 			mMediaPlayer.prepareAsync();
 			setState(PREPARING);
-		} else if (getState() == LOADING_CONTENT) {
+		} else if (state == LOADING_CONTENT) {
 			setState(PREPARING_CONTENT);
 		} else {
 			throw illegalState("prepareAsync");
 		}
 	}
-
+	
+	private static final int START_BITMASK = PREPARED | STARTED | PAUSED | PLAYBACK_COMPLETED;
 	@Override
 	public synchronized void start() throws IllegalStateException {
-		if (getState() == PREPARED || getState() == STARTED
-				|| getState() == PAUSED || getState() == PLAYBACK_COMPLETED) {
+		int state = getInternalState();
+		if ((state & START_BITMASK) != 0) {
 			mMediaPlayer.start();
 			setState(STARTED);
 		} else {
@@ -139,9 +252,11 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		}
 	}
 
+	private static final int PAUSE_BITMASK = STARTED | PAUSED;
 	@Override
 	public synchronized void pause() throws IllegalStateException {
-		if (getState() == STARTED || getState() == PAUSED) {
+		int state = getInternalState();
+		if ((state & PAUSE_BITMASK) != 0) {
 			mMediaPlayer.pause();
 			setState(PAUSED);
 		} else {
@@ -149,34 +264,26 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		}
 	}
 
-	private IllegalStateException illegalState(String methodName) {
-		IllegalStateException e = new IllegalStateException("Cannot call "
-				+ methodName + " in the " + getStateName(getState())
-				+ " state.");
-		e.printStackTrace();
-		return e;
-	}
-
+	private static final int STOP_BITMASK = PREPARED | STARTED | STOPPED | PAUSED | PLAYBACK_COMPLETED;
 	@Override
 	public synchronized void stop() throws IllegalStateException {
-		if (getState() == PREPARED || getState() == STARTED
-				|| this.getState() == STOPPED || this.getState() == PAUSED
-				|| this.getState() == PLAYBACK_COMPLETED) {
-			this.mMediaPlayer.stop();
+		int state = getInternalState();
+		if ((state & (STOP_BITMASK)) != 0) {
+			mMediaPlayer.stop();
 			setState(STOPPED);
 		} else {
 			throw illegalState("stop");
 		}
 	}
 
+	private static final int SEEK_TO_BITMASK = PREPARED | STARTED | PAUSED | PLAYBACK_COMPLETED;
 	@Override
 	public synchronized void seekTo(int msec) {
-		if (this.getState() == PREPARED || this.getState() == STARTED
-				|| this.getState() == PAUSED
-				|| this.getState() == PLAYBACK_COMPLETED) {
-			this.mPrevState = this.getState();
+		int state = getInternalState();
+		if ((state & SEEK_TO_BITMASK) != 0) {
+			mPrevState = getInternalState();
 			setState(PREPARING);
-			this.mMediaPlayer.seekTo(msec);
+			mMediaPlayer.seekTo(msec);
 		} else {
 			throw illegalState("seekTo");
 		}
@@ -184,32 +291,32 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 
 	@Override
 	public synchronized boolean isPlaying() {
-		return this.mMediaPlayer.isPlaying();
+		return mMediaPlayer.isPlaying();
 	}
-
+	
+	private static final int GET_POSITION_BITMASK = STARTED | PAUSED | STOPPED | PLAYBACK_COMPLETED;
 	@Override
 	public synchronized int getCurrentPosition() {
-		if (this.getState() == STARTED || this.getState() == PAUSED
-				|| this.getState() == STOPPED
-				|| this.getState() == PLAYBACK_COMPLETED) {
-			return this.mMediaPlayer.getCurrentPosition();
+		int state = getInternalState();
+		if ((state & GET_POSITION_BITMASK) != 0) {
+			return mMediaPlayer.getCurrentPosition();
 		}
 		return 0;
 	}
 
+	private static final int GET_DURATION_BITMASK = PREPARED | STARTED | PAUSED | PLAYBACK_COMPLETED;
 	@Override
 	public synchronized int getDuration() {
-		if (this.getState() == PREPARED || this.getState() == STARTED
-				|| this.getState() == PAUSED
-				|| this.getState() == PLAYBACK_COMPLETED) {
-			return this.mMediaPlayer.getDuration();
+		int state = getInternalState();
+		if ((state & GET_DURATION_BITMASK) != 0) {
+			return mMediaPlayer.getDuration();
 		}
 		return 0;
 	}
 
 	@Override
 	public synchronized void setAudioStreamType(int streamtype) {
-		this.mMediaPlayer.setAudioStreamType(streamtype);
+		mMediaPlayer.setAudioStreamType(streamtype);
 	}
 
 	@Override
@@ -225,20 +332,18 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 						ParcelFileDescriptor fd = context.getContentResolver()
 								.openFileDescriptor(uri, "r");
 						mMediaPlayer.setDataSource(fd.getFileDescriptor());
-						if (StatelyPlayer.this.getState() == PREPARING_CONTENT) {
-							setState(INITIALIZED);
+						int state = getInternalState();
+						setState(INITIALIZED);
+						if ((state & PREPARING_CONTENT) != 0) {
 							prepareAsync();
-						} else {
-							setState(INITIALIZED);
 						}
 					} catch (Exception e) {
 						try {
 							mMediaPlayer.setDataSource(uri.toString());
-							if (StatelyPlayer.this.getState() == PREPARING_CONTENT) {
-								setState(INITIALIZED);
+							int state = getInternalState();
+							setState(INITIALIZED);
+							if ((state & PREPARING_CONTENT) != 0) {
 								prepareAsync();
-							} else {
-								setState(INITIALIZED);
 							}
 						} catch (Exception e1) {
 							Log.e("Whoops", e1);
@@ -352,5 +457,13 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	@Override
 	public String toString() {
 		return mMediaPlayer.toString() + " (" + getStateName() + ")";
+	}
+	
+	private IllegalStateException illegalState(String methodName) {
+		IllegalStateException e = new IllegalStateException("Cannot call "
+				+ methodName + " in the " + getStateName(getState())
+				+ " state.");
+		e.printStackTrace();
+		return e;
 	}
 }

@@ -1,41 +1,33 @@
 package org.prx.playerhater;
 
+import org.prx.playerhater.mediaplayer.MediaPlayerPool;
+import org.prx.playerhater.mediaplayer.SynchronousPlayer;
 import org.prx.playerhater.service.PlayerHaterService;
 import org.prx.playerhater.songs.SongQueue;
 import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
 
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnErrorListener;
+
 public class PlaybackService extends PlayerHaterService implements
-		OnQueuedSongsChangedListener {
+		OnQueuedSongsChangedListener, OnErrorListener, OnCompletionListener {
+
+	private MediaPlayerPool mMediaPlayerPool;
 
 	@Override
-	public boolean pause() {
-		return getMediaPlayer().conditionalPause();
-	}
-
-	@Override
-	public boolean stop() {
-		onStopped();
-		return getMediaPlayer().conditionalStop();
-	}
-
-	@Override
-	public boolean play() {
-		return getMediaPlayer().conditionalPlay();
-	}
-
-	@Override
-	public boolean play(int startTime) {
-		getMediaPlayer().conditionalPause();
-		getMediaPlayer().seekTo(startTime);
-		getMediaPlayer().conditionalPlay();
-		return true;
+	public void onCreate() {
+		super.onCreate();
+		mMediaPlayerPool = new MediaPlayerPool();
 	}
 
 	@Override
 	public boolean play(Song song, int startTime) {
-		getMediaPlayer().prepareAndPlay(getApplicationContext(), song.getUri(),
-				startTime);
-		return true;
+		int position = enqueue(song);
+		onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
+		getQueue().skipTo(position);
+		seekTo(startTime);
+		return play();
 	}
 
 	@Override
@@ -51,17 +43,24 @@ public class PlaybackService extends PlayerHaterService implements
 
 	@Override
 	public boolean skipTo(int position) {
+		onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
 		return getQueue().skipTo(position);
 	}
 
 	@Override
 	public void skip() {
+		onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
 		getQueue().next();
 	}
 
 	@Override
 	public void skipBack() {
-		getQueue().back();
+		if (getCurrentPosition() < 2000) {
+			onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
+			getQueue().back();
+		} else {
+			seekTo(0);
+		}
 	}
 
 	@Override
@@ -91,7 +90,7 @@ public class PlaybackService extends PlayerHaterService implements
 
 	@Override
 	public int getQueuePosition() {
-		return getQueue().getPosition();
+		return getQueue().getPosition() + (isPlaying() ? 1 : 0);
 	}
 
 	@Override
@@ -100,18 +99,61 @@ public class PlaybackService extends PlayerHaterService implements
 	}
 
 	@Override
-	public void onNowPlayingChanged(Song nowPlaying) {
-		getMediaPlayer().prepare(getApplicationContext(), nowPlaying.getUri());
+	public void onNowPlayingChanged(Song nowPlaying, Song was) {
+		boolean willContinuePlaying = isPlaying();
+		SynchronousPlayer player = mMediaPlayerPool.getPlayer(
+				getApplicationContext(), nowPlaying.getUri());
+		if (was == null) {
+			mMediaPlayerPool.recycle(swapMediaPlayer(player,
+					willContinuePlaying));
+		} else {
+			mMediaPlayerPool.recycle(
+					swapMediaPlayer(player, willContinuePlaying), was.getUri());
+		}
 		onSongChanged();
 	}
 
 	@Override
-	public void onNextSongChanged(Song nextSong) {
+	public void onNextSongChanged(Song nextSong, Song was) {
+		if (nextSong != null) {
+			mMediaPlayerPool
+					.prepare(getApplicationContext(), nextSong.getUri());
+		}
 		onNextSongChanged();
 	}
-	
+
+	@Override
+	public void onCompletion(MediaPlayer mp) {
+		if (peekMediaPlayer() != null && peekMediaPlayer().equals(mp)) {
+			onSongFinished(PlayerHater.FINISH_SONG_END);
+			getQueue().next();
+		}
+	}
+
+	@Override
+	public boolean onError(MediaPlayer mp, int what, int extra) {
+		if (peekMediaPlayer() != null && peekMediaPlayer().equals(mp)) {
+			onSongFinished(PlayerHater.FINISH_ERROR);
+			getQueue().next();
+			return true;
+		}
+		return false;
+	}
+
 	@Override
 	public Song getNextSong() {
 		return getQueue().getNextPlaying();
+	}
+
+	@Override
+	protected void setMediaPlayer(SynchronousPlayer mediaPlayer) {
+		SynchronousPlayer oldPlayer = peekMediaPlayer();
+		if (oldPlayer != null) {
+			oldPlayer.setOnErrorListener(null);
+			oldPlayer.setOnCompletionListener(null);
+		}
+		super.setMediaPlayer(mediaPlayer);
+		mediaPlayer.setOnErrorListener(this);
+		mediaPlayer.setOnCompletionListener(this);
 	}
 }

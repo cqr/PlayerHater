@@ -102,12 +102,12 @@ public class BoundPlayerHater extends PlayerHater {
 					.setQueuedSongsChangedListener(new OnQueuedSongsChangedListener() {
 
 						@Override
-						public void onNowPlayingChanged(Song nowPlaying) {
+						public void onNowPlayingChanged(Song nowPlaying, Song was) {
 							getPlugin().onSongChanged(nowPlaying);
 						}
 
 						@Override
-						public void onNextSongChanged(Song nextSong) {
+						public void onNextSongChanged(Song nextSong, Song was) {
 							if (nextSong != null) {
 								getPlugin().onNextSongAvailable(nextSong);
 							} else {
