@@ -18,7 +18,6 @@ package org.prx.playerhater.plugins;
 import org.prx.playerhater.BroadcastReceiver;
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.broadcast.OnAudioFocusChangedListener;
-import org.prx.playerhater.util.Log;
 import org.prx.playerhater.wrappers.ServicePlayerHater;
 
 import android.annotation.TargetApi;
@@ -47,7 +46,6 @@ public class AudioFocusPlugin extends AbstractPlugin {
 	
 	@Override
 	public void onAudioStarted() {
-		Log.d("Getting Audio Focus");
 		getAudioManager().requestAudioFocus(mAudioFocusChangeListener,
 				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 		getAudioManager().registerMediaButtonEventReceiver(getEventReceiver());

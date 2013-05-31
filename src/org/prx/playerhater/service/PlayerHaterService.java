@@ -113,7 +113,6 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public void onDestroy() {
-		onStopped();
 		getMediaPlayer().release();
 		BroadcastReceiver.release(getApplicationContext());
 		SongHost.clear();
@@ -215,7 +214,6 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public boolean stop() {
-		onStopped();
 		return getMediaPlayer().conditionalStop();
 	}
 
@@ -344,7 +342,7 @@ public abstract class PlayerHaterService extends Service implements
 	// Config stuff
 
 	private void setConfig(Config config) {
-		if (config != null) {
+		if (config != null && mConfig == null) {
 			mConfig = config;
 			mConfig.run(getApplicationContext(), mPlayerHater,
 					getPluginCollection());
@@ -364,7 +362,6 @@ public abstract class PlayerHaterService extends Service implements
 
 	protected boolean startTransaction() {
 		if (mInTransaction == PlayerHater.STATE_INVALID) {
-			Log.d("Starting transaction in state " + mLastState);
 			mInTransaction = mLastState;
 			return true;
 		} else {
@@ -377,7 +374,6 @@ public abstract class PlayerHaterService extends Service implements
 			int nextState = mLastState;
 			mLastState = mInTransaction;
 			mInTransaction = PlayerHater.STATE_INVALID;
-			Log.d("Committing transaction (" + mLastState + " => " + nextState +")");
 			onStateChanged(nextState);
 		}
 	}

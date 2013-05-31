@@ -15,8 +15,6 @@
  ******************************************************************************/
 package org.prx.playerhater.mediaplayer;
 
-import org.prx.playerhater.util.Log;
-
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -71,7 +69,6 @@ public class SynchronousPlayer extends StatelyPlayer implements
 			mShouldSetPrepareContext = context;
 			break;
 		default:
-			Log.d("About to reset with state " + getStateName());
 			reset();
 			try {
 				setDataSource(context, uri);

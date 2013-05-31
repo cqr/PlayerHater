@@ -17,7 +17,6 @@ package org.prx.playerhater.plugins;
 
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.R;
-import org.prx.playerhater.util.Log;
 import org.prx.playerhater.wrappers.ServicePlayerHater;
 
 import android.annotation.TargetApi;
@@ -66,7 +65,6 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	@Override
 	public void onAudioStarted() {
-		Log.d("audio is getting started");
 		try {
 			getBinder().startForeground(NOTIFICATION_NU, getNotification());
 			mIsVisible = true;

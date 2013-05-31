@@ -16,6 +16,7 @@
 package org.prx.playerhater.plugins;
 
 import org.prx.playerhater.Song;
+
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -73,9 +74,8 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
 	@Override
 	public void onAudioStopped() {
+		getRemoteControlClient().setPlaybackState(RemoteControlClient.PLAYSTATE_STOPPED);
 		super.onAudioStopped();
-		getAudioManager().unregisterRemoteControlClient(
-				getRemoteControlClient());
 	}
 
 	@Override
