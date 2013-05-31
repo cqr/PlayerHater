@@ -1,0 +1,207 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>PlayerHater by PRX</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>PlayerHater</h1>
+        <p>A wrapper for the StageFright player on Android. Hate the player, not the game.</p>
+        <p class="view"><a href="https://github.com/PRX/PlayerHater">View the Project on GitHub <small>PRX/PlayerHater</small></a></p>
+        <ul>
+          <li><a href="https://github.com/PRX/PlayerHater/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/PRX/PlayerHater/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/PRX/PlayerHater">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h2>
+<a name="whats-this" class="anchor" href="#whats-this"><span class="octicon octicon-link"></span></a>What's this?</h2>
+
+<p>PlayerHater is an Android library for playing audio in the background of your app. You can use it for:</p>
+
+<ul>
+<li>Podcasts!</li>
+<li>Music!</li>
+<li>Radio!</li>
+</ul><p>You probably shouldn't use it for:</p>
+
+<ul>
+<li>Fart sounds</li>
+<li>Game sound effects</li>
+</ul><p>There's a whole lot that PlayerHater does for you right out of the box and you can add your own functionality through the use of plugins. PlayerHater even ships with plugins that will do the following automatically:</p>
+
+<ul>
+<li>Show a regular notification on on Android 2.3 or lower, a notification with player controls on Android 3.0+, and an expandable notification on Android 4.2+!</li>
+<li>Handle audio focus changes in all of the weird and different ways for pre-2.2 and post-2.2 versions!</li>
+<li>Add lock screen controls on Android 4.0+!</li>
+<li>Pebble support!</li>
+</ul><p>All of this is configurable if you like, and you can write your own plugins to run alongside these.</p>
+
+<p>But the best thing about PlayerHater is that there are no ServiceConnection callbacks, MediaPlayer state diagrams, or setup and teardown code for you to write. It's all taken care of in the library.</p>
+
+<h2>
+<a name="quick-start" class="anchor" href="#quick-start"><span class="octicon octicon-link"></span></a>Quick Start</h2>
+
+<h3>
+<a name="important-temporary-information" class="anchor" href="#important-temporary-information"><span class="octicon octicon-link"></span></a>Important, temporary information</h3>
+
+<pre><code>Everything's going into Maven Central soon using the new aar format
+that's part of the new Android build system that uses Gradle. If
+you're not comfortable using the sonatpe OSS snapshot server (or if
+you don't know what that is) or you haven't moved to Gradle yet, you
+can check out the project repository and use the files in 
+
+legacyLibraryProject/PlayerHater
+
+as if they were a normal android library project. They are, in fact
+symlinks.
+
+Note that doing this will require you to add entries to your
+AndroidManifest.xml file, while the new build system allows us to
+automatically do this for you if you're using Gradle.
+</code></pre>
+
+<p>Once you've imported the project into your android application and added the <code>Service</code> and <code>BroadcastReceiver</code> to your <code>AndroidManifest.xml</code> file, getting a handle on the player is as easy as:</p>
+
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">org.prx.android.playerhater.PlayerHater</span><span class="o">;</span>
+
+<span class="kd">class</span> <span class="nc">MyApplicationActivity</span> <span class="kd">extends</span> <span class="n">Activity</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="n">PlayerHater</span> <span class="n">mPlayerHater</span><span class="o">;</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onResume</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onResume</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="n">mPlayerHater</span> <span class="o">=</span> <span class="n">PlayerHater</span><span class="o">.</span><span class="na">bind</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onPause</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">mPlayerHater</span><span class="o">.</span><span class="na">release</span><span class="o">();</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+</pre></div>
+
+<p>When you've bound to a <code>PlayerHater</code>, you're ready to start playing stuff - music, podcasts, or whatever new thing the kids are listening to these days.</p>
+
+<h3>
+<a name="the-playerhater-api" class="anchor" href="#the-playerhater-api"><span class="octicon octicon-link"></span></a>The PlayerHater API</h3>
+
+<pre><code>    abstract void   emptyQueue()
+    Removes all songs from the queue.
+    abstract int    enqueue(Song song)
+    Puts a song on the end of the play queue.
+    abstract int    getCurrentPosition()
+    Gets the location of the playhead in milliseconds.
+    abstract int    getDuration()
+    Gets the duration of the currently loaded Song in milliseconds.
+    abstract int    getQueueLength()
+    Returns the number of items in the queue.
+    abstract int    getQueuePosition()
+    Returns the number of clips in the queue which are at least partially behind the playhead.
+    abstract int    getState()
+    Gets the state of the PlayerHater, represented as an int.
+    abstract boolean    isLoading()
+    Checks to see if the player is currently loading audio.
+    abstract boolean    isPlaying()
+    Checks to see if the player is currently playing back audio.
+    abstract Song   nowPlaying()
+    Gets the Song representation of the track that is currently loaded in the player.
+    abstract boolean    pause()
+    Pauses the player.
+    abstract boolean    play(Song song, int startTime)
+    Begins playback of song at startTime
+    abstract boolean    play(Song song)
+    Begins playback of a song at the beginning.
+    abstract boolean    play(int startTime)
+    Begins playback of the currently loaded Song at startTime in the track.
+    abstract boolean    play()
+    Begins playback of the currently loaded Song.
+    abstract boolean    removeFromQueue(int position)
+    Removes the element at position from the play queue.
+    abstract boolean    seekTo(int startTime)
+    Moves the playhead to startTime
+    abstract void   setPendingIntent(PendingIntent intent)
+    Sets the intent to be used by the plugins.
+    abstract void   setTransportControlFlags(int transportControlFlags)
+    Sets the visible buttons for plugins.
+    abstract void   skip()
+    Moves to the next song in the play queue.
+    abstract void   skipBack()
+    Moves back in the play queue.
+    abstract boolean    skipTo(int position)
+    Moves to a new position in the play queue.
+    abstract boolean stop()
+    Stops the player.
+</code></pre>
+
+<h2>
+<a name="changelog" class="anchor" href="#changelog"><span class="octicon octicon-link"></span></a>Changelog</h2>
+
+<h3>
+<a name="v030" class="anchor" href="#v030"><span class="octicon octicon-link"></span></a>v0.3.0</h3>
+
+<p>We refactored everything to make more sense and run faster. Large parts of the codebase have been written from scratch using knowledge we gained in versions 0.1.0 and 0.2.0 and many class and method names have been changed to make more sense.</p>
+
+<p>0.3.0 is a breaking upgrade from 0.2.0 and is still considered beta software until a 1.0.0 release.</p>
+
+<h4>
+<a name="highlights" class="anchor" href="#highlights"><span class="octicon octicon-link"></span></a>Highlights</h4>
+
+<ul>
+<li><p>The Service is now aggressively bound whenever you are interacting with PlayerHater. It's still released when appropriate so that Android can GC the process automatically and it will not show up in the Android Running Services list.</p></li>
+<li><p>getState() will now return one of <code>PlayerHater.IDLE</code>, <code>PlayerHater.PLAYING</code>, <code>PlayerHater.LOADING</code>, or <code>PlayerHater.PAUSED</code> instead of one of the lower-level MediaPlayer states.</p></li>
+<li><p><code>public Bundle getExtra()</code> and <code>public String getAlbumTitle()</code> have been added to the <code>Song</code> interface. <code>void onAlbumTitleChanged(String albumTitle)</code> has been added to the <code>PlayerHaterPlugin</code> interface.</p></li>
+<li><p><code>void onServiceStarted(IPlayerHaterBinder binder)</code> has been removed from the <code>PlayerHaterPlugin</code> interface. If you need access to Service-only methods, check to see if the <code>PlayerHater</code> passed to <code>onPlayerHaterLoaded()</code> is a <code>ServicePlayerHater</code>, cast, and then call the methods needed.</p></li>
+<li><p>Song data is loaded just in time, even across the IPC boundary. This means that if you enqueue a <code>Song</code> and then the return values for the various Song methods change, those changes will be propagated. Please note that if your Activity-side application is terminated the Song data will be serialized at that moment and passed across the barier to permit garbage collection.</p></li>
+</ul><h3>
+<a name="v020" class="anchor" href="#v020"><span class="octicon octicon-link"></span></a>v0.2.0</h3>
+
+<ul>
+<li><p>No service callbacks to deal with - Service is automatically started as needed when <code>play()</code> is called. You can immediately work with PlayerHater and all commands sent to it will be forwarded to the Service once it is started.</p></li>
+<li><p>It is no longer the developer's responsibility to remember when to and when not to stop the service.</p></li>
+<li><p>The service is now runnable on a separate Android process through the use of AIDL IPC.</p></li>
+<li><p>Too many changes to enumerate. Refer to documentation.</p></li>
+</ul><p>0.2.0 is a breaking upgrade from 0.1.0 and is still considered beta software until a 1.0.0 release.</p>
+
+<h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<pre><code>Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+</code></pre>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/PRX">PRX</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
