@@ -17,8 +17,7 @@ package org.prx.playerhater.plugins;
 
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.Song;
-import org.prx.playerhater.plugins.PlayerHaterPlugin;
-import org.prx.playerhater.service.IPlayerHaterBinder;
+import org.prx.playerhater.PlayerHaterPlugin;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
@@ -35,7 +34,6 @@ import android.net.Uri;
  */
 public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	private PlayerHater mPlayerHater;
-	private IPlayerHaterBinder mBinder;
 	private Context mContext;
 
 	public AbstractPlugin() {
@@ -53,24 +51,6 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
 		mContext = context;
 		mPlayerHater = playerHater;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * Overridden implementations should be sure to call
-	 * {@code super.onServiceBound} so that future calls to {@link #getBinder()}
-	 * can succeed.
-	 */
-	@Override
-	public void onServiceBound(IPlayerHaterBinder playerHaterBinder) {
-		mBinder = playerHaterBinder;
-	}
-
-	@Override
-	public void onServiceStopping() {
-		mContext = null;
-		mPlayerHater = null;
 	}
 
 	@Override
@@ -101,11 +81,11 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onAlbumArtChanged(int resourceId) {
+	public void onAlbumTitleChanged(String albumTitle) {
 	}
 
 	@Override
-	public void onAlbumArtChangedToUri(Uri url) {
+	public void onAlbumArtChanged(Uri uri) {
 	}
 
 	/**
@@ -119,7 +99,8 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 		if (song != null) {
 			onTitleChanged(song.getTitle());
 			onArtistChanged(song.getArtist());
-			onAlbumArtChangedToUri(song.getAlbumArt());
+			onAlbumTitleChanged(song.getAlbumTitle());
+			onAlbumArtChanged(song.getAlbumArt());
 		}
 	}
 
@@ -144,7 +125,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onIntentActivityChanged(PendingIntent pending) {
+	public void onPendingIntentChanged(PendingIntent pending) {
 	}
 
 	@Override
@@ -177,16 +158,5 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	 */
 	protected final Context getContext() {
 		return mContext;
-	}
-
-	/**
-	 * A method providing simple access to a service binder without having to
-	 * override {@link onServiceBound(IPlayerHaterBinder)}
-	 * 
-	 * @return The {@link IPlayerHaterBinder} that the plugin is bound to if the
-	 *         service is running. Otherwise, {@code null}.
-	 */
-	protected final IPlayerHaterBinder getBinder() {
-		return mBinder;
 	}
 }

@@ -16,11 +16,11 @@
 -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <bool name="__playerhater_notification">true</bool>
-    <bool name="__playerhater_lockscreen">false</bool>
-    <bool name="__playerhater_audiofocus">false</bool>
-    <bool name="__playerhater_touchable_notification">false</bool>
-    <bool name="__playerhater_expanding_notification">false</bool>
+    <bool name="zzz_ph_notification">true</bool>
+    <bool name="zzz_ph_lockscreen">false</bool>
+    <bool name="zzz_ph_audiofocus">false</bool>
+    <bool name="zzz_ph_touch_notification">false</bool>
+    <bool name="zzz_ph_exp_notification">false</bool>
 
     <string name="stop">Stop</string>
     <string name="back">Previous</string>

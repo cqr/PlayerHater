@@ -37,7 +37,7 @@ public class PebblePlugin extends AbstractPlugin {
 			Intent intent = new Intent("com.getpebble.action.NOW_PLAYING");
 			intent.putExtra("artist", mSong.getArtist());
 			intent.putExtra("track", mSong.getTitle());
-			intent.putExtra("album", "");
+			intent.putExtra("album", mSong.getAlbumTitle());
 			
 			getContext().sendBroadcast(intent);
 		}

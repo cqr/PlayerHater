@@ -17,7 +17,7 @@ package org.prx.playerhater.plugins;
 
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.R;
-import org.prx.playerhater.util.Log;
+import org.prx.playerhater.wrappers.ServicePlayerHater;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
@@ -27,7 +27,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.RemoteException;
 
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
 public class NotificationPlugin extends AbstractPlugin {
@@ -46,6 +45,10 @@ public class NotificationPlugin extends AbstractPlugin {
 	@Override
 	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
 		super.onPlayerHaterLoaded(context, playerHater);
+		if (!(playerHater instanceof ServicePlayerHater)) {
+			throw new IllegalArgumentException(
+					"NotificationPlugin must be run on the server side");
+		}
 
 		PackageManager packageManager = context.getPackageManager();
 		mNotificationManager = (NotificationManager) context
@@ -62,7 +65,6 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	@Override
 	public void onAudioStarted() {
-		Log.d("audio is getting started");
 		try {
 			getBinder().startForeground(NOTIFICATION_NU, getNotification());
 			mIsVisible = true;
@@ -81,10 +83,8 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	@Override
 	public void onAudioStopped() {
-		try {
-			mIsVisible = false;
-			getBinder().stopForeground(true);
-		} catch (RemoteException e) {}
+		mIsVisible = false;
+		getBinder().stopForeground(true);
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class NotificationPlugin extends AbstractPlugin {
 		mNotificationTitle = notificationTitle;
 	}
 
-	public void onIntentActivityChanged(PendingIntent contentIntent) {
+	public void onPendingIntentChanged(PendingIntent contentIntent) {
 		mContentIntent = contentIntent;
 		if (mNotification != null) {
 			mNotification.contentIntent = mContentIntent;
@@ -113,6 +113,10 @@ public class NotificationPlugin extends AbstractPlugin {
 		if (mIsVisible) {
 			mNotificationManager.notify(NOTIFICATION_NU, getNotification());
 		}
+	}
+
+	protected ServicePlayerHater getBinder() {
+		return (ServicePlayerHater) getPlayerHater();
 	}
 
 }

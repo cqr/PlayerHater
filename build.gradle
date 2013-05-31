@@ -7,7 +7,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.4'
+        classpath 'com.android.tools.build:gradle:0.4.1'
     }
 }
 
@@ -25,12 +25,16 @@ uploadArchives {
     mavenDeployer {
       beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-      repository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+        authentication(userName: sonatypeUserName, password: sonatypePassword)
+      }
+
+      repository(url: "https://flooss.sonatype.org/content/repositories/snapshots") {
         authentication(userName: sonatypeUserName, password: sonatypePassword)
       }
         
       pom.project {
-        version '2.1.0-SNAPSHOT'
+        version '0.3.0-SNAPSHOT'
         artifactId 'playerhater'
         groupId 'org.prx'
 

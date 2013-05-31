@@ -15,99 +15,493 @@
  ******************************************************************************/
 package org.prx.playerhater.service;
 
+import org.prx.playerhater.BroadcastReceiver;
+import org.prx.playerhater.PlayerHater;
+import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.Song;
-import org.prx.playerhater.plugins.IRemotePlugin;
-import org.prx.playerhater.plugins.PlayerHaterPlugin;
+import org.prx.playerhater.ipc.ClientPlugin;
+import org.prx.playerhater.ipc.IPlayerHaterClient;
+import org.prx.playerhater.ipc.PlayerHaterClient;
+import org.prx.playerhater.ipc.PlayerHaterServer;
+import org.prx.playerhater.mediaplayer.SynchronousPlayer;
+import org.prx.playerhater.plugins.BackgroundedPlugin;
 import org.prx.playerhater.plugins.PluginCollection;
-import android.app.Activity;
-import android.app.Notification;
-import android.content.Context;
-import android.net.Uri;
+import org.prx.playerhater.service.PlayerStateWatcher.PlayerHaterStateListener;
+import org.prx.playerhater.songs.SongHost;
+import org.prx.playerhater.util.Config;
+import org.prx.playerhater.util.IPlayerHater;
+import org.prx.playerhater.util.Log;
+import org.prx.playerhater.wrappers.ServicePlayerHater;
 
-public interface PlayerHaterService {
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+import android.view.KeyEvent;
 
-	public abstract boolean play(Song song, int position)
-			throws IllegalArgumentException;
+public abstract class PlayerHaterService extends Service implements
+		IPlayerHater, PlayerHaterStateListener {
 
-	public abstract boolean pause();
+	private static final String SELF_STARTER = "org.prx.playerhater.service.PlayerHaterService.SELF_STARTER";
 
-	public abstract boolean stop();
+	private int mStarted = -1;
 
-	public abstract boolean play() throws IllegalStateException;
+	private PlayerHaterPlugin mPlugin;
+	private Config mConfig;
+	private PluginCollection mPluginCollection;
 
-	public abstract boolean play(int startTime) throws IllegalStateException;
+	private final ServicePlayerHater mPlayerHater = new ServicePlayerHater(this);
+	private final PlayerHaterServer mServer = new PlayerHaterServer(this);
+	private final PlayerStateWatcher mPlayerStateWatcher = new PlayerStateWatcher(
+			this);
 
-	public abstract void setTitle(String title);
+	private ClientPlugin mClient;
 
-	public abstract void setArtist(String artist);
+	public void setClient(IPlayerHaterClient client) {
+		if (mClient != null) {
+			getPluginCollection().remove(mClient);
+		}
+		if (client != null) {
+			mClient = new ClientPlugin(client);
 
-	public abstract int getCurrentPosition();
+			if (nowPlaying() != null) {
+				mClient.onSongChanged(nowPlaying());
+			}
+			if (getNextSong() != null) {
+				mClient.onNextSongAvailable(getNextSong());
+			} else {
+				mClient.onNextSongUnavailable();
+			}
+			switch (getState()) {
+			case PlayerHater.STATE_IDLE:
+				mClient.onAudioStopped();
+				break;
+			case PlayerHater.STATE_LOADING:
+				mClient.onAudioLoading();
+				break;
+			case PlayerHater.STATE_PLAYING:
+				mClient.onAudioStarted();
+				break;
+			case PlayerHater.STATE_PAUSED:
+				mClient.onAudioPaused();
+				break;
+			}
 
-	public abstract int getDuration();
+			getPluginCollection().add(mClient);
 
-	public abstract Song getNowPlaying();
+			// If we're running remotely, set up the remote song host.
+			// If this condition returns false, that indicates that
+			// the two sides of the transaction are happening on the
+			// same process.
+			if (!(client instanceof PlayerHaterClient)) {
+				SongHost.setRemote(client);
+			}
+		} else {
+			mClient = null;
+			SongHost.clear();
+		}
+	}
 
-	public abstract boolean isPlaying();
+	/* The Service Life Cycle */
 
-	public abstract boolean isLoading();
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		BroadcastReceiver.register(getApplicationContext());
+		Log.TAG = getPackageName() + "/PH/" + getClass().getSimpleName();
+	}
 
-	public abstract int getState();
+	@Override
+	public void onDestroy() {
+		getMediaPlayer().release();
+		BroadcastReceiver.release(getApplicationContext());
+		SongHost.clear();
+		super.onDestroy();
+	}
 
-	public abstract void setAlbumArt(int resourceId);
+	@Override
+	public void onStart(Intent intent, int requestId) {
+		onStartCommand(intent, 0, requestId);
+	}
 
-	public abstract void setAlbumArt(Uri url);
+	@Override
+	public int onStartCommand(Intent intent, int flags, int requestId) {
+		if (isSelfStartCommand(intent)) {
+			mStarted = requestId;
+		} else {
+			new Thread(new RemoteControlButtonTask(intent, this, requestId))
+					.start();
+		}
+		return START_NOT_STICKY;
+	}
 
-	public abstract int enqueue(Song song);
+	@Override
+	public IBinder onBind(Intent intent) {
+		setConfig(Config.fromIntent(intent));
+		return mServer;
+	}
 
-	public abstract int getQueueLength();
+	// We don't want onBind called again when the next
+	// bind request comes in.
+	@Override
+	public boolean onUnbind(Intent intent) {
+		setClient(null);
+		return true;
+	}
 
-	public abstract int getQueuePosition();
+	@Override
+	public void onRebind(Intent intent) {
+	}
 
-	public abstract boolean skipTo(int position);
+	/* END Life Cycle Methods */
 
-	public abstract void emptyQueue();
+	/*
+	 * Lazy Loaders for Plugins.
+	 */
+	protected PlayerHaterPlugin getPlugin() {
+		if (mPlugin == null) {
+			mPlugin = new BackgroundedPlugin(getPluginCollection());
+		}
+		return mPlugin;
+	}
 
-	public abstract void setIntentClass(Class<? extends Activity> klass);
+	protected PluginCollection getPluginCollection() {
+		if (mPluginCollection == null) {
+			mPluginCollection = new PluginCollection();
+		}
+		return mPluginCollection;
+	}
 
-	public abstract Context getBaseContext();
+	/* Player State Methods */
 
-	public abstract boolean isPaused();
+	@Override
+	public boolean isPlaying() {
+		return (getState() & PlayerHater.STATE_PLAYING) != 0;
+	}
 
-	public abstract void startForeground(int notificationNu,
-			Notification notification);
+	@Override
+	public boolean isLoading() {
+		return (getState() & PlayerHater.STATE_LOADING) != 0;
+	}
 
-	public abstract void stopForeground(boolean b);
+	@Override
+	public int getState() {
+		if (mInTransaction != PlayerHater.STATE_INVALID) {
+			return mInTransaction;
+		} else {
+			return mLastState;
+		}
+	}
 
-	public abstract void duck();
+	@Override
+	public int getDuration() {
+		return getMediaPlayer().getDuration();
+	}
 
-	public abstract void unduck();
+	@Override
+	public int getCurrentPosition() {
+		return getMediaPlayer().getCurrentPosition();
+	}
 
-	public abstract boolean seekTo(int max);
+	/* END Player State Methods */
 
-	public abstract boolean play(Song song) throws IllegalArgumentException;
+	/* Generic Player Controls */
 
-	public abstract void onRemoteControlButtonPressed(int keycodeMediaNext);
+	@Override
+	public boolean pause() {
+		return getMediaPlayer().conditionalPause();
+	}
 
-	void setSongInfo(Song song);
+	@Override
+	public boolean stop() {
+		return getMediaPlayer().conditionalStop();
+	}
 
-	public abstract void addPluginInstance(PlayerHaterPlugin plugin);
+	@Override
+	public boolean play() {
+		return getMediaPlayer().conditionalPlay();
+	}
 
-	public abstract boolean skip();
+	@Override
+	public boolean play(int startTime) {
+		getMediaPlayer().conditionalPause();
+		getMediaPlayer().seekTo(startTime);
+		getMediaPlayer().conditionalPlay();
+		return true;
+	}
 
-	public abstract boolean skipBack();
+	public void duck() {
+		getMediaPlayer().setVolume(0.1f, 0.1f);
+	}
 
-	public abstract void setTransportControlFlags(int transportControlFlags);
+	public void unduck() {
+		getMediaPlayer().setVolume(1.0f, 1.0f);
+	}
 
-	void stopService(Song[] songs);
+	/* END Generic Player Controls */
 
-	public abstract boolean removeFromQueue(int position);
+	/* Decomposed Player Methods */
 
-	public abstract void releaseMediaPlayer();
+	@Override
+	public boolean play(Song song) throws IllegalArgumentException {
+		return play(song, 0);
+	}
 
-	public abstract void removeRemotePlugin();
+	/* END Decomposed Player Methods */
 
-	public abstract void setPluginBinder(IRemotePlugin binder);
+	/* Plug-In Stuff */
 
-	public abstract PluginCollection getPluginCollection();
+	@Override
+	public void setTransportControlFlags(int transportControlFlags) {
+		getPlugin().onTransportControlFlagsChanged(transportControlFlags);
+	}
 
+	/* END Plug-In Stuff */
+
+	/* Remote Controls */
+
+	public void onRemoteControlButtonPressed(int button) {
+		switch (button) {
+		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+			if (isPlaying()) {
+				pause();
+			} else {
+				play();
+			}
+			break;
+		case KeyEvent.KEYCODE_MEDIA_PLAY:
+			play();
+			break;
+		case KeyEvent.KEYCODE_MEDIA_PAUSE:
+			pause();
+			break;
+		case KeyEvent.KEYCODE_MEDIA_STOP:
+			stop();
+			break;
+		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+			skipBack();
+			break;
+		case KeyEvent.KEYCODE_MEDIA_NEXT:
+			skip();
+			break;
+		}
+	}
+
+	/* END Remote Controls */
+
+	/* Events for Subclasses */
+
+	protected void onStopped() {
+		getPlugin().onAudioStopped();
+	}
+
+	protected void onPaused() {
+		getPlugin().onAudioPaused();
+	}
+
+	protected void onLoading() {
+		getPlugin().onAudioLoading();
+	}
+
+	protected void onStarted() {
+		getPlugin().onAudioStarted();
+	}
+
+	protected void onResumed() {
+		getPlugin().onAudioResumed();
+	}
+
+	protected void onSongChanged() {
+		getPlugin().onSongChanged(nowPlaying());
+		getPlugin().onDurationChanged(getDuration());
+	}
+
+	protected void onSongFinished(int reason) {
+		if (nowPlaying() != null) {
+			getPlugin().onSongFinished(nowPlaying(), reason);
+		}
+	}
+
+	public abstract Song getNextSong();
+
+	protected void onNextSongChanged() {
+		if (getNextSong() != null)
+			getPlugin().onNextSongAvailable(getNextSong());
+		else
+			getPlugin().onNextSongUnavailable();
+	}
+
+	@Override
+	public void setPendingIntent(PendingIntent intent) {
+		getPlugin().onPendingIntentChanged(intent);
+	}
+
+	/* END Events for Subclasses */
+
+	// ///////////////////////
+	// Config stuff
+
+	private void setConfig(Config config) {
+		if (config != null && mConfig == null) {
+			mConfig = config;
+			mConfig.run(getApplicationContext(), mPlayerHater,
+					getPluginCollection());
+		}
+	}
+
+	/*
+	 * State things
+	 * 
+	 * @see
+	 * org.prx.playerhater.service.PlayerStateWatcher.PlayerHaterStateListener
+	 * #onStateChanged(int)
+	 */
+
+	private int mLastState = PlayerHater.STATE_IDLE;
+	private int mInTransaction = PlayerHater.STATE_INVALID;
+
+	protected boolean startTransaction() {
+		if (mInTransaction == PlayerHater.STATE_INVALID) {
+			mInTransaction = mLastState;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	protected void commitTransaction() {
+		if (mInTransaction != PlayerHater.STATE_INVALID) {
+			int nextState = mLastState;
+			mLastState = mInTransaction;
+			mInTransaction = PlayerHater.STATE_INVALID;
+			onStateChanged(nextState);
+		}
+	}
+
+	@Override
+	public void onStateChanged(int state) {
+		if (!selfStarted() && state != PlayerHater.STATE_IDLE) {
+			startSelf();
+		}
+		if (mInTransaction == PlayerHater.STATE_INVALID) {
+			switch (state) {
+			case PlayerHater.STATE_IDLE:
+				onStopped();
+				break;
+			case PlayerHater.STATE_LOADING:
+				onLoading();
+				break;
+			case PlayerHater.STATE_PAUSED:
+				onPaused();
+				break;
+			case PlayerHater.STATE_PLAYING:
+				if (mLastState == PlayerHater.STATE_PAUSED) {
+					onResumed();
+				} else {
+					onStarted();
+				}
+			}
+		}
+		mLastState = state;
+	}
+
+	// ///////////////////////
+	// For dealing with
+	// MediaPlayers.
+
+	private SynchronousPlayer mMediaPlayer;
+
+	protected SynchronousPlayer getMediaPlayer() {
+		if (mMediaPlayer == null) {
+			setMediaPlayer(buildMediaPlayer());
+		}
+		return mMediaPlayer;
+	}
+
+	protected SynchronousPlayer peekMediaPlayer() {
+		return mMediaPlayer;
+	}
+
+	protected void setMediaPlayer(SynchronousPlayer mediaPlayer) {
+		boolean myTransaction = startTransaction();
+		mPlayerStateWatcher.setMediaPlayer(mediaPlayer);
+		mMediaPlayer = mediaPlayer;
+		if (myTransaction) {
+			commitTransaction();
+		}
+	}
+
+	protected SynchronousPlayer swapMediaPlayer(SynchronousPlayer mediaPlayer) {
+		return swapMediaPlayer(mediaPlayer, false);
+	}
+
+	protected SynchronousPlayer swapMediaPlayer(SynchronousPlayer mediaPlayer,
+			boolean play) {
+		boolean myTransaction = startTransaction();
+		SynchronousPlayer oldPlayer = peekMediaPlayer();
+		if (oldPlayer != null) {
+			oldPlayer.conditionalPause();
+		}
+		if (play) {
+			mediaPlayer.start();
+		}
+		setMediaPlayer(mediaPlayer);
+		if (myTransaction) {
+			commitTransaction();
+		}
+		return oldPlayer;
+	}
+
+	protected SynchronousPlayer buildMediaPlayer() {
+		SynchronousPlayer player = new SynchronousPlayer();
+		return player;
+	}
+
+	/**
+	 * For running Remote Control button presses in the background.
+	 */
+	private static class RemoteControlButtonTask implements Runnable {
+
+		private final Intent mIntent;
+		private final PlayerHaterService mService;
+		private final int mRequestCode;
+
+		RemoteControlButtonTask(Intent intent, PlayerHaterService service,
+				int requestCode) {
+			mIntent = intent;
+			mService = service;
+			mRequestCode = requestCode;
+		}
+
+		@Override
+		public void run() {
+			int keyCode = mIntent.getIntExtra(
+					BroadcastReceiver.REMOTE_CONTROL_BUTTON, -1);
+			if (keyCode != -1) {
+				mService.onRemoteControlButtonPressed(keyCode);
+				mService.stopSelfResult(mRequestCode);
+			}
+		}
+	}
+
+	private boolean selfStarted() {
+		return mStarted != -1;
+	}
+
+	private void startSelf() {
+		Intent intent = PlayerHater.buildServiceIntent(getApplicationContext());
+		intent.putExtra(SELF_STARTER, true);
+		startService(intent);
+	}
+
+	public void quit() {
+		if (selfStarted()) {
+			stopSelfResult(mStarted);
+			mStarted = -1;
+		}
+	}
+
+	private boolean isSelfStartCommand(Intent intent) {
+		return intent.getBooleanExtra(SELF_STARTER, false);
+	}
 }

@@ -16,11 +16,13 @@
 package org.prx.playerhater.plugins;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.prx.playerhater.PlayerHater;
+import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.Song;
-import org.prx.playerhater.service.IPlayerHaterBinder;
+
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
@@ -58,6 +60,10 @@ public class PluginCollection implements PlayerHaterPlugin {
 		mPlugins.remove(plugin);
 	}
 
+	public synchronized PlayerHaterPlugin get(int tag) {
+		return mPluginTags.get(tag);
+	}
+
 	public synchronized void remove(int tag) {
 		if (tag != 0 && mPluginTags.get(tag) != null) {
 			mPlugins.remove(mPluginTags.get(tag));
@@ -84,15 +90,9 @@ public class PluginCollection implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onAlbumArtChanged(int resourceId) {
+	public void onAlbumArtChanged(Uri url) {
 		for (PlayerHaterPlugin listener : mPlugins)
-			listener.onAlbumArtChanged(resourceId);
-	}
-
-	@Override
-	public void onAlbumArtChangedToUri(Uri url) {
-		for (PlayerHaterPlugin listener : mPlugins)
-			listener.onAlbumArtChangedToUri(url);
+			listener.onAlbumArtChanged(url);
 	}
 
 	@Override
@@ -145,29 +145,15 @@ public class PluginCollection implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onPlayerHaterLoaded(Context context,
-			PlayerHater playerHater) {
+	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onPlayerHaterLoaded(context, playerHater);
 	}
 
 	@Override
-	public void onServiceStopping() {
+	public void onPendingIntentChanged(PendingIntent pending) {
 		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onServiceStopping();
-
-	}
-
-	@Override
-	public void onIntentActivityChanged(PendingIntent pending) {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onIntentActivityChanged(pending);
-	}
-
-	@Override
-	public void onServiceBound(IPlayerHaterBinder binder) {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onServiceBound(binder);
+			plugin.onPendingIntentChanged(pending);
 	}
 
 	@Override
@@ -177,8 +163,7 @@ public class PluginCollection implements PlayerHaterPlugin {
 	}
 
 	@Override
-	public void onTransportControlFlagsChanged(
-			int transportControlFlags) {
+	public void onTransportControlFlagsChanged(int transportControlFlags) {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onTransportControlFlagsChanged(transportControlFlags);
 	}
@@ -188,7 +173,7 @@ public class PluginCollection implements PlayerHaterPlugin {
 		for (PlayerHaterPlugin plugin : mPlugins)
 			plugin.onChangesComplete();
 	}
-	
+
 	public synchronized int getSize() {
 		return mPlugins.size();
 	}
@@ -198,4 +183,23 @@ public class PluginCollection implements PlayerHaterPlugin {
 		mPlugins.clear();
 	}
 
+	@Override
+	public void onAlbumTitleChanged(String albumTitle) {
+		for (PlayerHaterPlugin plugin : mPlugins)
+			plugin.onAlbumTitleChanged(albumTitle);
+	}
+
+	@Override
+	public synchronized String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("PluginCollection@").append(hashCode()).append("[ ");
+		Iterator<PlayerHaterPlugin> iter = mPlugins.iterator();
+		if (iter.hasNext()) {
+			sb.append(iter.next().toString());
+			while (iter.hasNext()) {
+				sb.append(", ").append(iter.next().toString());
+			}
+		}
+		return sb.append("]").toString();
+	}
 }

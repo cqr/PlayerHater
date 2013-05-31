@@ -15,9 +15,9 @@
  ******************************************************************************/
 package org.prx.playerhater.plugins;
 
+import org.prx.playerhater.BroadcastReceiver;
 import org.prx.playerhater.R;
 import org.prx.playerhater.Song;
-import org.prx.playerhater.util.BroadcastReceiver;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -43,7 +43,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	@Override
 	public void onSongChanged(Song song) {
 		super.onSongChanged(song);
-		onAlbumArtChangedToUri(song.getAlbumArt());
+		onAlbumArtChanged(song.getAlbumArt());
 	}
 
 	@Override
@@ -59,16 +59,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	@Override
-	public void onAlbumArtChanged(int resourceId) {
-		mNotificationImageResourceId = resourceId;
-		if (mNotificationImageResourceId != 0) {
-			mNotificationImageUrl = null;
-			setImageViewResource(R.id.image, mNotificationImageResourceId);
-		}
-	}
-
-	@Override
-	public void onAlbumArtChangedToUri(Uri url) {
+	public void onAlbumArtChanged(Uri url) {
 		mNotificationImageUrl = url;
 		if (mNotificationImageUrl != null) {
 			mNotificationImageResourceId = 0;

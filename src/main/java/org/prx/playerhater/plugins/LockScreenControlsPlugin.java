@@ -16,11 +16,11 @@
 package org.prx.playerhater.plugins;
 
 import org.prx.playerhater.Song;
+
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
 import android.net.Uri;
@@ -65,7 +65,7 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 	public void onSongChanged(Song song) {
 
 		if (song.getAlbumArt() != null) {
-			onAlbumArtChangedToUri(song.getAlbumArt());
+			onAlbumArtChanged(song.getAlbumArt());
 		}
 
 		onTitleChanged(song.getTitle());
@@ -74,9 +74,8 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
 	@Override
 	public void onAudioStopped() {
+		getRemoteControlClient().setPlaybackState(RemoteControlClient.PLAYSTATE_STOPPED);
 		super.onAudioStopped();
-		getAudioManager().unregisterRemoteControlClient(
-				getRemoteControlClient());
 	}
 
 	@Override
@@ -90,18 +89,11 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 	}
 
 	@Override
-	public void onAlbumArtChanged(int resourceId) {
-		mAlbumArt = BitmapFactory.decodeResource(getContext().getResources(),
-				resourceId);
+	public void onAlbumArtChanged(Uri url) {
+		mAlbumArt = null; // XXX TODO FIXME
 		getRemoteControlClient().editMetadata(false).putBitmap(
 				RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
 				mAlbumArt);
-	}
-
-	@Override
-	public void onAlbumArtChangedToUri(Uri url) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

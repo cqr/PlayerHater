@@ -15,5 +15,5 @@
   limitations under the License.
 -->
 <resources>
-    <bool name="__playerhater_audiofocus">true</bool>
+    <bool name="zzz_ph_audiofocus">true</bool>
 </resources>

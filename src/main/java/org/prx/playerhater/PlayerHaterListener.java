@@ -16,7 +16,8 @@
 package org.prx.playerhater;
 
 /**
- * A simple interface for receiving events from the {@linkplain PlayerHater} service.
+ * A simple interface for receiving events from the {@linkplain PlayerHater}
+ * service.
  * 
  * @since 1.0.0
  * @version 2.0.0

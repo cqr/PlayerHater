@@ -15,7 +15,6 @@
   limitations under the License.
 -->
 <resources>
-    <bool name="__playerhater_notification">false</bool>
-    <bool name="__playerhater_touchable_notification">false</bool>
-    <bool name="__playerhater_expanding_notification">true</bool>
+    <bool name="zzz_ph_touch_notification">false</bool>
+    <bool name="zzz_ph_exp_notification">true</bool>
 </resources>

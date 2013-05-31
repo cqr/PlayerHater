@@ -21,18 +21,18 @@
         enabled="true" />
     <plugin
         name="org.prx.playerhater.plugins.NotificationPlugin"
-        enabled="@bool/__playerhater_notification" />
+        enabled="@bool/zzz_ph_notification" />
     <plugin
         name="org.prx.playerhater.plugins.TouchableNotificationPlugin"
-        enabled="@bool/__playerhater_touchable_notification" />
+        enabled="@bool/zzz_ph_touch_notification" />
     <plugin
         name="org.prx.playerhater.plugins.ExpandableNotificationPlugin"
-        enabled="@bool/__playerhater_expanding_notification" />
+        enabled="@bool/zzz_ph_exp_notification" />
     <plugin
         name="org.prx.playerhater.plugins.AudioFocusPlugin"
-        enabled="@bool/__playerhater_audiofocus" />
+        enabled="@bool/zzz_ph_audiofocus" />
     <plugin
         name="org.prx.playerhater.plugins.LockScreenControlsPlugin"
-        enabled="@bool/__playerhater_lockscreen" />
+        enabled="@bool/zzz_ph_lockscreen" />
 
 </config>

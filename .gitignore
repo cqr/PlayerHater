@@ -1,6 +1,5 @@
 bin
 gen
-gen
 local.properties
 .settings/*
 .project

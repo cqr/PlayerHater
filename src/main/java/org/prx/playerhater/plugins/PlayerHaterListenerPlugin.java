@@ -22,8 +22,6 @@ import java.util.List;
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.PlayerHaterListener;
 import org.prx.playerhater.Song;
-import org.prx.playerhater.player.Player;
-import org.prx.playerhater.service.IPlayerHaterBinder;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
@@ -49,8 +47,9 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 	private static final int ADD = 1;
 	private static final int REM = 2;
 	private static final int TCK = 3;
-	
-	private synchronized static void addInstance(PlayerHaterListenerPlugin plugin) {
+
+	private synchronized static void addInstance(
+			PlayerHaterListenerPlugin plugin) {
 		WeakReference<PlayerHaterListenerPlugin> ref = new WeakReference<PlayerHaterListenerPlugin>(
 				plugin);
 		sHandler.obtainMessage(ADD, ref).sendToTarget();
@@ -61,9 +60,10 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 		@SuppressWarnings("unchecked")
 		@Override
 		public void handleMessage(Message msg) {
-			switch(msg.what) {
+			switch (msg.what) {
 			case ADD:
-				sInstances.add((WeakReference<PlayerHaterListenerPlugin>) msg.obj);
+				sInstances
+						.add((WeakReference<PlayerHaterListenerPlugin>) msg.obj);
 				break;
 			case REM:
 				sInstances.remove(msg.obj);
@@ -145,15 +145,6 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 	}
 
 	@Override
-	public void onServiceBound(IPlayerHaterBinder binder) {
-		super.onServiceBound(binder);
-		mSong = getPlayerHater().nowPlaying();
-		if (mEcho) {
-			onChangesComplete();
-		}
-	}
-
-	@Override
 	public void onSongChanged(Song song) {
 		mSong = song;
 	}
@@ -161,12 +152,13 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 	@Override
 	public void onChangesComplete() {
 		switch (getPlayerHater().getState()) {
-		case Player.STARTED:
-			mListener.onPlaying(mSong, getPlayerHater().getCurrentPosition());
+		case PlayerHater.STATE_PLAYING:
+			if (mSong != null) {
+				mListener.onPlaying(mSong, getPlayerHater()
+						.getCurrentPosition());
+			}
 			break;
-		case Player.PREPARING:
-		case Player.LOADING_CONTENT:
-		case Player.PREPARING_CONTENT:
+		case PlayerHater.STATE_LOADING:
 			mListener.onLoading(mSong);
 			break;
 		default:
@@ -177,10 +169,11 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 			}
 		}
 	}
-	
+
 	private void onTick() {
-		if (getPlayerHater().getState() == Player.STARTED) {
-			mListener.onPlaying(getPlayerHater().nowPlaying(), getPlayerHater().getCurrentPosition());
+		if (getPlayerHater().getState() == PlayerHater.STATE_PLAYING) {
+			mListener.onPlaying(getPlayerHater().nowPlaying(), getPlayerHater()
+					.getCurrentPosition());
 		}
 	}
 }

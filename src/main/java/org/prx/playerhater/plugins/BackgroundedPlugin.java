@@ -20,8 +20,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.prx.playerhater.PlayerHater;
+import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.Song;
-import org.prx.playerhater.service.IPlayerHaterBinder;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -39,7 +39,7 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	public static final int NEXT_TRACK_UNAVAILABLE = 2;
 	public static final int NEXT_TRACK_AVAILABLE = 3;
 	public static final int ART_CHANGED_URI = 4;
-	public static final int ART_CHANGED_INT = 5;
+	public static final int ALBUM_CHANGED = 5;
 	public static final int ARTIST_CHANGED = 6;
 	public static final int TITLE_CHANGED = 7;
 	public static final int PLAYBACK_STOPPED = 8;
@@ -103,11 +103,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 			this.context = context;
 			this.playerHater = playerHater;
 		}
-	}
-
-	@Override
-	public void onServiceStopping() {
-		mHandler.sendTargettedEmptyMessage(SERVICE_STOPPING);
 	}
 
 	@Override
@@ -206,6 +201,17 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
+	
+	@Override
+	public void onAlbumTitleChanged(String title) {
+		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
+		if (shouldHandleMessage(ALBUM_CHANGED)) {
+			mPlugin.onAlbumTitleChanged(title);
+		} else {
+			mHandler.obtainTargettedMessage(ALBUM_CHANGED, title).sendToTarget();
+		}
+		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
+	}
 
 	@Override
 	public void onArtistChanged(String artist) {
@@ -220,22 +226,10 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	}
 
 	@Override
-	public void onAlbumArtChanged(int resourceId) {
-		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
-		if (shouldHandleMessage(ART_CHANGED_INT)) {
-			mPlugin.onAlbumArtChanged(resourceId);
-		} else {
-			mHandler.obtainTargettedMessage(ART_CHANGED_INT, resourceId)
-					.sendToTarget();
-		}
-		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
-	}
-
-	@Override
-	public void onAlbumArtChangedToUri(Uri url) {
+	public void onAlbumArtChanged(Uri url) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
 		if (shouldHandleMessage(ART_CHANGED_URI)) {
-			mPlugin.onAlbumArtChangedToUri(url);
+			mPlugin.onAlbumArtChanged(url);
 		} else {
 			mHandler.obtainTargettedMessage(ART_CHANGED_URI, url)
 					.sendToTarget();
@@ -267,25 +261,15 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	}
 
 	@Override
-	public void onIntentActivityChanged(PendingIntent pending) {
+	public void onPendingIntentChanged(PendingIntent pending) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
 		if (shouldHandleMessage(INTENT_CHANGED)) {
-			mPlugin.onIntentActivityChanged(pending);
+			mPlugin.onPendingIntentChanged(pending);
 		} else {
 			mHandler.obtainTargettedMessage(INTENT_CHANGED, pending)
 					.sendToTarget();
 		}
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
-	}
-
-	@Override
-	public void onServiceBound(IPlayerHaterBinder playerHater) {
-		if (shouldHandleMessage(SERVICE_BOUND)) {
-			mPlugin.onServiceBound(playerHater);
-		} else {
-			mHandler.obtainTargettedMessage(SERVICE_BOUND, playerHater)
-					.sendToTarget();
-		}
 	}
 
 	@Override
@@ -497,10 +481,10 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 			mPlugin.onNextSongAvailable((Song) msg.obj);
 			break;
 		case ART_CHANGED_URI:
-			mPlugin.onAlbumArtChangedToUri((Uri) msg.obj);
+			mPlugin.onAlbumArtChanged((Uri) msg.obj);
 			break;
-		case ART_CHANGED_INT:
-			mPlugin.onAlbumArtChanged((Integer) msg.obj);
+		case ALBUM_CHANGED:
+			mPlugin.onAlbumTitleChanged((String) msg.obj);
 			break;
 		case ARTIST_CHANGED:
 			mPlugin.onArtistChanged((String) msg.obj);
@@ -524,20 +508,14 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 			mPlugin.onAudioLoading();
 			break;
 		case INTENT_CHANGED:
-			mPlugin.onIntentActivityChanged((PendingIntent) msg.obj);
+			mPlugin.onPendingIntentChanged((PendingIntent) msg.obj);
 			break;
 		case SONG_FINISHED:
 			mPlugin.onSongFinished((Song) msg.obj, msg.arg1);
 			break;
-		case SERVICE_BOUND:
-			mPlugin.onServiceBound((IPlayerHaterBinder) msg.obj);
-			break;
 		case PLAYER_HATER_LOADED:
 			LoadedObject o = (LoadedObject) msg.obj;
 			mPlugin.onPlayerHaterLoaded(o.context, o.playerHater);
-			break;
-		case SERVICE_STOPPING:
-			mPlugin.onServiceStopping();
 			break;
 		case TRANSPORT_CONTROL_FLAGS_CHANGED:
 			mPlugin.onTransportControlFlagsChanged(msg.arg1);

@@ -15,9 +15,10 @@
  ******************************************************************************/
 package org.prx.playerhater.plugins;
 
-import org.prx.playerhater.service.IPlayerHaterBinder;
-import org.prx.playerhater.util.BroadcastReceiver;
-import org.prx.playerhater.util.OnAudioFocusChangeListener;
+import org.prx.playerhater.BroadcastReceiver;
+import org.prx.playerhater.PlayerHater;
+import org.prx.playerhater.broadcast.OnAudioFocusChangedListener;
+import org.prx.playerhater.wrappers.ServicePlayerHater;
 
 import android.annotation.TargetApi;
 import android.content.ComponentName;
@@ -28,19 +29,21 @@ import android.os.Build;
 @TargetApi(Build.VERSION_CODES.FROYO)
 public class AudioFocusPlugin extends AbstractPlugin {
 	private AudioManager mAudioService;
-	private OnAudioFocusChangeListener mAudioFocusChangeListener;
+	private OnAudioFocusChangedListener mAudioFocusChangeListener;
 	private ComponentName mEventReceiver;
 
 	public AudioFocusPlugin() {
-
 	}
 
 	@Override
-	public void onServiceBound(IPlayerHaterBinder binder) {
-		super.onServiceBound(binder);
-		mAudioFocusChangeListener = new OnAudioFocusChangeListener(binder);
+	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
+		super.onPlayerHaterLoaded(context, playerHater);
+		if (!(playerHater instanceof ServicePlayerHater)) {
+			throw new IllegalArgumentException("AudioFocusPlugin must be run on the server side");
+		}
+		mAudioFocusChangeListener = new OnAudioFocusChangedListener((ServicePlayerHater) playerHater);
 	}
-
+	
 	@Override
 	public void onAudioStarted() {
 		getAudioManager().requestAudioFocus(mAudioFocusChangeListener,
@@ -66,8 +69,7 @@ public class AudioFocusPlugin extends AbstractPlugin {
 
 	protected ComponentName getEventReceiver() {
 		if (mEventReceiver == null) {
-			mEventReceiver = new ComponentName(getContext(),
-					BroadcastReceiver.class);
+			mEventReceiver = new ComponentName(getContext(), BroadcastReceiver.class);
 		}
 		return mEventReceiver;
 	}
