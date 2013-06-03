@@ -176,7 +176,7 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public boolean isPlaying() {
-		return (getState() & PlayerHater.STATE_PLAYING) != 0;
+		return (getState() & (PlayerHater.STATE_PLAYING | PlayerHater.STATE_STREAMING)) != 0;
 	}
 
 	@Override
@@ -453,8 +453,7 @@ public abstract class PlayerHaterService extends Service implements
 	}
 
 	protected SynchronousPlayer buildMediaPlayer() {
-		SynchronousPlayer player = new SynchronousPlayer();
-		return player;
+		return new SynchronousPlayer();
 	}
 
 	/**

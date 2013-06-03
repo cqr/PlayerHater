@@ -32,4 +32,6 @@ public interface PlayerHaterListener {
 	void onLoading(Song song);
 
 	void onPlaying(Song song, int progress);
+
+	void onStreaming(Song song);
 }

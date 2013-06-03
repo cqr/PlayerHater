@@ -28,8 +28,7 @@ class HeadphoneButtonGestureHelper {
 	private static final int PREV = 3;
 	private static final int MILISECONDS_DELAY = 250;
 	public static final String TAG = "GESTURES";
-	
-	
+
 	private long mLastEventTime = 0;
 	private int mCurrentAction = 1;
 	private static Context lastContext;
@@ -68,15 +67,18 @@ class HeadphoneButtonGestureHelper {
 
 			case PLAY_PAUSE:
 				mButtonGestureHelper.mMediaButtonReceiver
-						.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, lastContext);
+						.onRemoteControlButtonPressed(
+								KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, lastContext);
 				break;
 			case NEXT:
 				mButtonGestureHelper.mMediaButtonReceiver
-						.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_NEXT, lastContext);
+						.onRemoteControlButtonPressed(
+								KeyEvent.KEYCODE_MEDIA_NEXT, lastContext);
 				break;
 			case PREV:
 				mButtonGestureHelper.mMediaButtonReceiver
-						.onRemoteControlButtonPressed(KeyEvent.KEYCODE_MEDIA_PREVIOUS, lastContext);
+						.onRemoteControlButtonPressed(
+								KeyEvent.KEYCODE_MEDIA_PREVIOUS, lastContext);
 				break;
 			}
 			mButtonGestureHelper.mLastEventTime = 0;

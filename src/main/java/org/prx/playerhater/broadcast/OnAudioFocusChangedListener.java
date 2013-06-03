@@ -26,10 +26,10 @@ public class OnAudioFocusChangedListener implements
 		AudioManager.OnAudioFocusChangeListener {
 
 	// 5 seconds
-	public static final int REWIND_ON_RESUME_DURATION = 5000;
+	private static final int REWIND_ON_RESUME_DURATION = 5000;
 
 	// 5 minutes
-	public static final int SKIP_RESUME_AFTER_DURATION = 300000;
+	private static final int SKIP_RESUME_AFTER_DURATION = 300000;
 
 	private final ServicePlayerHater mPlayerHater;
 

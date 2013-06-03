@@ -15,6 +15,7 @@
  ******************************************************************************/
 package org.prx.playerhater.util;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,8 +36,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Config implements Parcelable {
-	public static final String EXTRA_CONFIG = "config";
-	public static Config sInstance;
+	private static final String EXTRA_CONFIG = "config";
+	private static Config sInstance;
 
 	public static void attachToIntent(Intent intent) {
 		if (sInstance != null) {
@@ -97,7 +98,7 @@ public class Config implements Parcelable {
 		}
 	}
 
-	public Set<Class<? extends PlayerHaterPlugin>> getPlugins() {
+	private Set<Class<? extends PlayerHaterPlugin>> getPlugins() {
 		return getPlugins(mPlugins);
 	}
 
@@ -156,9 +157,7 @@ public class Config implements Parcelable {
 
 	private void setStringArray(String[] stuff, Set<String> in) {
 		in.clear();
-		for (String plugin : stuff) {
-			in.add(plugin);
-		}
+		Collections.addAll(in, stuff);
 	}
 
 	private void load(XmlResourceParser parser, Context context) {
@@ -172,9 +171,7 @@ public class Config implements Parcelable {
 			int currentTagType = INVALID_TAG;
 
 			while (eventType != XmlResourceParser.END_DOCUMENT) {
-				if (eventType == XmlResourceParser.START_DOCUMENT) {
-					//
-				} else if (eventType == XmlResourceParser.START_TAG) {
+				if (eventType == XmlResourceParser.START_TAG) {
 					if (parser.getName().equals("plugin")) {
 						currentTagType = PLUGIN;
 					}
@@ -194,8 +191,6 @@ public class Config implements Parcelable {
 						}
 						break;
 					}
-				} else if (eventType == XmlResourceParser.TEXT) {
-					// NOTHING
 				}
 				eventType = parser.next();
 			}

@@ -60,7 +60,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * The default implementation forwards thos method call to
+	 * The default implementation forwards this method call to
 	 * {@link #onAudioStarted()}
 	 */
 	@Override

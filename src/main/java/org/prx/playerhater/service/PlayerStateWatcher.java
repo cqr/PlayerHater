@@ -58,6 +58,7 @@ public class PlayerStateWatcher implements StateChangeListener {
 	@Override
 	public synchronized void onStateChanged(Player mediaPlayer, int state) {
 		boolean willPlay = StatelyPlayer.willPlay(state);
+		boolean seekable = StatelyPlayer.seekable(state);
 		state = StatelyPlayer.mediaPlayerState(state);
 		
 		switch (state) {
@@ -80,7 +81,11 @@ public class PlayerStateWatcher implements StateChangeListener {
 			setCurrentState(PlayerHater.STATE_PAUSED);
 			break;
 		case StatelyPlayer.STARTED:
-			setCurrentState(PlayerHater.STATE_PLAYING);
+			if (seekable) {
+				setCurrentState(PlayerHater.STATE_PLAYING);
+			} else {
+				setCurrentState(PlayerHater.STATE_STREAMING);
+			}
 			break;
 		default:
 			throw new IllegalStateException("Illegal State: " + state);

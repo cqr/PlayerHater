@@ -158,6 +158,11 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 						.getCurrentPosition());
 			}
 			break;
+		case PlayerHater.STATE_STREAMING:
+			if (mSong != null) {
+				mListener.onStreaming(mSong);
+			}
+			break;
 		case PlayerHater.STATE_LOADING:
 			mListener.onLoading(mSong);
 			break;

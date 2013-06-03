@@ -24,17 +24,17 @@ import android.app.Notification;
 import android.app.PendingIntent;
 
 public class ServicePlayerHater extends ThreadsafePlayerHater {
-	
+
 	private final PlayerHaterService mService;
 
 	public ServicePlayerHater(PlayerHaterService service) {
 		super(new ServiceWrapper(service));
 		mService = service;
 	}
-	
+
 	private static class ServiceWrapper extends PlayerHater {
 		private final PlayerHaterService mService;
-		
+
 		private ServiceWrapper(PlayerHaterService service) {
 			mService = service;
 		}
@@ -155,10 +155,10 @@ public class ServicePlayerHater extends ThreadsafePlayerHater {
 		}
 	}
 
-	/* 
+	/*
 	 * Service Specific stuff.
 	 */
-	
+
 	public void setClient(IPlayerHaterClient client) {
 		mService.setClient(client);
 	}

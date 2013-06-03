@@ -45,6 +45,7 @@ public interface IPlayerHater {
 	public static final int STATE_LOADING = 8;
 	public static final int STATE_PLAYING = 16;
 	public static final int STATE_PAUSED = 32;
+	public static final int STATE_STREAMING = 64;
 
 	/**
 	 * Pauses the player.

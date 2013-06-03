@@ -88,7 +88,7 @@ public class SongQueue {
 	public synchronized int addSongAtPosition(Song song, int position) {
 		mSongs.add(position, song);
 		songOrderChanged();
-		return mSongs.size() - getPlayheadPosition();
+		return mSongs.size() - getPosition();
 	}
 
 	public synchronized Song next() {
@@ -244,6 +244,10 @@ public class SongQueue {
 
 	// XXX Should do some more here.
 	public int getPosition() {
-		return getPlayheadPosition();
+		if (getPlayheadPosition() < 0) {
+			return 0;
+		} else {
+			return getPlayheadPosition();
+		}
 	}
 }

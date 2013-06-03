@@ -115,20 +115,34 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	 * Used in a statemask to indicate that the player is getting ready to play.
 	 */
 	public static final int WILL_PLAY = 65536;
+	
+	/**
+	 * Used in a statemask to indicate that the player is not able to seek. 
+	 */
+	public static final int NOT_SEEKABLE = 2048;
 
 	public static boolean willPlay(int stateMask) {
 		return (stateMask & WILL_PLAY) == WILL_PLAY;
+	}
+	
+	public static boolean seekable(int stateMask) {
+		return (stateMask & NOT_SEEKABLE) != NOT_SEEKABLE;
 	}
 
 	public static int mediaPlayerState(int stateMask) {
 		if (willPlay(stateMask)) {
 			stateMask &= ~WILL_PLAY;
 		}
+		if (!seekable(stateMask)) {
+			stateMask &= ~NOT_SEEKABLE;
+		}
 		return stateMask;
 	}
 
-	private MediaPlayer mMediaPlayer;
+	private final MediaPlayer mMediaPlayer;
 	private StateChangeListener mStateChangeListener;
+	private boolean mBuffering = false;
+	private boolean mNotSeekable = false;
 
 	public static class ListenerCollection {
 		public OnErrorListener errorListener;
@@ -139,7 +153,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		public OnSeekCompleteListener seekCompleteListener;
 	}
 
-	private ListenerCollection mListenerCollection;
+	private final ListenerCollection mListenerCollection;
 
 	private int mState;
 	private int mPrevState;
@@ -169,7 +183,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	}
 
 	public synchronized int getStateMask() {
-		return getState() | (isWaitingToPlay() ? WILL_PLAY : 0);
+		return getState() | (isWaitingToPlay() ? WILL_PLAY : 0) | (mNotSeekable ? NOT_SEEKABLE : 0);
 	}
 
 	private synchronized int getInternalState() {
@@ -239,8 +253,10 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 
 	@Override
 	public synchronized void reset() {
-		setState(IDLE);
-		mMediaPlayer.reset();
+		if (getState() != IDLE) {
+			setState(IDLE);
+			mMediaPlayer.reset();
+		}
 	}
 
 	@Override
@@ -457,10 +473,26 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 
 	@Override
 	public synchronized boolean onInfo(MediaPlayer mp, int what, int extra) {
+		boolean handled = false;
 		if (mListenerCollection.infoListener != null) {
-			return mListenerCollection.infoListener.onInfo(mp, what, extra);
+			handled = mListenerCollection.infoListener.onInfo(mp, what, extra);
 		}
-		return false;
+
+		switch (what) {
+		case MediaPlayer.MEDIA_INFO_BUFFERING_START:
+			mBuffering = true;
+			setState(PREPARING);
+			return true;
+		case MediaPlayer.MEDIA_INFO_BUFFERING_END:
+			mBuffering = false;
+			setState(STARTED);
+			return true;
+		case MediaPlayer.MEDIA_INFO_NOT_SEEKABLE:
+			mNotSeekable = true;
+			return true;
+		default:
+			return handled;
+		}
 	}
 
 	@Override
@@ -487,6 +519,11 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	@Override
 	public synchronized boolean equals(MediaPlayer mp) {
 		return mp == mMediaPlayer;
+	}
+
+	@Override
+	public boolean isWaitingToPlay() {
+		return super.isWaitingToPlay() || mBuffering;
 	}
 
 	private synchronized MediaPlayer getBarePlayer() {

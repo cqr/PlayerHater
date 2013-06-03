@@ -31,8 +31,8 @@ import android.os.Build;
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
 public class NotificationPlugin extends AbstractPlugin {
 
-	protected static final int NOTIFICATION_NU = 0x974732;
-	protected NotificationManager mNotificationManager;
+	private static final int NOTIFICATION_NU = 0x974732;
+	private NotificationManager mNotificationManager;
 	protected PendingIntent mContentIntent;
 	protected String mNotificationTitle = "PlayerHater";
 	protected String mNotificationText = "Version 0.1.0";
