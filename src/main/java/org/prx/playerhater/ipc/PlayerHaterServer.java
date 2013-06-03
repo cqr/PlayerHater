@@ -16,6 +16,7 @@
 
 package org.prx.playerhater.ipc;
 
+import org.prx.playerhater.Song;
 import org.prx.playerhater.service.PlayerHaterService;
 import org.prx.playerhater.songs.SongHost;
 import org.prx.playerhater.wrappers.ServicePlayerHater;

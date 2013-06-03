@@ -43,7 +43,11 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	@Override
 	public void onSongChanged(Song song) {
 		super.onSongChanged(song);
-		onAlbumArtChanged(song.getAlbumArt());
+		if (song == null) { 
+			onAlbumArtChanged(null); 
+		} else { 
+			onAlbumArtChanged(song.getAlbumArt());
+		}
 	}
 
 	@Override

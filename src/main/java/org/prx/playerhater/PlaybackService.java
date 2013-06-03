@@ -46,9 +46,9 @@ public class PlaybackService extends PlayerHaterService implements
 	
 	@Override
 	public boolean play(Song song, int startTime) {
-		int position = enqueue(song);
+		enqueue(song);
 		onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
-		getQueue().skipTo(position);
+		getQueue().skipTo(getQueue().size());
 		seekTo(startTime);
 		return play();
 	}
@@ -130,10 +130,13 @@ public class PlaybackService extends PlayerHaterService implements
 		if (peekMediaPlayer() != null) {
 			mMediaPlayerPool.recycle(peekMediaPlayer(), was == null ? null : was.getUri());
 		}
-		setMediaPlayer(mMediaPlayerPool.getPlayer(getApplicationContext(),
-				nowPlaying.getUri()));
-		if (isPlaying()) {
-			getMediaPlayer().start();
+		if (nowPlaying == null) { 
+			setMediaPlayer(null); 
+		} else { 
+			setMediaPlayer(mMediaPlayerPool.getPlayer(getApplicationContext(), nowPlaying.getUri()));
+			if (isPlaying()) {
+				getMediaPlayer().start();
+			}
 		}
 		commitTransaction();
 		onSongChanged();

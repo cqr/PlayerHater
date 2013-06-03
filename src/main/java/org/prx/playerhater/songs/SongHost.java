@@ -28,6 +28,8 @@ import android.util.SparseArray;
 
 public class SongHost {
 	
+	public static final int INVALID_TAG = -1; 
+	
 	private static Remote sRemote;
 	private static SparseArray<Song> sSongs;
 	private static Map<Song, Integer> sTags;
@@ -55,6 +57,9 @@ public class SongHost {
 	}
 	
 	public static int getTag(Song song) {
+		if (song == null) { 
+			return INVALID_TAG; 
+		}
 		if (getTags().containsKey(song)) {
 			return getTags().get(song);
 		} else {
@@ -66,6 +71,7 @@ public class SongHost {
 	}
 	
 	public static Song getSong(int tag) {
+		if (tag == INVALID_TAG) { return null; }
 		Song song = getSongs().get(tag);
 		if (song != null) {
 			return song;

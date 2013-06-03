@@ -26,42 +26,42 @@ import android.os.Message;
 
 public class SongQueue {
 
-	private static Handler sHandler;
-	private static final int CURRENT_SONG = 1;
-	private static final int NEXT_SONG = 2;
-
-	private static Handler getHandler() {
-		if (sHandler == null) {
-			HandlerThread thread = new HandlerThread("SongQueue");
-			thread.start();
-			sHandler = new Handler(thread.getLooper()) {
-
-				@Override
-				public void handleMessage(Message msg) {
-					SongMessage m = (SongMessage) msg.obj;
-					switch (msg.what) {
-					case CURRENT_SONG:
-						m.queue.sendSongChanged(m.song);
-						break;
-					case NEXT_SONG:
-						m.queue.sendNextSongChanged(m.song);
-					}
-				}
-
-			};
-		}
-		return sHandler;
-	}
-
-	private static class SongMessage {
-		private final SongQueue queue;
-		private final Song song;
-
-		public SongMessage(SongQueue songQueue, Song theSong) {
-			queue = songQueue;
-			song = theSong;
-		}
-	}
+//	private static Handler sHandler;
+//	private static final int CURRENT_SONG = 1;
+//	private static final int NEXT_SONG = 2;
+//
+//	private static Handler getHandler() {
+//		if (sHandler == null) {
+//			HandlerThread thread = new HandlerThread("SongQueue");
+//			thread.start();
+//			sHandler = new Handler(thread.getLooper()) {
+//
+//				@Override
+//				public void handleMessage(Message msg) {
+//					SongMessage m = (SongMessage) msg.obj;
+//					switch (msg.what) {
+//					case CURRENT_SONG:
+//						m.queue.sendSongChanged(m.song);
+//						break;
+//					case NEXT_SONG:
+//						m.queue.sendNextSongChanged(m.song);
+//					}
+//				}
+//
+//			};
+//		}
+//		return sHandler;
+//	}
+//
+//	private static class SongMessage {
+//		private final SongQueue queue;
+//		private final Song song;
+//
+//		public SongMessage(SongQueue songQueue, Song theSong) {
+//			queue = songQueue;
+//			song = theSong;
+//		}
+//	}
 
 	public interface OnQueuedSongsChangedListener {
 		public void onNowPlayingChanged(Song nowPlaying, Song nowPlayingWas);
@@ -171,24 +171,26 @@ public class SongQueue {
 
 	private void currentSongChanged(boolean notify) {
 		if (notify && mListener != null)
-			getHandler().obtainMessage(CURRENT_SONG,
-					new SongMessage(this, mCurrentSongWas)).sendToTarget();
+			sendSongChanged(mCurrentSongWas); 
+//			getHandler().obtainMessage(CURRENT_SONG,
+//					new SongMessage(this, mCurrentSongWas)).sendToTarget();
 		mCurrentSongWas = getNowPlaying();
 	}
 
 	private void sendSongChanged(Song reallyWas) {
-		mListener.onNowPlayingChanged(mCurrentSongWas, reallyWas);
+		mListener.onNowPlayingChanged(getNowPlaying(), reallyWas);
 	}
 
 	private void nextSongChanged(boolean notify) {
 		if (notify && mListener != null)
-			getHandler().obtainMessage(NEXT_SONG,
-					new SongMessage(this, mNextSongWas)).sendToTarget();
+			sendNextSongChanged(mNextSongWas);
+//			getHandler().obtainMessage(NEXT_SONG,
+//					new SongMessage(this, mNextSongWas)).sendToTarget();
 		mNextSongWas = getNextSong();
 	}
 
 	private void sendNextSongChanged(Song reallyWas) {
-		mListener.onNextSongChanged(mNextSongWas, reallyWas);
+		mListener.onNextSongChanged(getNextSong(), reallyWas);
 	}
 
 	private Song getNextSong() {

@@ -64,6 +64,12 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 	@Override
 	public void onSongChanged(Song song) {
 
+		if (song == null) { 
+			onAlbumArtChanged(null);
+			onTitleChanged(null); 
+			onArtistChanged(null); 
+			return; 
+		}
 		if (song.getAlbumArt() != null) {
 			onAlbumArtChanged(song.getAlbumArt());
 		}
