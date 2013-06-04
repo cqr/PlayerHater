@@ -115,16 +115,16 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	 * Used in a statemask to indicate that the player is getting ready to play.
 	 */
 	public static final int WILL_PLAY = 65536;
-	
+
 	/**
-	 * Used in a statemask to indicate that the player is not able to seek. 
+	 * Used in a statemask to indicate that the player is not able to seek.
 	 */
 	public static final int NOT_SEEKABLE = 2048;
 
 	public static boolean willPlay(int stateMask) {
 		return (stateMask & WILL_PLAY) == WILL_PLAY;
 	}
-	
+
 	public static boolean seekable(int stateMask) {
 		return (stateMask & NOT_SEEKABLE) != NOT_SEEKABLE;
 	}
@@ -183,7 +183,8 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	}
 
 	public synchronized int getStateMask() {
-		return getState() | (isWaitingToPlay() ? WILL_PLAY : 0) | (mNotSeekable ? NOT_SEEKABLE : 0);
+		return getState() | (isWaitingToPlay() ? WILL_PLAY : 0)
+				| (mNotSeekable ? NOT_SEEKABLE : 0);
 	}
 
 	private synchronized int getInternalState() {
@@ -377,25 +378,28 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 			(new Thread() {
 				@Override
 				public void run() {
-					try {
-						ParcelFileDescriptor fd = context.getContentResolver()
-								.openFileDescriptor(uri, "r");
-						mMediaPlayer.setDataSource(fd.getFileDescriptor());
-						int state = getInternalState();
-						setState(INITIALIZED);
-						if ((state & PREPARING_CONTENT) != 0) {
-							prepareAsync();
-						}
-					} catch (Exception e) {
+					synchronized (StatelyPlayer.this) {
 						try {
-							mMediaPlayer.setDataSource(uri.toString());
+							ParcelFileDescriptor fd = context
+									.getContentResolver().openFileDescriptor(
+											uri, "r");
+							mMediaPlayer.setDataSource(fd.getFileDescriptor());
 							int state = getInternalState();
 							setState(INITIALIZED);
 							if ((state & PREPARING_CONTENT) != 0) {
 								prepareAsync();
 							}
-						} catch (Exception e1) {
-							Log.e("Whoops", e1);
+						} catch (Exception e) {
+							try {
+								mMediaPlayer.setDataSource(uri.toString());
+								int state = getInternalState();
+								setState(INITIALIZED);
+								if ((state & PREPARING_CONTENT) != 0) {
+									prepareAsync();
+								}
+							} catch (Exception e1) {
+								Log.e("Whoops", e1);
+							}
 						}
 					}
 				}

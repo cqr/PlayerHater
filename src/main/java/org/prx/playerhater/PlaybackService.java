@@ -21,7 +21,6 @@ import org.prx.playerhater.mediaplayer.SynchronousPlayer;
 import org.prx.playerhater.service.PlayerHaterService;
 import org.prx.playerhater.songs.SongQueue;
 import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
-import org.prx.playerhater.util.Log;
 
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -46,9 +45,9 @@ public class PlaybackService extends PlayerHaterService implements
 
 	@Override
 	public boolean play(Song song, int startTime) {
-		enqueue(song);
 		onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
-		getQueue().skipTo(getQueue().size());
+		onNowPlayingChanged(song, nowPlaying());
+		getQueue().appendAndSkip(song);
 		seekTo(startTime);
 		return play();
 	}
@@ -132,10 +131,11 @@ public class PlaybackService extends PlayerHaterService implements
 			mMediaPlayerPool.recycle(peekMediaPlayer(), was == null ? null
 					: was.getUri());
 		}
-		if (nowPlaying == null) { 
-			setMediaPlayer(null); 
-		} else { 
-			setMediaPlayer(mMediaPlayerPool.getPlayer(getApplicationContext(), nowPlaying.getUri()));
+		if (nowPlaying == null) {
+			setMediaPlayer(null);
+		} else {
+			setMediaPlayer(mMediaPlayerPool.getPlayer(getApplicationContext(),
+					nowPlaying.getUri()));
 			if (isPlaying()) {
 				getMediaPlayer().start();
 			}

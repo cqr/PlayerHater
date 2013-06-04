@@ -18,6 +18,8 @@ package org.prx.playerhater.plugins;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.PlayerHaterPlugin;
@@ -32,6 +34,7 @@ public class PluginCollection implements PlayerHaterPlugin {
 
 	private final Set<PlayerHaterPlugin> mPlugins;
 	private final SparseArray<PlayerHaterPlugin> mPluginTags;
+	private final ReadWriteLock mLock = new ReentrantReadWriteLock();
 
 	public PluginCollection() {
 		mPlugins = new HashSet<PlayerHaterPlugin>();
@@ -40,165 +43,310 @@ public class PluginCollection implements PlayerHaterPlugin {
 
 	public PluginCollection(PlayerHaterPlugin... plugins) {
 		this();
-		for (PlayerHaterPlugin plugin : plugins) {
-			add(plugin);
+		mLock.writeLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : plugins) {
+				add(plugin);
+			}
+		} finally {
+			mLock.writeLock().unlock();
 		}
 	}
 
-	public synchronized void add(PlayerHaterPlugin plugin) {
-		add(plugin, 0);
-	}
+	public void add(final PlayerHaterPlugin plugin) {
+		if (mLock.writeLock().tryLock()) {
+			try {
+				add(plugin, 0);
+			} finally {
+				mLock.writeLock().unlock();
+			}
+		} else {
+			new Thread() {
 
-	public synchronized void add(PlayerHaterPlugin plugin, int tag) {
-		if (tag != 0) {
-			mPluginTags.put(tag, plugin);
-		}
-		mPlugins.add(plugin);
-	}
+				@Override
+				public void run() {
+					add(plugin, 0);
+				}
 
-	public synchronized void remove(PlayerHaterPlugin plugin) {
-		mPlugins.remove(plugin);
-	}
-
-	public synchronized PlayerHaterPlugin get(int tag) {
-		return mPluginTags.get(tag);
-	}
-
-	public synchronized void remove(int tag) {
-		if (tag != 0 && mPluginTags.get(tag) != null) {
-			mPlugins.remove(mPluginTags.get(tag));
-			mPluginTags.delete(tag);
+			}.start();
 		}
 	}
 
-	@Override
-	public synchronized void onAudioStopped() {
-		for (PlayerHaterPlugin listener : mPlugins)
-			listener.onAudioStopped();
+	public void add(PlayerHaterPlugin plugin, int tag) {
+		mLock.writeLock().lock();
+		try {
+			if (tag != 0) {
+				mPluginTags.put(tag, plugin);
+			}
+			mPlugins.add(plugin);
+		} finally {
+			mLock.writeLock().unlock();
+		}
 	}
 
-	@Override
-	public synchronized void onTitleChanged(String title) {
-		for (PlayerHaterPlugin listener : mPlugins)
-			listener.onTitleChanged(title);
+	public void remove(PlayerHaterPlugin plugin) {
+		mLock.writeLock().lock();
+		try {
+			mPlugins.remove(plugin);
+		} finally {
+			mLock.writeLock().unlock();
+		}
 	}
 
-	@Override
-	public synchronized void onArtistChanged(String artist) {
-		for (PlayerHaterPlugin listener : mPlugins)
-			listener.onArtistChanged(artist);
+	public PlayerHaterPlugin get(int tag) {
+		mLock.readLock().lock();
+		try {
+			return mPluginTags.get(tag);
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
-	@Override
-	public synchronized void onAlbumArtChanged(Uri url) {
-		for (PlayerHaterPlugin listener : mPlugins)
-			listener.onAlbumArtChanged(url);
-	}
-
-	@Override
-	public synchronized void onSongChanged(Song song) {
-		for (PlayerHaterPlugin plugin : mPlugins) {
-			plugin.onSongChanged(song);
+	public void remove(int tag) {
+		mLock.writeLock().lock();
+		try {
+			if (tag != 0 && mPluginTags.get(tag) != null) {
+				mPlugins.remove(mPluginTags.get(tag));
+				mPluginTags.delete(tag);
+			}
+		} finally {
+			mLock.writeLock().unlock();
 		}
 	}
 
 	@Override
-	public synchronized void onDurationChanged(int duration) {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onDurationChanged(duration);
+	public void onAudioStopped() {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin listener : mPlugins)
+				listener.onAudioStopped();
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onAudioLoading() {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onAudioLoading();
+	public void onTitleChanged(String title) {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin listener : mPlugins)
+				listener.onTitleChanged(title);
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onAudioPaused() {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onAudioPaused();
+	public void onArtistChanged(String artist) {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin listener : mPlugins)
+				listener.onArtistChanged(artist);
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onAudioResumed() {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onAudioResumed();
+	public void onAlbumArtChanged(Uri url) {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin listener : mPlugins)
+				listener.onAlbumArtChanged(url);
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onAudioStarted() {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onAudioStarted();
+	public void onSongChanged(Song song) {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins) {
+				plugin.onSongChanged(song);
+			}
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onNextSongAvailable(Song nextSong) {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onNextSongAvailable(nextSong);
+	public void onDurationChanged(int duration) {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onDurationChanged(duration);
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onNextSongUnavailable() {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onNextSongUnavailable();
+	public void onAudioLoading() {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onAudioLoading();
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onPlayerHaterLoaded(context, playerHater);
+	public void onAudioPaused() {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onAudioPaused();
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onPendingIntentChanged(PendingIntent pending) {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onPendingIntentChanged(pending);
+	public void onAudioResumed() {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onAudioResumed();
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onSongFinished(Song song, int reason) {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onSongFinished(song, reason);
+	public void onAudioStarted() {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onAudioStarted();
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onTransportControlFlagsChanged(int transportControlFlags) {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onTransportControlFlagsChanged(transportControlFlags);
+	public void onNextSongAvailable(Song nextSong) {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onNextSongAvailable(nextSong);
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onChangesComplete() {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onChangesComplete();
-	}
-
-	public synchronized int getSize() {
-		return mPlugins.size();
-	}
-
-	public synchronized void removeAll() {
-		mPluginTags.clear();
-		mPlugins.clear();
+	public void onNextSongUnavailable() {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onNextSongUnavailable();
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
-	public synchronized void onAlbumTitleChanged(String albumTitle) {
-		for (PlayerHaterPlugin plugin : mPlugins)
-			plugin.onAlbumTitleChanged(albumTitle);
+	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onPlayerHaterLoaded(context, playerHater);
+		} finally {
+			mLock.readLock().unlock();
+		}
+	}
+
+	@Override
+	public void onPendingIntentChanged(PendingIntent pending) {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onPendingIntentChanged(pending);
+		} finally {
+			mLock.readLock().unlock();
+		}
+	}
+
+	@Override
+	public void onSongFinished(Song song, int reason) {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onSongFinished(song, reason);
+		} finally {
+			mLock.readLock().unlock();
+		}
+	}
+
+	@Override
+	public void onTransportControlFlagsChanged(int transportControlFlags) {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onTransportControlFlagsChanged(transportControlFlags);
+		} finally {
+			mLock.readLock().unlock();
+		}
+	}
+
+	@Override
+	public void onChangesComplete() {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onChangesComplete();
+		} finally {
+			mLock.readLock().unlock();
+		}
+	}
+
+	public int getSize() {
+		mLock.readLock().lock();
+		try {
+			return mPlugins.size();
+		} finally {
+			mLock.readLock().unlock();
+		}
+	}
+
+	public void removeAll() {
+		mLock.writeLock().lock();
+		try {
+			mPluginTags.clear();
+			mPlugins.clear();
+		} finally {
+			mLock.writeLock().unlock();
+		}
+	}
+
+	@Override
+	public void onAlbumTitleChanged(String albumTitle) {
+		mLock.readLock().lock();
+		try {
+			for (PlayerHaterPlugin plugin : mPlugins)
+				plugin.onAlbumTitleChanged(albumTitle);
+		} finally {
+			mLock.readLock().unlock();
+		}
 	}
 
 	@Override
 	public synchronized String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("PluginCollection@").append(hashCode()).append("[ ");
-		Iterator<PlayerHaterPlugin> iter = mPlugins.iterator();
-		if (iter.hasNext()) {
-			sb.append(iter.next().toString());
-			while (iter.hasNext()) {
-				sb.append(", ").append(iter.next().toString());
+		mLock.readLock().lock();
+		try {
+			Iterator<PlayerHaterPlugin> iter = mPlugins.iterator();
+			if (iter.hasNext()) {
+				sb.append(iter.next().toString());
+				while (iter.hasNext()) {
+					sb.append(", ").append(iter.next().toString());
+				}
 			}
+		} finally {
+			mLock.readLock().unlock();
 		}
 		return sb.append("]").toString();
 	}

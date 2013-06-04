@@ -1,18 +1,3 @@
-/*******************************************************************************
- * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
 package org.prx.playerhater.wrappers;
 
 import org.prx.playerhater.PlayerHater;
@@ -23,136 +8,126 @@ import org.prx.playerhater.service.PlayerHaterService;
 import android.app.Notification;
 import android.app.PendingIntent;
 
-public class ServicePlayerHater extends ThreadsafePlayerHater {
-
+public class ServicePlayerHater extends PlayerHater {
 	private final PlayerHaterService mService;
 
 	public ServicePlayerHater(PlayerHaterService service) {
-		super(new ServiceWrapper(service));
 		mService = service;
 	}
 
-	private static class ServiceWrapper extends PlayerHater {
-		private final PlayerHaterService mService;
+	@Override
+	public boolean pause() {
+		return mService.pause();
+	}
 
-		private ServiceWrapper(PlayerHaterService service) {
-			mService = service;
-		}
+	@Override
+	public boolean stop() {
+		return mService.stop();
+	}
 
-		@Override
-		public boolean pause() {
-			return mService.pause();
-		}
+	@Override
+	public boolean play() {
+		return mService.play();
+	}
 
-		@Override
-		public boolean stop() {
-			return mService.stop();
-		}
+	@Override
+	public boolean play(int startTime) {
+		return mService.play(startTime);
+	}
 
-		@Override
-		public boolean play() {
-			return mService.play();
-		}
+	@Override
+	public boolean play(Song song) {
+		return play(song, 0);
+	}
 
-		@Override
-		public boolean play(int startTime) {
-			return mService.play(startTime);
-		}
+	@Override
+	public boolean play(Song song, int startTime) {
+		return mService.play(song, startTime);
+	}
 
-		@Override
-		public boolean play(Song song) {
-			return play(song, 0);
-		}
+	@Override
+	public boolean seekTo(int startTime) {
+		return mService.seekTo(startTime);
+	}
 
-		@Override
-		public boolean play(Song song, int startTime) {
-			return mService.play(song, startTime);
-		}
+	@Override
+	public int enqueue(Song song) {
+		return mService.enqueue(song);
+	}
 
-		@Override
-		public boolean seekTo(int startTime) {
-			return mService.seekTo(startTime);
-		}
+	@Override
+	public boolean skipTo(int position) {
+		return mService.skipTo(position);
+	}
 
-		@Override
-		public int enqueue(Song song) {
-			return mService.enqueue(song);
-		}
+	@Override
+	public void skip() {
+		mService.skip();
+	}
 
-		@Override
-		public boolean skipTo(int position) {
-			return mService.skipTo(position);
-		}
+	@Override
+	public void skipBack() {
+		mService.skipBack();
+	}
 
-		@Override
-		public void skip() {
-			mService.skip();
-		}
+	@Override
+	public void emptyQueue() {
+		mService.emptyQueue();
+	}
 
-		@Override
-		public void skipBack() {
-			mService.skipBack();
-		}
+	@Override
+	public int getCurrentPosition() {
+		return mService.getCurrentPosition();
+	}
 
-		@Override
-		public void emptyQueue() {
-			mService.emptyQueue();
-		}
+	@Override
+	public int getDuration() {
+		return mService.getDuration();
+	}
 
-		@Override
-		public int getCurrentPosition() {
-			return mService.getCurrentPosition();
-		}
+	@Override
+	public Song nowPlaying() {
+		return mService.nowPlaying();
+	}
 
-		@Override
-		public int getDuration() {
-			return mService.getDuration();
-		}
+	@Override
+	public boolean isPlaying() {
+		return mService.isPlaying();
+	}
 
-		@Override
-		public Song nowPlaying() {
-			return mService.nowPlaying();
-		}
+	@Override
+	public boolean isLoading() {
+		return mService.isLoading();
+	}
 
-		@Override
-		public boolean isPlaying() {
-			return mService.isPlaying();
-		}
+	@Override
+	public int getState() {
+		return mService.getState();
+	}
 
-		@Override
-		public boolean isLoading() {
-			return mService.isLoading();
-		}
+	@Override
+	public void setTransportControlFlags(int transportControlFlags) {
+		mService.setTransportControlFlags(transportControlFlags);
+	}
 
-		@Override
-		public int getState() {
-			return mService.getState();
-		}
+	@Override
+	public int getQueueLength() {
+		return mService.getQueueLength();
+	}
 
-		@Override
-		public void setTransportControlFlags(int transportControlFlags) {
-			mService.setTransportControlFlags(transportControlFlags);
-		}
+	@Override
+	public int getQueuePosition() {
+		return mService.getQueuePosition();
+	}
 
-		@Override
-		public int getQueueLength() {
-			return mService.getQueueLength();
-		}
+	@Override
+	public boolean removeFromQueue(int position) {
+		return mService.removeFromQueue(position);
+	}
 
-		@Override
-		public int getQueuePosition() {
-			return mService.getQueuePosition();
-		}
-
-		@Override
-		public boolean removeFromQueue(int position) {
-			return mService.removeFromQueue(position);
-		}
-
-		@Override
-		public void setPendingIntent(PendingIntent intent) {
-			mService.setPendingIntent(intent);
-		}
+	@Override
+	public void setPendingIntent(PendingIntent intent) {
+		mService.setPendingIntent(intent);
 	}
 
 	/*
@@ -183,5 +158,4 @@ public class ServicePlayerHater extends ThreadsafePlayerHater {
 	public void unduck() {
 		mService.unduck();
 	}
-
 }

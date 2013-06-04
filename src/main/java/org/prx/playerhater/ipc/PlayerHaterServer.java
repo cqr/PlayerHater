@@ -16,10 +16,9 @@
 
 package org.prx.playerhater.ipc;
 
-import org.prx.playerhater.Song;
 import org.prx.playerhater.service.PlayerHaterService;
 import org.prx.playerhater.songs.SongHost;
-import org.prx.playerhater.wrappers.ServicePlayerHater;
+import org.prx.playerhater.wrappers.ThreadsafeServicePlayerHater;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -29,13 +28,13 @@ import android.os.RemoteException;
 
 public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 
-	private final ServicePlayerHater mService;
+	private final ThreadsafeServicePlayerHater mService;
 
 	public PlayerHaterServer(PlayerHaterService service) {
-		mService = new ServicePlayerHater(service);
+		mService = new ThreadsafeServicePlayerHater(service);
 	}
 	
-	public PlayerHaterServer(ServicePlayerHater playerHater) {
+	public PlayerHaterServer(ThreadsafeServicePlayerHater playerHater) {
 		mService = playerHater;
 	}
 

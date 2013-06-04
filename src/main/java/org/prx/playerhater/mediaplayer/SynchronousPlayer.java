@@ -22,177 +22,176 @@ import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 
 public class SynchronousPlayer extends StatelyPlayer implements
-        OnPreparedListener, OnSeekCompleteListener {
+		OnPreparedListener, OnSeekCompleteListener {
 
-    private boolean mShouldPlayWhenPrepared;
-    private int mShouldSkipWhenPrepared;
-    private Uri mShouldSetDataSourceUri;
-    private Context mShouldSetPrepareContext;
+	private boolean mShouldPlayWhenPrepared;
+	private int mShouldSkipWhenPrepared;
+	private Uri mShouldSetDataSourceUri;
+	private Context mShouldSetPrepareContext;
 
-    public SynchronousPlayer() {
-        super();
-    }
+	public SynchronousPlayer() {
+		super();
+	}
 
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        super.onPrepared(mp);
-        startIfNecessary();
-    }
+	@Override
+	public void onPrepared(MediaPlayer mp) {
+		super.onPrepared(mp);
+		startIfNecessary();
+	}
 
-    @Override
-    public void onSeekComplete(MediaPlayer mp) {
-        super.onSeekComplete(mp);
-        startIfNecessary();
-    }
+	@Override
+	public void onSeekComplete(MediaPlayer mp) {
+		super.onSeekComplete(mp);
+		startIfNecessary();
+	}
 
-    @Override
-    public boolean prepare(Context context, Uri uri) {
-        mShouldPlayWhenPrepared = false;
-        mShouldSkipWhenPrepared = 0;
-        mShouldSetDataSourceUri = null;
-        mShouldSetPrepareContext = null;
-        switch (getState()) {
-            case IDLE:
-                try {
-                    setDataSource(context, uri);
-                } catch (Exception e) {
-                    return false;
-                }
-            case INITIALIZED:
-            case STOPPED:
-            case LOADING_CONTENT:
-                prepareAsync();
-                break;
-            case PREPARING:
-            case PREPARING_CONTENT:
-                mShouldSetDataSourceUri = uri;
-                mShouldSetPrepareContext = context;
-                break;
-            default:
-                reset();
-                try {
-                    setDataSource(context, uri);
-                } catch (Exception e) {
-                    return false;
-                }
-                try {
-                    prepareAsync();
-                } catch (IllegalStateException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-        }
-        return true;
-    }
+	@Override
+	public boolean prepare(Context context, Uri uri) {
+		mShouldPlayWhenPrepared = false;
+		mShouldSkipWhenPrepared = 0;
+		mShouldSetDataSourceUri = null;
+		mShouldSetPrepareContext = null;
+		switch (getState()) {
+		case IDLE:
+			try {
+				setDataSource(context, uri);
+			} catch (Exception e) {
+				return false;
+			}
+		case INITIALIZED:
+		case STOPPED:
+		case LOADING_CONTENT:
+			prepareAsync();
+			break;
+		case PREPARING:
+		case PREPARING_CONTENT:
+			mShouldSetDataSourceUri = uri;
+			mShouldSetPrepareContext = context;
+			break;
+		default:
+			reset();
+			try {
+				setDataSource(context, uri);
+			} catch (Exception e) {
+				return false;
+			}
+			try {
+				prepareAsync();
+			} catch (IllegalStateException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return true;
+	}
 
-    @Override
-    public boolean prepareAndPlay(Context context, Uri uri, int position) {
-        if (prepare(context, uri)) {
-            if (position != 0) {
-                mShouldPlayWhenPrepared = true;
-                seekTo(position);
-            } else {
-                start();
-            }
-            return true;
-        } else {
-            return false;
-        }
-    }
+	@Override
+	public boolean prepareAndPlay(Context context, Uri uri, int position) {
+		if (prepare(context, uri)) {
+			if (position != 0) {
+				mShouldPlayWhenPrepared = true;
+				seekTo(position);
+			} else {
+				start();
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-    @Override
-    public void start() {
-        if (getState() == PREPARING || getState() == PREPARING_CONTENT
-                || getState() == LOADING_CONTENT) {
-            mShouldPlayWhenPrepared = true;
-            onStateChanged();
-        } else if (getState() == INITIALIZED || getState() == STOPPED) {
-            mShouldPlayWhenPrepared = true;
-            try {
-                prepareAsync();
-            } catch (Exception e) {
-            }
-        } else {
-            super.start();
-        }
-    }
+	@Override
+	public void start() {
+		if (getState() == PREPARING) {
+			mShouldPlayWhenPrepared = true;
+			onStateChanged();
+		} else if (getState() == INITIALIZED || getState() == STOPPED) {
+			mShouldPlayWhenPrepared = true;
+			try {
+				prepareAsync();
+			} catch (Exception e) {}
+		} else {
+			super.start();
+		}
+	}
 
-    @Override
-    public void seekTo(int msec) {
-        int state = getState();
-        if (state == PREPARING || state == INITIALIZED || state == STOPPED
-                || state == LOADING_CONTENT || state == PREPARING_CONTENT) {
-            mShouldSkipWhenPrepared = msec;
-            if (state == INITIALIZED || state == STOPPED) {
-                prepareAsync();
-            }
-        } else if (state == PREPARED || state == PAUSED
-                || state == PLAYBACK_COMPLETED) {
-            super.seekTo(msec);
-        } else if (state == STARTED) {
-            super.pause();
-            mShouldPlayWhenPrepared = true;
-            super.seekTo(msec);
-        }
-    }
+	@Override
+	public void seekTo(int msec) {
+		int state = getState();
+		if (state == PREPARING || state == INITIALIZED || state == STOPPED
+				|| state == LOADING_CONTENT || state == PREPARING_CONTENT) {
+			mShouldSkipWhenPrepared = msec;
+			if (state == INITIALIZED || state == STOPPED) {
+				prepareAsync();
+			}
+		} else if (state == PREPARED || state == PAUSED
+				|| state == PLAYBACK_COMPLETED) {
+			super.seekTo(msec);
+		} else if (state == STARTED) {
+			super.pause();
+			mShouldPlayWhenPrepared = true;
+			super.seekTo(msec);
+		}
+	}
 
-    @Override
-    public boolean conditionalPause() {
-        if (mShouldPlayWhenPrepared) {
-            mShouldPlayWhenPrepared = false;
-            return true;
-        } else if (getState() == STARTED) {
-            pause();
-            return true;
-        }
-        return false;
-    }
+	@Override
+	public boolean conditionalPause() {
+		if (mShouldPlayWhenPrepared) {
+			mShouldPlayWhenPrepared = false;
+			return true;
+		} else if (getState() == STARTED) {
+			pause();
+			return true;
+		}
+		return false;
+	}
 
-    @Override
-    public boolean conditionalPlay() {
-        try {
-            start();
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
+	@Override
+	public boolean conditionalPlay() {
+		try {
+			start();
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
 
-    @Override
-    public boolean conditionalStop() {
-        if (mShouldPlayWhenPrepared) {
-            mShouldPlayWhenPrepared = false;
-            return true;
-        }
-        int state = getState();
-        if (state != PREPARED && state != STARTED && state != PAUSED
-                && state != PLAYBACK_COMPLETED) {
-            return false;
-        }
-        stop();
-        return true;
-    }
+	@Override
+	public boolean conditionalStop() {
+		if (mShouldPlayWhenPrepared) {
+			mShouldPlayWhenPrepared = false;
+			return true;
+		}
+		int state = getState();
+		if (state != PREPARED && state != STARTED && state != PAUSED
+				&& state != PLAYBACK_COMPLETED) {
+			return false;
+		}
+		stop();
+		return true;
+	}
 
-    @Override
-    public boolean isWaitingToPlay() {
-        return super.isWaitingToPlay() || (mShouldSkipWhenPrepared != 0 | mShouldPlayWhenPrepared);
-    }
+	@Override
+	public boolean isWaitingToPlay() {
+		return super.isWaitingToPlay()
+				|| (mShouldSkipWhenPrepared != 0 | mShouldPlayWhenPrepared);
+	}
 
-    private void startIfNecessary() {
-        if (mShouldSetDataSourceUri != null) {
-            if (mShouldPlayWhenPrepared) {
-                prepareAndPlay(mShouldSetPrepareContext,
-                        mShouldSetDataSourceUri, mShouldSkipWhenPrepared);
-            } else {
-                prepare(mShouldSetPrepareContext, mShouldSetDataSourceUri);
-            }
-        } else if (mShouldSkipWhenPrepared != 0) {
-            seekTo(mShouldSkipWhenPrepared);
-            mShouldSkipWhenPrepared = 0;
-        } else if (mShouldPlayWhenPrepared) {
-            start();
-            mShouldPlayWhenPrepared = false;
-        }
-    }
+	private void startIfNecessary() {
+		if (mShouldSetDataSourceUri != null) {
+			if (mShouldPlayWhenPrepared) {
+				prepareAndPlay(mShouldSetPrepareContext,
+						mShouldSetDataSourceUri, mShouldSkipWhenPrepared);
+			} else {
+				prepare(mShouldSetPrepareContext, mShouldSetDataSourceUri);
+			}
+		} else if (mShouldSkipWhenPrepared != 0) {
+			seekTo(mShouldSkipWhenPrepared);
+			mShouldSkipWhenPrepared = 0;
+		} else if (mShouldPlayWhenPrepared) {
+			start();
+			mShouldPlayWhenPrepared = false;
+		}
+	}
 
 }

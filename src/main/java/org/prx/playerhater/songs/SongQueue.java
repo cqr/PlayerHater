@@ -26,42 +26,44 @@ import android.os.Message;
 
 public class SongQueue {
 
-//	private static Handler sHandler;
-//	private static final int CURRENT_SONG = 1;
-//	private static final int NEXT_SONG = 2;
-//
-//	private static Handler getHandler() {
-//		if (sHandler == null) {
-//			HandlerThread thread = new HandlerThread("SongQueue");
-//			thread.start();
-//			sHandler = new Handler(thread.getLooper()) {
-//
-//				@Override
-//				public void handleMessage(Message msg) {
-//					SongMessage m = (SongMessage) msg.obj;
-//					switch (msg.what) {
-//					case CURRENT_SONG:
-//						m.queue.sendSongChanged(m.song);
-//						break;
-//					case NEXT_SONG:
-//						m.queue.sendNextSongChanged(m.song);
-//					}
-//				}
-//
-//			};
-//		}
-//		return sHandler;
-//	}
-//
-//	private static class SongMessage {
-//		private final SongQueue queue;
-//		private final Song song;
-//
-//		public SongMessage(SongQueue songQueue, Song theSong) {
-//			queue = songQueue;
-//			song = theSong;
-//		}
-//	}
+	private static Handler sHandler;
+	private static final int CURRENT_SONG = 1;
+	private static final int NEXT_SONG = 2;
+
+	private static Handler getHandler() {
+		if (sHandler == null) {
+			HandlerThread thread = new HandlerThread("SongQueue");
+			thread.start();
+			sHandler = new Handler(thread.getLooper()) {
+
+				@Override
+				public void handleMessage(Message msg) {
+					SongMessage m = (SongMessage) msg.obj;
+					switch (msg.what) {
+					case CURRENT_SONG:
+						m.queue.sendSongChanged(m.song, m.oldSong);
+						break;
+					case NEXT_SONG:
+						m.queue.sendNextSongChanged(m.song, m.oldSong);
+					}
+				}
+
+			};
+		}
+		return sHandler;
+	}
+
+	private static class SongMessage {
+		private final SongQueue queue;
+		private final Song song;
+		private final Song oldSong;
+
+		public SongMessage(SongQueue songQueue, Song newSong, Song lastSong) {
+			queue = songQueue;
+			song = newSong;
+			oldSong = lastSong;
+		}
+	}
 
 	public interface OnQueuedSongsChangedListener {
 		public void onNowPlayingChanged(Song nowPlaying, Song nowPlayingWas);
@@ -170,27 +172,29 @@ public class SongQueue {
 	}
 
 	private void currentSongChanged(boolean notify) {
-		if (notify && mListener != null)
-			sendSongChanged(mCurrentSongWas); 
-//			getHandler().obtainMessage(CURRENT_SONG,
-//					new SongMessage(this, mCurrentSongWas)).sendToTarget();
+		if (notify && mListener != null) {
+			getHandler().obtainMessage(CURRENT_SONG,
+					new SongMessage(this, getNowPlaying(), mCurrentSongWas))
+					.sendToTarget();
+		}
 		mCurrentSongWas = getNowPlaying();
 	}
 
-	private void sendSongChanged(Song reallyWas) {
-		mListener.onNowPlayingChanged(getNowPlaying(), reallyWas);
+	private void sendSongChanged(Song newSong, Song oldSong) {
+		mListener.onNowPlayingChanged(newSong, oldSong);
 	}
 
 	private void nextSongChanged(boolean notify) {
-		if (notify && mListener != null)
-			sendNextSongChanged(mNextSongWas);
-//			getHandler().obtainMessage(NEXT_SONG,
-//					new SongMessage(this, mNextSongWas)).sendToTarget();
+		if (notify && mListener != null) {
+			getHandler().obtainMessage(NEXT_SONG,
+					new SongMessage(this, getNextSong(), mNextSongWas))
+					.sendToTarget();
+		}
 		mNextSongWas = getNextSong();
 	}
 
-	private void sendNextSongChanged(Song reallyWas) {
-		mListener.onNextSongChanged(getNextSong(), reallyWas);
+	private void sendNextSongChanged(Song newNextSong, Song oldNextSong) {
+		mListener.onNextSongChanged(newNextSong, oldNextSong);
 	}
 
 	private Song getNextSong() {
@@ -249,5 +253,11 @@ public class SongQueue {
 		} else {
 			return getPlayheadPosition();
 		}
+	}
+
+	public void appendAndSkip(Song song) {
+		mSongs.add(mSongs.size(), song);
+		setPlayheadPosition(mSongs.size());
+		songOrderChanged(false, true);
 	}
 }
