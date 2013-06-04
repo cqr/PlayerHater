@@ -66,8 +66,10 @@ public class NotificationPlugin extends AbstractPlugin {
 	@Override
 	public void onAudioStarted() {
 		try {
-			getBinder().startForeground(NOTIFICATION_NU, getNotification());
-			mIsVisible = true;
+			if (!mIsVisible) {
+				getBinder().startForeground(NOTIFICATION_NU, getNotification());
+				mIsVisible = true;
+			}
 		} catch (Exception e) {}
 	}
 

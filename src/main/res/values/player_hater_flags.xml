@@ -28,8 +28,4 @@
     <string name="skip">Skip</string>
     <string name="play_pause">Toggle Playback</string>
 
-    <style name="PHSkipButton">
-        <item name="android:visibility">gone</item>
-    </style>
-
 </resources>

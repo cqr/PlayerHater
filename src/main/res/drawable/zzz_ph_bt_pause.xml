@@ -14,6 +14,8 @@
   limitations under the License.
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_enabled="true" android:drawable="@drawable/zzz_ph_bt_pause_enabled" />
-	<item android:state_enabled="false" android:drawable="@drawable/zzz_ph_bt_pause_disabled" />
+
+    <item android:drawable="@drawable/zzz_ph_bt_pause_enabled" android:state_enabled="true"/>
+    <item android:drawable="@drawable/zzz_ph_bt_pause_disabled"/>
+
 </selector>

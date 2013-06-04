@@ -19,7 +19,7 @@
     android:layout_height="128dp" >
 
     <ImageView
-        android:id="@+id/image"
+        android:id="@+id/zzz_ph_notification_image"
         android:layout_width="128dp"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
@@ -30,11 +30,11 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_toRightOf="@id/image"
+        android:layout_toRightOf="@id/zzz_ph_notification_image"
         android:orientation="vertical" >
 
         <TextView
-            android:id="@+id/title"
+            android:id="@+id/zzz_ph_notification_title"
             style="@android:style/TextAppearance.StatusBar.EventContent.Title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
         </TextView>
 
         <TextView
-            android:id="@+id/text"
+            android:id="@+id/zzz_ph_notification_text"
             style="@android:style/TextAppearance.StatusBar.EventContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -77,7 +77,7 @@
             android:showDividers="middle" >
 
             <ImageView
-                android:id="@+id/back"
+                android:id="@+id/zzz_ph_back_button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -89,7 +89,7 @@
                 android:src="@drawable/zzz_ph_bt_back" />
 
             <ImageView
-                android:id="@+id/button"
+                android:id="@+id/zzz_ph_play_pause_button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -101,7 +101,7 @@
                 android:src="@drawable/zzz_ph_bt_pause" />
 
             <ImageView
-                android:id="@+id/skip"
+                android:id="@+id/zzz_ph_skip_button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -115,7 +115,7 @@
     </LinearLayout>
 
     <ImageView
-        android:id="@+id/stop"
+        android:id="@+id/zzz_ph_stop_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"

@@ -45,12 +45,15 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 			setListeners(mExpandedView);
 		}
 
-		mExpandedView.setTextViewText(R.id.title, mNotificationTitle);
-		mExpandedView.setTextViewText(R.id.text, mNotificationText);
+		mExpandedView.setTextViewText(R.id.zzz_ph_notification_title,
+				mNotificationTitle);
+		mExpandedView.setTextViewText(R.id.zzz_ph_notification_text,
+				mNotificationText);
 		if (mNotificationImageUrl != null) {
-			setImageViewUri(R.id.image, mNotificationImageUrl);
+			setImageViewUri(R.id.zzz_ph_notification_image,
+					mNotificationImageUrl);
 		} else if (mNotificationImageResourceId != 0) {
-			mExpandedView.setImageViewResource(R.id.image,
+			mExpandedView.setImageViewResource(R.id.zzz_ph_notification_image,
 					mNotificationImageResourceId);
 		}
 		return mExpandedView;

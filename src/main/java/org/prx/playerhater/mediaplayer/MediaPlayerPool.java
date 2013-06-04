@@ -86,36 +86,6 @@ public class MediaPlayerPool {
 		}
 	}
 
-	public synchronized void recycle(SynchronousPlayer player, Uri prepared) {
-		if (player != null) {
-			if (prepared == null) {
-				recycle(player);
-				return;
-			}
-			if (mMediaPlayers.containsKey(prepared)) {
-				recycle(player);
-			} else {
-				switch (player.getState()) {
-				case StatelyPlayer.IDLE:
-				case StatelyPlayer.ERROR:
-					recycle(player);
-					return;
-				case StatelyPlayer.END:
-					return;
-				case StatelyPlayer.INITIALIZED:
-				case StatelyPlayer.STOPPED:
-					player.prepareAsync();
-					break;
-				case StatelyPlayer.STARTED:
-					player.pause();
-				case StatelyPlayer.PAUSED:
-					player.seekTo(0);
-				}
-				addPlayer(player, prepared);
-			}
-		}
-	}
-
 	private synchronized SynchronousPlayer getPlayer() {
 		if (mIdlePlayers.size() > 0) {
 			SynchronousPlayer player = mIdlePlayers

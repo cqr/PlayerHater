@@ -18,6 +18,7 @@ package org.prx.playerhater.plugins;
 import org.prx.playerhater.BroadcastReceiver;
 import org.prx.playerhater.R;
 import org.prx.playerhater.Song;
+import org.prx.playerhater.util.Log;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -43,22 +44,22 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	@Override
 	public void onSongChanged(Song song) {
 		super.onSongChanged(song);
-		if (song == null) { 
-			onAlbumArtChanged(null); 
-		} else { 
+		if (song == null) {
+			onAlbumArtChanged(null);
+		} else {
 			onAlbumArtChanged(song.getAlbumArt());
 		}
 	}
 
 	@Override
 	public void onTitleChanged(String title) {
-		setTextViewText(R.id.title, title);
+		setTextViewText(R.id.zzz_ph_notification_title, title);
 		super.onTitleChanged(title);
 	}
 
 	@Override
 	public void onArtistChanged(String artist) {
-		setTextViewText(R.id.text, artist);
+		setTextViewText(R.id.zzz_ph_notification_text, artist);
 		super.onArtistChanged(artist);
 	}
 
@@ -67,7 +68,8 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 		mNotificationImageUrl = url;
 		if (mNotificationImageUrl != null) {
 			mNotificationImageResourceId = 0;
-			setImageViewUri(R.id.image, mNotificationImageUrl);
+			setImageViewUri(R.id.zzz_ph_notification_image,
+					mNotificationImageUrl);
 		}
 	}
 
@@ -79,39 +81,42 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 
 	@Override
 	public void onAudioPaused() {
-		setImageViewResource(R.id.button, R.drawable.zzz_ph_bt_play_enabled);
+		setImageViewResource(R.id.zzz_ph_play_pause_button,
+				R.drawable.zzz_ph_bt_play);
 	}
 
 	@Override
 	public void onAudioResumed() {
-		setImageViewResource(R.id.button, R.drawable.zzz_ph_bt_pause_enabled);
+		setImageViewResource(R.id.zzz_ph_play_pause_button,
+				R.drawable.zzz_ph_bt_pause);
 	}
 
 	@Override
 	public void onTransportControlFlagsChanged(int transportControlFlags) {
+		Log.d("Got new TCFs " + transportControlFlags);
 		if ((transportControlFlags & RemoteControlClient.FLAG_KEY_MEDIA_NEXT) == 0) {
-			setViewVisibility(R.id.skip, View.GONE);
+			setViewEnabled(R.id.zzz_ph_skip_button, false);
 		} else {
-			setViewVisibility(R.id.skip, View.VISIBLE);
+			setViewEnabled(R.id.zzz_ph_skip_button, true);
 		}
 
 		if ((transportControlFlags & RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS) == 0) {
-			setViewVisibility(R.id.back, View.GONE);
+			setViewEnabled(R.id.zzz_ph_back_button, false);
 		} else {
-			setViewVisibility(R.id.back, View.VISIBLE);
+			setViewEnabled(R.id.zzz_ph_back_button, true);
 		}
 
-		if ((transportControlFlags & (RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
-				| RemoteControlClient.FLAG_KEY_MEDIA_PLAY | RemoteControlClient.FLAG_KEY_MEDIA_PAUSE)) != 0) {
-			setViewVisibility(R.id.button, View.VISIBLE);
-		} else {
-			setViewVisibility(R.id.button, View.GONE);
-		}
+//		if ((transportControlFlags & (RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
+//				| RemoteControlClient.FLAG_KEY_MEDIA_PLAY | RemoteControlClient.FLAG_KEY_MEDIA_PAUSE)) == 0) {
+//			setViewEnabled(R.id.zzz_ph_play_pause_button, false);
+//		} else {
+//			setViewEnabled(R.id.zzz_ph_play_pause_button, true);
+//		}
 
-		if ((transportControlFlags & RemoteControlClient.FLAG_KEY_MEDIA_STOP) != 0) {
-			setViewVisibility(R.id.stop, View.VISIBLE);
+		if ((transportControlFlags & RemoteControlClient.FLAG_KEY_MEDIA_STOP) == 0) {
+			setViewVisibility(R.id.zzz_ph_stop_button, View.VISIBLE);
 		} else {
-			setViewVisibility(R.id.stop, View.GONE);
+			setViewVisibility(R.id.zzz_ph_stop_button, View.GONE);
 		}
 	}
 
@@ -136,12 +141,16 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 			setListeners(mNotificationView);
 		}
 
-		mNotificationView.setTextViewText(R.id.title, mNotificationTitle);
-		mNotificationView.setTextViewText(R.id.text, mNotificationText);
+		mNotificationView.setTextViewText(R.id.zzz_ph_notification_title,
+				mNotificationTitle);
+		mNotificationView.setTextViewText(R.id.zzz_ph_notification_text,
+				mNotificationText);
 		if (mNotificationImageUrl != null) {
-			setImageViewUri(R.id.image, mNotificationImageUrl);
+			setImageViewUri(R.id.zzz_ph_notification_image,
+					mNotificationImageUrl);
 		} else if (mNotificationImageResourceId != 0) {
-			mNotificationView.setImageViewResource(R.id.image,
+			mNotificationView.setImageViewResource(
+					R.id.zzz_ph_notification_image,
 					mNotificationImageResourceId);
 		}
 
@@ -149,13 +158,13 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	protected void setListeners(RemoteViews view) {
-		view.setOnClickPendingIntent(R.id.skip,
+		view.setOnClickPendingIntent(R.id.zzz_ph_skip_button,
 				getMediaButtonPendingIntent(KeyEvent.KEYCODE_MEDIA_NEXT));
-		view.setOnClickPendingIntent(R.id.button,
+		view.setOnClickPendingIntent(R.id.zzz_ph_play_pause_button,
 				getMediaButtonPendingIntent(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
-		view.setOnClickPendingIntent(R.id.stop,
+		view.setOnClickPendingIntent(R.id.zzz_ph_stop_button,
 				getMediaButtonPendingIntent(KeyEvent.KEYCODE_MEDIA_STOP));
-		view.setOnClickPendingIntent(R.id.back,
+		view.setOnClickPendingIntent(R.id.zzz_ph_back_button,
 				getMediaButtonPendingIntent(KeyEvent.KEYCODE_MEDIA_PREVIOUS));
 	}
 

@@ -254,9 +254,15 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 
 	@Override
 	public synchronized void reset() {
-		if (getState() != IDLE) {
-			setState(IDLE);
-			mMediaPlayer.reset();
+		try {
+			if (getState() != IDLE) {
+				setState(IDLE);
+				mMediaPlayer.reset();
+			}
+		} catch (IllegalStateException e) {
+			Log.e("We got an error", e);
+			Log.e(getStateName(), e);
+			throw e;
 		}
 	}
 
