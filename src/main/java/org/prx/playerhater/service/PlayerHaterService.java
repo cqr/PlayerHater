@@ -113,7 +113,8 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public void onDestroy() {
-		getMediaPlayer().release();
+		mMediaPlayer.release();
+		mMediaPlayer = null;
 		BroadcastReceiver.release(getApplicationContext());
 		SongHost.clear();
 		super.onDestroy();

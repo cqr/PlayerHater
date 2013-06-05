@@ -256,7 +256,6 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	public synchronized void reset() {
 		try {
 			if (getState() != IDLE) {
-				setState(IDLE);
 				mMediaPlayer.reset();
 			}
 		} catch (IllegalStateException e) {
@@ -264,6 +263,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 			Log.e(getStateName(), e);
 			throw e;
 		}
+		setState(IDLE);
 	}
 
 	@Override
@@ -396,6 +396,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 								prepareAsync();
 							}
 						} catch (Exception e) {
+							Log.e("Whoops", e);
 							try {
 								mMediaPlayer.setDataSource(uri.toString());
 								int state = getInternalState();

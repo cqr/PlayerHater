@@ -93,7 +93,6 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 
 	@Override
 	public void onTransportControlFlagsChanged(int transportControlFlags) {
-		Log.d("Got new TCFs " + transportControlFlags);
 		if ((transportControlFlags & RemoteControlClient.FLAG_KEY_MEDIA_NEXT) == 0) {
 			setViewEnabled(R.id.zzz_ph_skip_button, false);
 		} else {
@@ -104,19 +103,6 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 			setViewEnabled(R.id.zzz_ph_back_button, false);
 		} else {
 			setViewEnabled(R.id.zzz_ph_back_button, true);
-		}
-
-//		if ((transportControlFlags & (RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
-//				| RemoteControlClient.FLAG_KEY_MEDIA_PLAY | RemoteControlClient.FLAG_KEY_MEDIA_PAUSE)) == 0) {
-//			setViewEnabled(R.id.zzz_ph_play_pause_button, false);
-//		} else {
-//			setViewEnabled(R.id.zzz_ph_play_pause_button, true);
-//		}
-
-		if ((transportControlFlags & RemoteControlClient.FLAG_KEY_MEDIA_STOP) == 0) {
-			setViewVisibility(R.id.zzz_ph_stop_button, View.VISIBLE);
-		} else {
-			setViewVisibility(R.id.zzz_ph_stop_button, View.GONE);
 		}
 	}
 

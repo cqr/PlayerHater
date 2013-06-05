@@ -101,9 +101,17 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 				RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
 				mAlbumArt);
 	}
+	
+	@Override
+	public void onTransportControlFlagsChanged(int transportControlFlags) {
+		mTransportControlFlags = transportControlFlags;
+		getRemoteControlClient().setTransportControlFlags(transportControlFlags);
+	}
 
 	@Override
 	public void onChangesComplete() {
+		getRemoteControlClient()
+				.setTransportControlFlags(mTransportControlFlags);
 		getRemoteControlClient()
 				.editMetadata(false)
 				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, mTitle)
@@ -121,8 +129,6 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 					getContext(), 0, mediaButtonIntent,
 					PendingIntent.FLAG_CANCEL_CURRENT);
 			mRemoteControlClient = new RemoteControlClient(pendingIntent);
-			mRemoteControlClient
-					.setTransportControlFlags(mTransportControlFlags);
 		}
 		return mRemoteControlClient;
 	}

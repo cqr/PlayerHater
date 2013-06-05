@@ -21,15 +21,17 @@ import android.net.Uri;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.prx.playerhater.util.Log;
 
 public class MediaPlayerPool {
 
 	private final Map<Uri, SynchronousPlayer> mMediaPlayers = new HashMap<Uri, SynchronousPlayer>();
-	private final List<SynchronousPlayer> mIdlePlayers = new ArrayList<SynchronousPlayer>();
+	private final Set<SynchronousPlayer> mIdlePlayers = new HashSet<SynchronousPlayer>();
 	private final List<Uri> mRequests = new ArrayList<Uri>();
 
 	public MediaPlayerPool() {
@@ -80,7 +82,7 @@ public class MediaPlayerPool {
 	}
 
 	public synchronized void recycle(SynchronousPlayer player) {
-		if (player != null) {
+		if (player != null && player.getState() != StatelyPlayer.END) {
 			player.reset();
 			mIdlePlayers.add(player);
 		}
@@ -88,8 +90,9 @@ public class MediaPlayerPool {
 
 	private synchronized SynchronousPlayer getPlayer() {
 		if (mIdlePlayers.size() > 0) {
-			SynchronousPlayer player = mIdlePlayers
-					.remove(mIdlePlayers.size() - 1);
+			SynchronousPlayer player = (SynchronousPlayer) mIdlePlayers
+					.toArray()[0];
+			mIdlePlayers.remove(player);
 			Log.d("Getting idle player (" + player + ")");
 			return player;
 		} else if (mRequests.size() > 0) {

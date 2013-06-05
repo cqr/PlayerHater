@@ -38,12 +38,15 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 
 public class BoundPlayerHater extends PlayerHater {
 
 	private static Context sApplicationContext;
+	private static Handler sHandler;
+	private static Runnable sRunnable;
 	private static PlayerHater sPlayerHater;
 	private static Set<BoundPlayerHater> sInstances;
 	private static PlayerHaterClient sClient;
@@ -54,6 +57,28 @@ public class BoundPlayerHater extends PlayerHater {
 	private static PendingIntent sPendingPendingIntent;
 	private static int sPendingTransportControlFlags = -1;
 	private static int sStartSeekPosition = -1;
+	
+	private static Handler getHandler() {
+		if (sHandler == null) {
+			sHandler = new Handler();
+		}
+		return sHandler;
+	}
+	
+	private static Runnable getDisconnectRunnable() {
+		if (sRunnable == null) {
+			sRunnable = new Runnable() {
+
+				@Override
+				public void run() {
+					sApplicationContext.unbindService(sServiceConnection);
+					sPlayerHater = null;
+				}
+				
+			};
+		}
+		return sRunnable;
+	}
 
 	private static synchronized PlayerHater getPlayerHater() {
 		return sPlayerHater;
@@ -75,13 +100,14 @@ public class BoundPlayerHater extends PlayerHater {
 					sServiceConnection, Context.BIND_AUTO_CREATE
 							| Context.BIND_NOT_FOREGROUND);
 		}
+		getHandler().removeCallbacks(getDisconnectRunnable());
 	}
 
 	private static void removeInstance(BoundPlayerHater instance) {
 		getInstances().remove(instance);
 		if (getInstances().size() < 1) {
-			sApplicationContext.unbindService(sServiceConnection);
-			sPlayerHater = null;
+			getHandler().removeCallbacks(getDisconnectRunnable());
+			getHandler().postDelayed(getDisconnectRunnable(), 2000);
 		}
 	}
 
@@ -434,7 +460,7 @@ public class BoundPlayerHater extends PlayerHater {
 	@Override
 	public int getQueuePosition() {
 		if (getPlayerHater() == null) {
-			return getSongQueue().getPosition();
+			return getSongQueue().getPosition() - 1;
 		} else {
 			return getPlayerHater().getQueuePosition();
 		}

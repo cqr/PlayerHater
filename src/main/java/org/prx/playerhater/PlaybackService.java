@@ -126,7 +126,7 @@ public class PlaybackService extends PlayerHaterService implements
 
 	@Override
 	public int getQueuePosition() {
-		return getQueue().getPosition() + (getCurrentPosition() > 0 ? 1 : 0);
+		return getQueue().getPosition() - (getCurrentPosition() > 0 ? 0 : 1);
 	}
 
 	@Override
