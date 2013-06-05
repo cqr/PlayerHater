@@ -33,7 +33,7 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 	public PlayerHaterServer(PlayerHaterService service) {
 		mService = new ThreadsafeServicePlayerHater(service);
 	}
-	
+
 	public PlayerHaterServer(ThreadsafeServicePlayerHater playerHater) {
 		mService = playerHater;
 	}
@@ -103,6 +103,12 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 	@Override
 	public int enqueue(int songTag) throws RemoteException {
 		return mService.enqueue(SongHost.getSong(songTag));
+	}
+
+	@Override
+	public void enqueueAtPosition(int position, int songTag)
+			throws RemoteException {
+		mService.enqueue(position, SongHost.getSong(songTag));
 	}
 
 	@Override
@@ -210,5 +216,4 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 	public void setPendingIntent(PendingIntent intent) throws RemoteException {
 		mService.setPendingIntent(intent);
 	}
-
 }

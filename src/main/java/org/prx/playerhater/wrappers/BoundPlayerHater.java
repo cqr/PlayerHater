@@ -367,6 +367,15 @@ public class BoundPlayerHater extends PlayerHater {
 			return getSongQueue().appendSong(song);
 		}
 	}
+	
+	@Override
+	public void enqueue(int position, Song song) {
+		if (getPlayerHater() != null) {
+			getPlayerHater().enqueue(position, song);
+		} else {
+			getSongQueue().addSongAtPosition(song, position);
+		}
+	}
 
 	@Override
 	public boolean skipTo(int position) {

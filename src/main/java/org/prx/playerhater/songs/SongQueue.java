@@ -84,11 +84,11 @@ public class SongQueue {
 	}
 
 	public synchronized int appendSong(Song song) {
-		return addSongAtPosition(song, mSongs.size());
+		return addSongAtPosition(song, mSongs.size()+1);
 	}
 
 	public synchronized int addSongAtPosition(Song song, int position) {
-		mSongs.add(position, song);
+		mSongs.add(position-1, song);
 		songOrderChanged();
 		return mSongs.size() - getPosition();
 	}

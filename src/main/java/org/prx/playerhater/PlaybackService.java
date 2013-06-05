@@ -45,7 +45,7 @@ public class PlaybackService extends PlayerHaterService implements
 
 	@Override
 	public boolean play(Song song, int startTime) {
-		onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
+		onSongFinished(nowPlaying(), PlayerHater.FINISH_SKIP_BUTTON);
 		onNowPlayingChanged(song, nowPlaying());
 		getQueue().appendAndSkip(song);
 		seekTo(startTime);
@@ -65,16 +65,26 @@ public class PlaybackService extends PlayerHaterService implements
 	}
 
 	@Override
+	public void enqueue(int position, Song song) {
+		getQueue().addSongAtPosition(song, position);
+	}
+
+	@Override
 	public boolean skipTo(int position) {
 		startTransaction();
-		onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
-		return getQueue().skipTo(position);
+		onSongFinished(nowPlaying(), PlayerHater.FINISH_SKIP_BUTTON);
+		if (getQueue().skipTo(position)) {
+			return true;
+		} else {
+			commitTransaction();
+			return false;
+		}
 	}
 
 	@Override
 	public void skip() {
 		startTransaction();
-		onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
+		onSongFinished(nowPlaying(), PlayerHater.FINISH_SKIP_BUTTON);
 		getQueue().next();
 	}
 
@@ -82,7 +92,7 @@ public class PlaybackService extends PlayerHaterService implements
 	public void skipBack() {
 		if (getCurrentPosition() < 2000) {
 			startTransaction();
-			onSongFinished(PlayerHater.FINISH_SKIP_BUTTON);
+			onSongFinished(nowPlaying(), PlayerHater.FINISH_SKIP_BUTTON);
 			getQueue().back();
 		} else {
 			seekTo(0);
@@ -116,7 +126,7 @@ public class PlaybackService extends PlayerHaterService implements
 
 	@Override
 	public int getQueuePosition() {
-		return getQueue().getPosition() + (isPlaying() ? 1 : 0);
+		return getQueue().getPosition() + (getCurrentPosition() > 0 ? 1 : 0);
 	}
 
 	@Override
@@ -138,7 +148,7 @@ public class PlaybackService extends PlayerHaterService implements
 			}
 		}
 		commitTransaction();
-		onSongChanged();
+		onSongChanged(nowPlaying);
 	}
 
 	@Override
@@ -147,7 +157,7 @@ public class PlaybackService extends PlayerHaterService implements
 			mMediaPlayerPool
 					.prepare(getApplicationContext(), nextSong.getUri());
 		}
-		onNextSongChanged();
+		onNextSongChanged(nextSong);
 	}
 
 	@Override
@@ -156,7 +166,7 @@ public class PlaybackService extends PlayerHaterService implements
 			startTransaction();
 			mMediaPlayerPool.recycle(peekMediaPlayer());
 			setMediaPlayer(null);
-			onSongFinished(PlayerHater.FINISH_SONG_END);
+			onSongFinished(nowPlaying(), PlayerHater.FINISH_SONG_END);
 			getQueue().next();
 		}
 	}
@@ -167,7 +177,7 @@ public class PlaybackService extends PlayerHaterService implements
 			startTransaction();
 			mMediaPlayerPool.recycle(peekMediaPlayer());
 			setMediaPlayer(null);
-			onSongFinished(PlayerHater.FINISH_ERROR);
+			onSongFinished(nowPlaying(), PlayerHater.FINISH_ERROR);
 			getQueue().next();
 			return true;
 		}

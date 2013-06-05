@@ -85,10 +85,10 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 
 	@Override
 	protected void setImageViewResource(int viewId, int resourceId) {
-		super.setImageViewResource(viewId, resourceId);
 		if (mExpandedView != null) {
 			mExpandedView.setImageViewResource(viewId, resourceId);
 		}
+		super.setImageViewResource(viewId, resourceId);
 	}
 
 	@Override

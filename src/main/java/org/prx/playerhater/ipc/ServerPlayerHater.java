@@ -25,15 +25,15 @@ import android.app.PendingIntent;
 import android.os.RemoteException;
 
 public class ServerPlayerHater extends PlayerHater {
-	
+
 	private static final String SERVER_ERROR = "Server has gone away...";
-	
+
 	private final IPlayerHaterServer mServer;
-	
+
 	public ServerPlayerHater(IPlayerHaterServer server) {
 		mServer = server;
 	}
-	
+
 	@Override
 	public boolean pause() {
 		try {
@@ -108,6 +108,16 @@ public class ServerPlayerHater extends PlayerHater {
 	public int enqueue(Song song) {
 		try {
 			return mServer.enqueue(SongHost.getTag(song));
+		} catch (RemoteException e) {
+			Log.e(SERVER_ERROR, e);
+			throw new IllegalStateException(SERVER_ERROR, e);
+		}
+	}
+
+	@Override
+	public void enqueue(int position, Song song) {
+		try {
+			mServer.enqueueAtPosition(position, SongHost.getTag(song));
 		} catch (RemoteException e) {
 			Log.e(SERVER_ERROR, e);
 			throw new IllegalStateException(SERVER_ERROR, e);
@@ -263,5 +273,4 @@ public class ServerPlayerHater extends PlayerHater {
 			throw new IllegalStateException(SERVER_ERROR, e);
 		}
 	}
-
 }

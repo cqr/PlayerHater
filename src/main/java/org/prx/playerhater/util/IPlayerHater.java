@@ -40,7 +40,7 @@ public interface IPlayerHater {
 	public static final int FINISH_ERROR = 2;
 
 	public static final int STATE_INVALID = -1;
-	
+
 	public static final int STATE_IDLE = 4;
 	public static final int STATE_LOADING = 8;
 	public static final int STATE_PLAYING = 16;
@@ -122,6 +122,16 @@ public interface IPlayerHater {
 	 *         and so on.
 	 */
 	abstract public int enqueue(Song song);
+
+	/**
+	 * Puts a song at the specified position on the play queue.
+	 * 
+	 * @param position
+	 *            The position in which to add the track
+	 * @param song
+	 *            The {@linkplain Song} to add to the queue.
+	 */
+	abstract public void enqueue(int position, Song song);
 
 	/**
 	 * Moves to a new position in the play queue.
@@ -215,8 +225,10 @@ public interface IPlayerHater {
 	/**
 	 * Gets the state of the PlayerHater, represented as an int.
 	 * 
-	 * @return One of: {@link PlayerHater.STATE_IDLE}, {@link PlayerHater.STATE_LOADING},
-	 *         {@link PlayerHater.STATE_PLAYING}, or {@link PlayerHater.STATE_PAUSED}
+	 * @return One of: {@link PlayerHater.STATE_IDLE},
+	 *         {@link PlayerHater.STATE_LOADING},
+	 *         {@link PlayerHater.STATE_PLAYING}, or
+	 *         {@link PlayerHater.STATE_PAUSED}
 	 */
 	abstract public int getState();
 

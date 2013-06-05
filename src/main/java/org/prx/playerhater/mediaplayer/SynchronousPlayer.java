@@ -34,19 +34,19 @@ public class SynchronousPlayer extends StatelyPlayer implements
 	}
 
 	@Override
-	public void onPrepared(MediaPlayer mp) {
+	public synchronized void onPrepared(MediaPlayer mp) {
 		super.onPrepared(mp);
 		startIfNecessary();
 	}
 
 	@Override
-	public void onSeekComplete(MediaPlayer mp) {
+	public synchronized void onSeekComplete(MediaPlayer mp) {
 		super.onSeekComplete(mp);
 		startIfNecessary();
 	}
 
 	@Override
-	public boolean prepare(Context context, Uri uri) {
+	public synchronized boolean prepare(Context context, Uri uri) {
 		mShouldPlayWhenPrepared = false;
 		mShouldSkipWhenPrepared = 0;
 		mShouldSetDataSourceUri = null;
@@ -86,7 +86,7 @@ public class SynchronousPlayer extends StatelyPlayer implements
 	}
 
 	@Override
-	public boolean prepareAndPlay(Context context, Uri uri, int position) {
+	public synchronized boolean prepareAndPlay(Context context, Uri uri, int position) {
 		if (prepare(context, uri)) {
 			if (position != 0) {
 				mShouldPlayWhenPrepared = true;
@@ -101,7 +101,7 @@ public class SynchronousPlayer extends StatelyPlayer implements
 	}
 
 	@Override
-	public void start() {
+	public synchronized void start() {
 		if (getState() == PREPARING) {
 			mShouldPlayWhenPrepared = true;
 			onStateChanged();
@@ -116,7 +116,7 @@ public class SynchronousPlayer extends StatelyPlayer implements
 	}
 
 	@Override
-	public void seekTo(int msec) {
+	public synchronized void seekTo(int msec) {
 		int state = getState();
 		if (state == PREPARING || state == INITIALIZED || state == STOPPED
 				|| state == LOADING_CONTENT || state == PREPARING_CONTENT) {
@@ -135,7 +135,7 @@ public class SynchronousPlayer extends StatelyPlayer implements
 	}
 
 	@Override
-	public boolean conditionalPause() {
+	public synchronized boolean conditionalPause() {
 		if (mShouldPlayWhenPrepared) {
 			mShouldPlayWhenPrepared = false;
 			return true;
@@ -147,7 +147,7 @@ public class SynchronousPlayer extends StatelyPlayer implements
 	}
 
 	@Override
-	public boolean conditionalPlay() {
+	public synchronized boolean conditionalPlay() {
 		try {
 			start();
 		} catch (Exception e) {
@@ -157,7 +157,7 @@ public class SynchronousPlayer extends StatelyPlayer implements
 	}
 
 	@Override
-	public boolean conditionalStop() {
+	public synchronized boolean conditionalStop() {
 		if (mShouldPlayWhenPrepared) {
 			mShouldPlayWhenPrepared = false;
 			return true;
@@ -172,7 +172,7 @@ public class SynchronousPlayer extends StatelyPlayer implements
 	}
 
 	@Override
-	public boolean isWaitingToPlay() {
+	public synchronized boolean isWaitingToPlay() {
 		return super.isWaitingToPlay()
 				|| (mShouldSkipWhenPrepared != 0 | mShouldPlayWhenPrepared);
 	}

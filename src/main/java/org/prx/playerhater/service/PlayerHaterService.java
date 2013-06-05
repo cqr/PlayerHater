@@ -311,22 +311,22 @@ public abstract class PlayerHaterService extends Service implements
 		getPlugin().onAudioResumed();
 	}
 
-	protected void onSongChanged() {
-		getPlugin().onSongChanged(nowPlaying());
+	protected void onSongChanged(Song nowPlaying) {
+		getPlugin().onSongChanged(nowPlaying);
 		getPlugin().onDurationChanged(getDuration());
 	}
 
-	protected void onSongFinished(int reason) {
-		if (nowPlaying() != null) {
-			getPlugin().onSongFinished(nowPlaying(), reason);
+	protected void onSongFinished(Song nowPlaying, int reason) {
+		if (nowPlaying != null) {
+			getPlugin().onSongFinished(nowPlaying, reason);
 		}
 	}
 
 	public abstract Song getNextSong();
 
-	protected void onNextSongChanged() {
-		if (getNextSong() != null)
-			getPlugin().onNextSongAvailable(getNextSong());
+	protected void onNextSongChanged(Song nextSong) {
+		if (nextSong != null)
+			getPlugin().onNextSongAvailable(nextSong);
 		else
 			getPlugin().onNextSongUnavailable();
 	}

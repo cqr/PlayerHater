@@ -43,6 +43,7 @@ interface IPlayerHaterServer {
     boolean play(int songTag, int startTime);
     boolean seekTo(int startTime);
     int enqueue(int songTag);
+    void enqueueAtPosition(int position, int songTag);
     boolean skipTo(int position);
     void skip();
     void skipBack();
