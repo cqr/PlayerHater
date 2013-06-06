@@ -83,19 +83,23 @@ public class PlaybackService extends PlayerHaterService implements
 
 	@Override
 	public void skip() {
-		startTransaction();
-		onSongFinished(nowPlaying(), PlayerHater.FINISH_SKIP_BUTTON);
-		getQueue().next();
+		if (nextAllowed()) {
+			startTransaction();
+			onSongFinished(nowPlaying(), PlayerHater.FINISH_SKIP_BUTTON);
+			getQueue().next();
+		}
 	}
 
 	@Override
 	public void skipBack() {
-		if (getCurrentPosition() < 2000) {
-			startTransaction();
-			onSongFinished(nowPlaying(), PlayerHater.FINISH_SKIP_BUTTON);
-			getQueue().back();
-		} else {
-			seekTo(0);
+		if (previousAllowed()) {
+			if (getCurrentPosition() < 2000) {
+				startTransaction();
+				onSongFinished(nowPlaying(), PlayerHater.FINISH_SKIP_BUTTON);
+				getQueue().back();
+			} else {
+				seekTo(0);
+			}
 		}
 	}
 
@@ -190,7 +194,7 @@ public class PlaybackService extends PlayerHaterService implements
 	}
 
 	@Override
-	protected void setMediaPlayer(SynchronousPlayer mediaPlayer) {
+	protected synchronized void setMediaPlayer(SynchronousPlayer mediaPlayer) {
 		SynchronousPlayer oldPlayer = peekMediaPlayer();
 		if (oldPlayer != null) {
 			oldPlayer.setOnErrorListener(null);

@@ -43,18 +43,12 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 			mExpandedView = new RemoteViews(getContext().getPackageName(),
 					R.layout.zzz_ph_jbb_notification);
 			setListeners(mExpandedView);
-		}
-
-		mExpandedView.setTextViewText(R.id.zzz_ph_notification_title,
-				mNotificationTitle);
-		mExpandedView.setTextViewText(R.id.zzz_ph_notification_text,
-				mNotificationText);
-		if (mNotificationImageUrl != null) {
-			setImageViewUri(R.id.zzz_ph_notification_image,
+			mExpandedView.setTextViewText(R.id.zzz_ph_notification_title,
+					mNotificationTitle);
+			mExpandedView.setTextViewText(R.id.zzz_ph_notification_text,
+					mNotificationText);
+			mExpandedView.setImageViewUri(R.id.zzz_ph_notification_image,
 					mNotificationImageUrl);
-		} else if (mNotificationImageResourceId != 0) {
-			mExpandedView.setImageViewResource(R.id.zzz_ph_notification_image,
-					mNotificationImageResourceId);
 		}
 		return mExpandedView;
 	}

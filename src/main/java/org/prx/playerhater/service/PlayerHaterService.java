@@ -33,12 +33,15 @@ import org.prx.playerhater.util.IPlayerHater;
 import org.prx.playerhater.util.Log;
 import org.prx.playerhater.wrappers.ServicePlayerHater;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.media.RemoteControlClient;
 import android.os.IBinder;
 import android.view.KeyEvent;
 
+@SuppressLint("InlinedApi")
 public abstract class PlayerHaterService extends Service implements
 		IPlayerHater, PlayerHaterStateListener {
 
@@ -57,6 +60,13 @@ public abstract class PlayerHaterService extends Service implements
 
 	private ClientPlugin mClient;
 
+	private int mTransportControlFlags = RemoteControlClient.FLAG_KEY_MEDIA_NEXT
+			| RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
+			| RemoteControlClient.FLAG_KEY_MEDIA_PAUSE
+			| RemoteControlClient.FLAG_KEY_MEDIA_PLAY
+			| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
+			| RemoteControlClient.FLAG_KEY_MEDIA_STOP;
+
 	public void setClient(IPlayerHaterClient client) {
 		if (mClient != null) {
 			getPluginCollection().remove(mClient);
@@ -73,13 +83,11 @@ public abstract class PlayerHaterService extends Service implements
 				mClient.onNextSongUnavailable();
 			}
 			switch (getState()) {
-			case PlayerHater.STATE_IDLE:
-				mClient.onAudioStopped();
-				break;
 			case PlayerHater.STATE_LOADING:
 				mClient.onAudioLoading();
 				break;
 			case PlayerHater.STATE_PLAYING:
+			case PlayerHater.STATE_STREAMING:
 				mClient.onAudioStarted();
 				break;
 			case PlayerHater.STATE_PAUSED:
@@ -210,7 +218,10 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public boolean pause() {
-		return getMediaPlayer().conditionalPause();
+		if (pauseAllowed()) {
+			return getMediaPlayer().conditionalPause();
+		}
+		return false;
 	}
 
 	@Override
@@ -220,7 +231,10 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public boolean play() {
-		return getMediaPlayer().conditionalPlay();
+		if (playAllowed()) {
+			return getMediaPlayer().conditionalPlay();
+		}
+		return false;
 	}
 
 	@Override
@@ -254,12 +268,39 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public void setTransportControlFlags(int transportControlFlags) {
-		getPlugin().onTransportControlFlagsChanged(transportControlFlags);
+		mTransportControlFlags = transportControlFlags
+				| RemoteControlClient.FLAG_KEY_MEDIA_STOP;
+		getPlugin().onTransportControlFlagsChanged(mTransportControlFlags);
 	}
 
 	/* END Plug-In Stuff */
 
 	/* Remote Controls */
+
+	private static final int ALLOW_PLAY = RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
+			| RemoteControlClient.FLAG_KEY_MEDIA_PLAY;
+	private static final int ALLOW_PAUSE = RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
+			| RemoteControlClient.FLAG_KEY_MEDIA_PAUSE;
+	private static final int ALLOW_PREV = RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
+			| RemoteControlClient.FLAG_KEY_MEDIA_FAST_FORWARD;
+	private static final int ALLOW_NEXT = RemoteControlClient.FLAG_KEY_MEDIA_NEXT
+			| RemoteControlClient.FLAG_KEY_MEDIA_REWIND;
+
+	protected boolean playAllowed() {
+		return (ALLOW_PLAY & mTransportControlFlags) != 0;
+	}
+
+	protected boolean pauseAllowed() {
+		return (ALLOW_PAUSE & mTransportControlFlags) != 0;
+	}
+
+	protected boolean nextAllowed() {
+		return (ALLOW_NEXT & mTransportControlFlags) != 0;
+	}
+
+	protected boolean previousAllowed() {
+		return (ALLOW_PREV & mTransportControlFlags) != 0;
+	}
 
 	public void onRemoteControlButtonPressed(int button) {
 		switch (button) {

@@ -15,10 +15,17 @@
  ******************************************************************************/
 package org.prx.playerhater.plugins;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
 import android.net.Uri;
@@ -28,7 +35,7 @@ import org.prx.playerhater.Song;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class LockScreenControlsPlugin extends AudioFocusPlugin {
-	
+
 	private RemoteControlClient mRemoteControlClient;
 	private Bitmap mAlbumArt;
 	private String mArtist;
@@ -64,11 +71,11 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 	@Override
 	public void onSongChanged(Song song) {
 
-		if (song == null) { 
+		if (song == null) {
 			onAlbumArtChanged(null);
-			onTitleChanged(null); 
-			onArtistChanged(null); 
-			return; 
+			onTitleChanged(null);
+			onArtistChanged(null);
+			return;
 		}
 		if (song.getAlbumArt() != null) {
 			onAlbumArtChanged(song.getAlbumArt());
@@ -80,7 +87,8 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
 	@Override
 	public void onAudioStopped() {
-		getRemoteControlClient().setPlaybackState(RemoteControlClient.PLAYSTATE_STOPPED);
+		getRemoteControlClient().setPlaybackState(
+				RemoteControlClient.PLAYSTATE_STOPPED);
 		super.onAudioStopped();
 	}
 
@@ -95,23 +103,64 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 	}
 
 	@Override
-	public void onAlbumArtChanged(Uri url) {
-		mAlbumArt = null; // XXX TODO FIXME
+	public void onAlbumArtChanged(Uri uri) {
+		if (uri != null) {
+			if (uri.getScheme().equals("android.resource")) {
+				mAlbumArt = BitmapFactory.decodeResource(getContext()
+						.getResources(), Integer.valueOf(uri
+						.getLastPathSegment()));
+			} else if (uri.getScheme().equals("content")) {
+				InputStream stream = null;
+				try {
+					stream = getContext().getContentResolver().openInputStream(
+							uri);
+					mAlbumArt = BitmapFactory.decodeStream(stream);
+				} catch (FileNotFoundException e) {
+					mAlbumArt = null;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {}
+					}
+				}
+
+			} else {
+				InputStream stream = null;
+				try {
+					stream = new URL(uri.toString()).openStream();
+					mAlbumArt = BitmapFactory.decodeStream(stream);
+				} catch (MalformedURLException e) {
+					mAlbumArt = null;
+				} catch (IOException e) {
+					mAlbumArt = null;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {}
+					}
+				}
+			}
+		} else {
+			mAlbumArt = null;
+		}
 		getRemoteControlClient().editMetadata(false).putBitmap(
 				RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
 				mAlbumArt);
 	}
-	
+
 	@Override
 	public void onTransportControlFlagsChanged(int transportControlFlags) {
 		mTransportControlFlags = transportControlFlags;
-		getRemoteControlClient().setTransportControlFlags(transportControlFlags);
+		getRemoteControlClient()
+				.setTransportControlFlags(transportControlFlags);
 	}
 
 	@Override
 	public void onChangesComplete() {
-		getRemoteControlClient()
-				.setTransportControlFlags(mTransportControlFlags);
+		getRemoteControlClient().setTransportControlFlags(
+				mTransportControlFlags);
 		getRemoteControlClient()
 				.editMetadata(false)
 				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, mTitle)
