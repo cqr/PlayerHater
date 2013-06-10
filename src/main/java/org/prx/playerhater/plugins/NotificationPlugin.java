@@ -27,11 +27,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.util.Log;
 
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
 public class NotificationPlugin extends AbstractPlugin {
 
 	private static final int NOTIFICATION_NU = 0x974732;
+	private static final String TAG = "NotificationPlugin";
 	private NotificationManager mNotificationManager;
 	protected PendingIntent mContentIntent;
 	protected String mNotificationTitle = "PlayerHater";
@@ -72,16 +74,19 @@ public class NotificationPlugin extends AbstractPlugin {
 			}
 		} catch (Exception e) {}
 	}
-
+	
 	@SuppressWarnings("deprecation")
-	protected Notification getNotification() {
-		if (mNotification == null)
-			mNotification = new Notification(R.drawable.zzz_ph_ic_notification,
-					"Playing: " + mNotificationTitle, 0);
-		mNotification.setLatestEventInfo(getContext(), mNotificationTitle,
-				mNotificationText, mContentIntent);
-		return mNotification;
-	}
+    protected Notification getNotification() {
+        if (mNotification == null) {
+            mNotification = new Notification(R.drawable.zzz_ph_ic_notification,
+                    "Playing: " + mNotificationTitle, 0);
+        } else { 
+            mNotification.tickerText = "Playing: " + mNotificationTitle;
+        }
+        mNotification.setLatestEventInfo(getContext(), mNotificationTitle,
+                mNotificationText, mContentIntent);
+        return mNotification;
+    }
 
 	@Override
 	public void onAudioStopped() {

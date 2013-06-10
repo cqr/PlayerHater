@@ -106,6 +106,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	protected Notification getNotification() {
 		if (mNotification == null)
 			mNotification = buildNotification();
+		mNotification.tickerText = "Playing: " +  mNotificationTitle; 
 		return mNotification;
 	}
 
@@ -201,7 +202,7 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	}
 
 	protected void setImageViewUri(int id, Uri contentUri) {
-		if (mNotificationView != null) {
+		if (mNotificationView != null && contentUri != null) {
 			mNotificationView.setImageViewUri(id, contentUri);
 		}
 	}

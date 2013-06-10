@@ -549,7 +549,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	private IllegalStateException illegalState(String methodName) {
 		IllegalStateException e = new IllegalStateException("Cannot call "
 				+ methodName + " in the " + getStateName(getState())
-				+ " state.");
+				+ " state. (" + mMediaPlayer.toString() + ")");
 		e.printStackTrace();
 		return e;
 	}

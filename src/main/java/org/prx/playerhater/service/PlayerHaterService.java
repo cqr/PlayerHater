@@ -453,18 +453,18 @@ public abstract class PlayerHaterService extends Service implements
 
 	private SynchronousPlayer mMediaPlayer;
 
-	protected SynchronousPlayer getMediaPlayer() {
+	synchronized protected SynchronousPlayer getMediaPlayer() {
 		if (mMediaPlayer == null) {
 			setMediaPlayer(buildMediaPlayer());
 		}
 		return mMediaPlayer;
 	}
 
-	protected SynchronousPlayer peekMediaPlayer() {
+	synchronized protected SynchronousPlayer peekMediaPlayer() {
 		return mMediaPlayer;
 	}
 
-	protected void setMediaPlayer(SynchronousPlayer mediaPlayer) {
+	synchronized protected void setMediaPlayer(SynchronousPlayer mediaPlayer) {
 		boolean myTransaction = startTransaction();
 		mPlayerStateWatcher.setMediaPlayer(mediaPlayer);
 		mMediaPlayer = mediaPlayer;

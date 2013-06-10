@@ -34,7 +34,7 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 			mNotification = super.getNotification();
 			mNotification.bigContentView = getExpandedView();
 		}
-
+		mNotification.tickerText = "Playing: " +  mNotificationTitle; 
 		return mNotification;
 	}
 
@@ -88,7 +88,7 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 	@Override
 	protected void setImageViewUri(int viewId, Uri contentUri) {
 		super.setImageViewUri(viewId, contentUri);
-		if (mExpandedView != null) {
+		if (mExpandedView != null && contentUri != null) {
 			mExpandedView.setImageViewUri(viewId, contentUri);
 		}
 	}
