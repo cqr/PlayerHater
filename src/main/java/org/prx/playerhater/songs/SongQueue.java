@@ -84,11 +84,21 @@ public class SongQueue {
 	}
 
 	public synchronized int appendSong(Song song) {
-		return addSongAtPosition(song, mSongs.size()+1);
+		return addSongAtPosition(song, mSongs.size() + 1);
 	}
 
 	public synchronized int addSongAtPosition(Song song, int position) {
-		mSongs.add(position-1, song);
+		if (position < 0) {
+			throw new IllegalArgumentException("Illegal position: " + position);
+		} else if (position == 0) {
+			position = 1;
+		}
+		
+		if (position <= getPlayheadPosition()) {
+			setPlayheadPosition(getPlayheadPosition() + 1);
+		}
+		
+		mSongs.add(position - 1, song);
 		songOrderChanged();
 		return mSongs.size() - getPosition();
 	}
