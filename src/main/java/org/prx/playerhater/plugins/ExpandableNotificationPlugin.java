@@ -26,7 +26,6 @@ import android.widget.RemoteViews;
 public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 
 	private RemoteViews mExpandedView;
-	private Notification mNotification;
 
 	@Override
 	protected Notification getNotification() {
@@ -34,7 +33,6 @@ public class ExpandableNotificationPlugin extends TouchableNotificationPlugin {
 			mNotification = super.getNotification();
 			mNotification.bigContentView = getExpandedView();
 		}
-		mNotification.tickerText = "Playing: " +  mNotificationTitle; 
 		return mNotification;
 	}
 

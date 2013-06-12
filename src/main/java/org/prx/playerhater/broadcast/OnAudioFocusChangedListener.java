@@ -80,7 +80,7 @@ public class OnAudioFocusChangedListener implements
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
 			if (mPlayerHater.isPlaying() && !isBeingDucked) {
 				isBeingDucked = true;
-				mPlayerHater.unduck();
+				mPlayerHater.duck();
 			}
 			break;
 		default:

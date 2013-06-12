@@ -32,7 +32,6 @@ import android.widget.RemoteViews;
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class TouchableNotificationPlugin extends NotificationPlugin {
 
-	private Notification mNotification;
 	protected Uri mNotificationImageUrl;
 	protected boolean mNotificationCanSkip = true;
 	protected int mTransportControlFlags = -1;
@@ -106,7 +105,6 @@ public class TouchableNotificationPlugin extends NotificationPlugin {
 	protected Notification getNotification() {
 		if (mNotification == null)
 			mNotification = buildNotification();
-		mNotification.tickerText = "Playing: " +  mNotificationTitle; 
 		return mNotification;
 	}
 

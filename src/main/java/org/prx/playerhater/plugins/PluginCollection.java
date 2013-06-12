@@ -350,4 +350,12 @@ public class PluginCollection implements PlayerHaterPlugin {
 		}
 		return sb.append("]").toString();
 	}
+	
+	public void writeLock() {
+		mLock.writeLock().lock();
+	}
+	
+	public void unWriteLock() {
+		mLock.writeLock().unlock();
+	}
 }

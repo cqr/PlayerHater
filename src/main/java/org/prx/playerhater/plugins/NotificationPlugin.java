@@ -27,19 +27,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.util.Log;
 
 @TargetApi(Build.VERSION_CODES.CUPCAKE)
 public class NotificationPlugin extends AbstractPlugin {
 
 	private static final int NOTIFICATION_NU = 0x974732;
-	private static final String TAG = "NotificationPlugin";
 	private NotificationManager mNotificationManager;
 	protected PendingIntent mContentIntent;
 	protected String mNotificationTitle = "PlayerHater";
 	protected String mNotificationText = "Version 0.1.0";
 	private boolean mIsVisible = false;
-	private Notification mNotification;
+	protected Notification mNotification;
 
 	public NotificationPlugin() {
 	}
@@ -74,23 +72,30 @@ public class NotificationPlugin extends AbstractPlugin {
 			}
 		} catch (Exception e) {}
 	}
-	
+
 	@SuppressWarnings("deprecation")
-    protected Notification getNotification() {
-        if (mNotification == null) {
-            mNotification = new Notification(R.drawable.zzz_ph_ic_notification,
-                    "Playing: " + mNotificationTitle, 0);
-        } else { 
-            mNotification.tickerText = "Playing: " + mNotificationTitle;
-        }
-        mNotification.setLatestEventInfo(getContext(), mNotificationTitle,
-                mNotificationText, mContentIntent);
-        return mNotification;
-    }
+	protected Notification getNotification() {
+		if (mNotification == null) {
+			mNotification = new Notification(R.drawable.zzz_ph_ic_notification,
+					"Playing: " + mNotificationTitle, 0);
+		} else {
+			mNotification.tickerText = "Playing: " + mNotificationTitle;
+		}
+		mNotification.setLatestEventInfo(getContext(), mNotificationTitle,
+				mNotificationText, mContentIntent);
+		return mNotification;
+	}
+
+	@Override
+	public void onAudioPaused() {
+		onAudioStopped();
+	}
 
 	@Override
 	public void onAudioStopped() {
 		mIsVisible = false;
+		mNotificationManager.cancel(NOTIFICATION_NU);
+		mNotification = null;
 		getBinder().stopForeground(true);
 	}
 
@@ -125,5 +130,4 @@ public class NotificationPlugin extends AbstractPlugin {
 	protected ServicePlayerHater getBinder() {
 		return (ServicePlayerHater) getPlayerHater();
 	}
-
 }

@@ -63,6 +63,7 @@ public class Config implements Parcelable {
 
 	public PluginCollection run(Context context, PlayerHater playerHater,
 			PluginCollection collection) {
+		collection.writeLock();
 		for (Class<? extends PlayerHaterPlugin> pluginKlass : getPlugins()) {
 			try {
 				PlayerHaterPlugin plugin = pluginKlass.newInstance();
@@ -73,6 +74,7 @@ public class Config implements Parcelable {
 			}
 		}
 		collection.onPlayerHaterLoaded(context, playerHater);
+		collection.unWriteLock();
 		return collection;
 	}
 

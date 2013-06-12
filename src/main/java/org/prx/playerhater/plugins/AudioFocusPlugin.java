@@ -39,11 +39,13 @@ public class AudioFocusPlugin extends AbstractPlugin {
 	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
 		super.onPlayerHaterLoaded(context, playerHater);
 		if (!(playerHater instanceof ServicePlayerHater)) {
-			throw new IllegalArgumentException("AudioFocusPlugin must be run on the server side");
+			throw new IllegalArgumentException(
+					"AudioFocusPlugin must be run on the server side");
 		}
-		mAudioFocusChangeListener = new OnAudioFocusChangedListener((ServicePlayerHater) playerHater);
+		mAudioFocusChangeListener = new OnAudioFocusChangedListener(
+				(ServicePlayerHater) playerHater);
 	}
-	
+
 	@Override
 	public void onAudioStarted() {
 		getAudioManager().requestAudioFocus(mAudioFocusChangeListener,
@@ -63,13 +65,13 @@ public class AudioFocusPlugin extends AbstractPlugin {
 			mAudioService = (AudioManager) getContext().getSystemService(
 					Context.AUDIO_SERVICE);
 		}
-
 		return mAudioService;
 	}
 
 	protected ComponentName getEventReceiver() {
 		if (mEventReceiver == null) {
-			mEventReceiver = new ComponentName(getContext(), BroadcastReceiver.class);
+			mEventReceiver = new ComponentName(getContext(),
+					BroadcastReceiver.class);
 		}
 		return mEventReceiver;
 	}

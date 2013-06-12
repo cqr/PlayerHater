@@ -54,7 +54,7 @@ public class ServicePlayerHater extends PlayerHater {
 	public int enqueue(Song song) {
 		return mService.enqueue(song);
 	}
-	
+
 	@Override
 	public void enqueue(int position, Song song) {
 		mService.enqueue(position, song);
