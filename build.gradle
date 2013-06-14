@@ -18,6 +18,10 @@ signing {
 android {
     buildToolsVersion "17"
     compileSdkVersion 16
+
+    defaultConfig {
+      proguardFile 'proguard-player-hater.txt'
+    }
 }
 
 uploadArchives {
