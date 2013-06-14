@@ -537,7 +537,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 		return super.isWaitingToPlay() || mBuffering;
 	}
 
-	private synchronized MediaPlayer getBarePlayer() {
+	protected synchronized MediaPlayer getBarePlayer() {
 		return mMediaPlayer;
 	}
 
