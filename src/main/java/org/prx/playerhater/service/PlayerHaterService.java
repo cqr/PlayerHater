@@ -23,7 +23,7 @@ import org.prx.playerhater.ipc.ClientPlugin;
 import org.prx.playerhater.ipc.IPlayerHaterClient;
 import org.prx.playerhater.ipc.PlayerHaterClient;
 import org.prx.playerhater.ipc.PlayerHaterServer;
-import org.prx.playerhater.mediaplayer.SynchronousPlayer;
+import org.prx.playerhater.mediaplayer.PlaylistSupportingPlayer;
 import org.prx.playerhater.plugins.BackgroundedPlugin;
 import org.prx.playerhater.plugins.PluginCollection;
 import org.prx.playerhater.service.PlayerStateWatcher.PlayerHaterStateListener;
@@ -451,20 +451,20 @@ public abstract class PlayerHaterService extends Service implements
 	// For dealing with
 	// MediaPlayers.
 
-	private SynchronousPlayer mMediaPlayer;
+	private PlaylistSupportingPlayer mMediaPlayer;
 
-	synchronized protected SynchronousPlayer getMediaPlayer() {
+	synchronized protected PlaylistSupportingPlayer getMediaPlayer() {
 		if (mMediaPlayer == null) {
 			setMediaPlayer(buildMediaPlayer());
 		}
 		return mMediaPlayer;
 	}
 
-	synchronized protected SynchronousPlayer peekMediaPlayer() {
+	synchronized protected PlaylistSupportingPlayer peekMediaPlayer() {
 		return mMediaPlayer;
 	}
 
-	synchronized protected void setMediaPlayer(SynchronousPlayer mediaPlayer) {
+	synchronized protected void setMediaPlayer(PlaylistSupportingPlayer mediaPlayer) {
 		boolean myTransaction = startTransaction();
 		mPlayerStateWatcher.setMediaPlayer(mediaPlayer);
 		mMediaPlayer = mediaPlayer;
@@ -473,14 +473,14 @@ public abstract class PlayerHaterService extends Service implements
 		}
 	}
 
-	protected SynchronousPlayer swapMediaPlayer(SynchronousPlayer mediaPlayer) {
+	protected PlaylistSupportingPlayer swapMediaPlayer(PlaylistSupportingPlayer mediaPlayer) {
 		return swapMediaPlayer(mediaPlayer, false);
 	}
 
-	protected SynchronousPlayer swapMediaPlayer(SynchronousPlayer mediaPlayer,
+	protected PlaylistSupportingPlayer swapMediaPlayer(PlaylistSupportingPlayer mediaPlayer,
 			boolean play) {
 		boolean myTransaction = startTransaction();
-		SynchronousPlayer oldPlayer = peekMediaPlayer();
+		PlaylistSupportingPlayer oldPlayer = peekMediaPlayer();
 		if (oldPlayer != null) {
 			oldPlayer.conditionalPause();
 		}
@@ -494,8 +494,8 @@ public abstract class PlayerHaterService extends Service implements
 		return oldPlayer;
 	}
 
-	protected SynchronousPlayer buildMediaPlayer() {
-		return new SynchronousPlayer();
+	protected PlaylistSupportingPlayer buildMediaPlayer() {
+		return new PlaylistSupportingPlayer();
 	}
 
 	/**

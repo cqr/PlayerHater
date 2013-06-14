@@ -23,7 +23,6 @@ import org.prx.playerhater.mediaplayer.Player.StateChangeListener;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
-
 public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 		StateChangeListener {
 	private static final String HTTP = "http";
@@ -60,11 +59,11 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 			if (uri.equals(mPlaylist[0])) {
 				super.setDataSource(context, uri);
 			} else {
-				mCurrentPlayer.setDataSource(context, mPlaylist[0]);
+				super.setDataSource(context, mPlaylist[0]);
 			}
 			if (mPlaylist.length > 1) {
 				mNextPlayer = newPlayer();
-				mNextPlayer.setDataSource(context, uri);
+				mNextPlayer.setDataSource(context, mPlaylist[1]);
 			}
 		} else {
 			super.setDataSource(context, uri);
@@ -108,7 +107,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 				PlaylistSupportingPlayer tmp = mCurrentPlayer;
 				mCurrentPlayer = mNextPlayer;
 				mNextPlayer = tmp;
-				mNextPlayer.start();
+				mCurrentPlayer.start();
 				if (mQueuePosition + 1 < mPlaylist.length) {
 					mNextPlayer.reset();
 					try {
@@ -233,10 +232,10 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 	@Override
 	public int getDuration() {
 		int duration = super.getDuration();
-		if (mCurrentPlayer != this) {
+		if (mCurrentPlayer != null && mCurrentPlayer != this) {
 			duration += mCurrentPlayer.getDuration();
 		}
-		if (mNextPlayer != this) {
+		if (mNextPlayer != null && mNextPlayer != this) {
 			duration += mNextPlayer.getDuration();
 		}
 		return duration;

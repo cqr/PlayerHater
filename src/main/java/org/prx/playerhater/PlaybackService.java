@@ -16,7 +16,7 @@
 package org.prx.playerhater;
 
 import org.prx.playerhater.mediaplayer.MediaPlayerPool;
-import org.prx.playerhater.mediaplayer.SynchronousPlayer;
+import org.prx.playerhater.mediaplayer.PlaylistSupportingPlayer;
 import org.prx.playerhater.service.PlayerHaterService;
 import org.prx.playerhater.songs.SongQueue;
 import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
@@ -28,12 +28,12 @@ import android.media.MediaPlayer.OnErrorListener;
 public class PlaybackService extends PlayerHaterService implements
 		OnQueuedSongsChangedListener, OnErrorListener, OnCompletionListener {
 
-	private MediaPlayerPool<SynchronousPlayer> mMediaPlayerPool;
+	private MediaPlayerPool<PlaylistSupportingPlayer> mMediaPlayerPool;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		mMediaPlayerPool = MediaPlayerPool.getInstance(SynchronousPlayer.class);
+		mMediaPlayerPool = MediaPlayerPool.getInstance(PlaylistSupportingPlayer.class);
 	}
 
 	@Override
@@ -193,8 +193,8 @@ public class PlaybackService extends PlayerHaterService implements
 	}
 
 	@Override
-	protected synchronized void setMediaPlayer(SynchronousPlayer mediaPlayer) {
-		SynchronousPlayer oldPlayer = peekMediaPlayer();
+	protected synchronized void setMediaPlayer(PlaylistSupportingPlayer mediaPlayer) {
+		PlaylistSupportingPlayer oldPlayer = peekMediaPlayer();
 		if (oldPlayer != null) {
 			oldPlayer.setOnErrorListener(null);
 			oldPlayer.setOnCompletionListener(null);
