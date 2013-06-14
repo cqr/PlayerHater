@@ -23,6 +23,8 @@ import org.prx.playerhater.mediaplayer.Player.StateChangeListener;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
+
 public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 		StateChangeListener {
 	private static final String HTTP = "http";
@@ -35,10 +37,17 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 	private PlaylistSupportingPlayer mNextPlayer = null;
 	private boolean mDieOnCompletion = false;
 
+	private LoadPlaylistTask mLoadPlaylistTask;
+	private boolean mPreparingPlaylist = false;
+
 	@Override
 	public synchronized void setDataSource(Context context, Uri uri)
 			throws IllegalStateException, IOException,
 			IllegalArgumentException, SecurityException {
+		if (mLoadPlaylistTask != null) {
+			mLoadPlaylistTask.cancel(true);
+		}
+		mPreparingPlaylist = false;
 		if (mNextPlayer != null) {
 			if (mNextPlayer != this) {
 				mNextPlayer.release();
@@ -46,40 +55,67 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 			mNextPlayer = null;
 		}
 		if (mCurrentPlayer != this) {
-			mCurrentPlayer.release();
+			if (mCurrentPlayer != null) {
+				mCurrentPlayer.release();
+			}
 			mCurrentPlayer = this;
 		}
 		mPlaylist = null;
 		mContext = null;
 		if (uri.getScheme().equals(HTTP) || uri.getScheme().equals(HTTPS)) {
-			mPlaylist = PlaylistParser.parsePlaylist(uri);
-			mContext = context;
-			mQueuePosition = 0;
-			mCurrentPlayer = this;
-			if (uri.equals(mPlaylist[0])) {
-				super.setDataSource(context, uri);
-			} else {
-				super.setDataSource(context, mPlaylist[0]);
-			}
-			if (mPlaylist.length > 1) {
-				mNextPlayer = newPlayer();
-				mNextPlayer.setDataSource(context, mPlaylist[1]);
-			}
+			loadPlaylist(context, uri);
 		} else {
+			setSingleSong(context, uri);
+		}
+	}
+
+	private synchronized void loadPlaylist(final Context context, final Uri uri) {
+		mLoadPlaylistTask = new LoadPlaylistTask(this, context, uri);
+		mLoadPlaylistTask.execute();
+	}
+
+	private synchronized void setSingleSong(Context context, Uri uri) {
+		try {
 			super.setDataSource(context, uri);
-			mCurrentPlayer = this;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		mCurrentPlayer = this;
+		mLoadPlaylistTask = null;
+		mContext = null;
+		if (mPreparingPlaylist) {
+			prepareAsync();
+		}
+	}
+
+	private synchronized void setPlaylist(Context context, Uri[] playlist) {
+		mNextPlayer = newPlayer();
+		try {
+			mNextPlayer.setDataSource(context, playlist[1]);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		setSingleSong(context, playlist[0]);
+		if (playlist.length > 2) {
+			mContext = context;
 		}
 	}
 
 	@Override
 	public void prepareAsync() {
-		if (mCurrentPlayer == this) {
-			super.prepareAsync();
+		if (mLoadPlaylistTask != null && !mPreparingPlaylist) {
+			mPreparingPlaylist = true;
+			onStateChanged();
 		} else {
-			mCurrentPlayer.prepareAsync();
-		}
-		if (mNextPlayer != null) {
-			mNextPlayer.prepareAsync();
+			mPreparingPlaylist = false;
+			if (mCurrentPlayer == this) {
+				super.prepareAsync();
+			} else {
+				mCurrentPlayer.prepareAsync();
+			}
+			if (mNextPlayer != null) {
+				mNextPlayer.prepareAsync();
+			}
 		}
 	}
 
@@ -145,11 +181,18 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 	}
 
 	@Override
-	public int getStateMask() {
+	public int getState() {
+		if (mLoadPlaylistTask != null) {
+			if (mPreparingPlaylist) {
+				return StatelyPlayer.PREPARING;
+			} else {
+				return StatelyPlayer.INITIALIZED;
+			}
+		}
 		if (mCurrentPlayer == this) {
-			return super.getStateMask();
+			return super.getState();
 		} else {
-			return mCurrentPlayer.getStateMask();
+			return mCurrentPlayer.getState();
 		}
 	}
 
@@ -324,5 +367,52 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 			player.setAudioStreamType(streamType);
 		}
 		return player;
+	}
+
+	private static class LoadPlaylistTask extends AsyncTask<Void, Void, Uri[]> {
+
+		private final PlaylistSupportingPlayer mPlayer;
+		private final Context mContext;
+		private final Uri mUri;
+
+		private Uri mFirstUri;
+		private Uri[] mPlaylist;
+
+		private LoadPlaylistTask(PlaylistSupportingPlayer player,
+				Context context, Uri uri) {
+			mPlayer = player;
+			mContext = context;
+			mUri = uri;
+		}
+
+		@Override
+		protected Uri[] doInBackground(Void... arg0) {
+			mFirstUri = mUri;
+			mPlaylist = PlaylistParser.parsePlaylist(mFirstUri);
+			for (int depth = 0; depth < 10; depth++) {
+				if (mFirstUri.equals(mPlaylist[0]) && mPlaylist.length == 1) {
+					return mPlaylist;
+				} else if (mPlaylist.length == 1) {
+					mFirstUri = mPlaylist[0];
+					mPlaylist = PlaylistParser.parsePlaylist(mFirstUri);
+				} else {
+					return mPlaylist;
+				}
+				if (isCancelled()) {
+					return null;
+				}
+			}
+			throw new IllegalStateException("playlist depth too deep!");
+		}
+
+		@Override
+		protected void onPostExecute(Uri[] result) {
+			if (result.length == 1) {
+				mPlayer.setSingleSong(mContext, result[0]);
+			} else {
+				mPlayer.setPlaylist(mContext, result);
+			}
+		}
+
 	}
 }
