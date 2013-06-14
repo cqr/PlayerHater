@@ -27,19 +27,32 @@ import java.util.Set;
 
 import org.prx.playerhater.util.Log;
 
-public class MediaPlayerPool {
+public class MediaPlayerPool<P extends SynchronousPlayer> {
 
-	private final Map<Uri, SynchronousPlayer> mMediaPlayers = new HashMap<Uri, SynchronousPlayer>();
-	private final Set<SynchronousPlayer> mIdlePlayers = new HashSet<SynchronousPlayer>();
+	private final Map<Uri, P> mMediaPlayers = new HashMap<Uri, P>();
+	private final Set<P> mIdlePlayers = new HashSet<P>();
 	private final List<Uri> mRequests = new ArrayList<Uri>();
+	private final Class<? extends P> mClass;
 
-	public MediaPlayerPool() {
-		this(3);
+	public static <SynchronousPlayerClass extends SynchronousPlayer> MediaPlayerPool<SynchronousPlayerClass> getInstance(
+			Class<SynchronousPlayerClass> klass) {
+		return new MediaPlayerPool<SynchronousPlayerClass>(klass);
 	}
 
-	public MediaPlayerPool(int size) {
+	public MediaPlayerPool(Class<P> mediaPlayerClass) {
+		this(mediaPlayerClass, 3);
+	}
+
+	public MediaPlayerPool(Class<P> mediaPlayerClass, int size) {
+		mClass = mediaPlayerClass;
 		for (int i = 0; i < size; i++) {
-			mIdlePlayers.add(new SynchronousPlayer());
+			try {
+				mIdlePlayers.add(mClass.newInstance());
+			} catch (InstantiationException e) {
+				throw new IllegalArgumentException(e);
+			} catch (IllegalAccessException e) {
+				throw new IllegalArgumentException(e);
+			}
 		}
 	}
 
@@ -60,44 +73,44 @@ public class MediaPlayerPool {
 
 	public synchronized void prepare(Context context, Uri uri) {
 		if (!mMediaPlayers.containsKey(uri)) {
-			SynchronousPlayer player = getPlayer();
+			P player = getPlayer();
 			Log.d("Preparing " + player + " for " + uri);
 			player.prepare(context, uri);
 			addPlayer(player, uri);
 		}
 	}
 
-	public synchronized SynchronousPlayer getPlayer(Context context, Uri uri) {
+	public synchronized P getPlayer(Context context, Uri uri) {
 		Log.d("Getting player for " + uri);
 		if (mMediaPlayers.containsKey(uri)) {
 			mRequests.remove(uri);
 			Log.d("Found one (" + mMediaPlayers.get(uri) + ")");
 			return mMediaPlayers.remove(uri);
 		} else {
-			SynchronousPlayer player = getPlayer();
+			P player = getPlayer();
 			player.prepare(context, uri);
 			return player;
 		}
 	}
 
-	public synchronized void recycle(SynchronousPlayer player) {
+	public synchronized void recycle(P player) {
 		if (player != null && player.getState() != StatelyPlayer.END) {
 			player.reset();
 			mIdlePlayers.add(player);
 		}
 	}
 
-	private synchronized SynchronousPlayer getPlayer() {
+	@SuppressWarnings("unchecked")
+	private synchronized P getPlayer() {
 		if (mIdlePlayers.size() > 0) {
-			SynchronousPlayer player = (SynchronousPlayer) mIdlePlayers
-					.toArray()[0];
+			P player = (P) mIdlePlayers.toArray()[0];
 			mIdlePlayers.remove(player);
 			Log.d("Getting idle player (" + player + ")");
 			return player;
 		} else if (mRequests.size() > 0) {
 			Uri leastRecentReq = mRequests.remove(mRequests.size() - 1);
 			Log.d("Recycling the player that is prepared for " + leastRecentReq);
-			SynchronousPlayer player = mMediaPlayers.remove(leastRecentReq);
+			P player = mMediaPlayers.remove(leastRecentReq);
 			Log.d("Player: " + player);
 			player.reset();
 			return player;
@@ -107,7 +120,7 @@ public class MediaPlayerPool {
 		}
 	}
 
-	private synchronized void addPlayer(SynchronousPlayer player, Uri uri) {
+	private synchronized void addPlayer(P player, Uri uri) {
 		mRequests.remove(uri);
 		mRequests.add(0, uri);
 		mMediaPlayers.put(uri, player);

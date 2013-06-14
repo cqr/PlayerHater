@@ -28,12 +28,12 @@ import android.media.MediaPlayer.OnErrorListener;
 public class PlaybackService extends PlayerHaterService implements
 		OnQueuedSongsChangedListener, OnErrorListener, OnCompletionListener {
 
-	private MediaPlayerPool mMediaPlayerPool;
+	private MediaPlayerPool<SynchronousPlayer> mMediaPlayerPool;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		mMediaPlayerPool = new MediaPlayerPool();
+		mMediaPlayerPool = MediaPlayerPool.getInstance(SynchronousPlayer.class);
 	}
 
 	@Override
