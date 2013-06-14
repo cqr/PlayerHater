@@ -105,7 +105,7 @@ public class LockScreenControlsPlugin extends AudioFocusPlugin {
 	@Override
 	public void onAlbumArtChanged(Uri uri) {
 		if (uri != null) {
-			if (uri.getScheme().equals("android.resource")) {
+			if (uri.getScheme().equals("android.resource") && uri.getLastPathSegment() != null) {
 				mAlbumArt = BitmapFactory.decodeResource(getContext()
 						.getResources(), Integer.valueOf(uri
 						.getLastPathSegment()));
