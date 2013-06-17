@@ -16,6 +16,8 @@
 package org.prx.playerhater.mediaplayer;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.prx.playerhater.util.PlaylistParser;
 import org.prx.playerhater.mediaplayer.Player.StateChangeListener;
@@ -24,9 +26,11 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 
 public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 		StateChangeListener {
+	private static final String TAG = "PlaylistSupportingPlayer";
 	private static final String HTTP = "http";
 	private static final String HTTPS = "https";
 	private Uri[] mPlaylist;
@@ -39,6 +43,8 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 
 	private LoadPlaylistTask mLoadPlaylistTask;
 	private boolean mPreparingPlaylist = false;
+	private float mLeftVolume;
+	private float mRightVolume; 
 
 	@Override
 	public synchronized void setDataSource(Context context, Uri uri)
@@ -82,6 +88,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 		}
 		mCurrentPlayer = this;
 		mLoadPlaylistTask = null;
+		mPlaylist = null; 
 		mContext = null;
 		if (mPreparingPlaylist) {
 			prepareAsync();
@@ -96,6 +103,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 			e.printStackTrace();
 		}
 		setSingleSong(context, playlist[0]);
+		mPlaylist = playlist; 
 		if (playlist.length > 2) {
 			mContext = context;
 		}
@@ -143,7 +151,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 				PlaylistSupportingPlayer tmp = mCurrentPlayer;
 				mCurrentPlayer = mNextPlayer;
 				mNextPlayer = tmp;
-				mCurrentPlayer.start();
+				mCurrentPlayer.startWithFade();
 				if (mQueuePosition + 1 < mPlaylist.length) {
 					mNextPlayer.reset();
 					try {
@@ -226,6 +234,37 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 			mCurrentPlayer.start();
 		}
 	}
+	
+	public void startWithFade() throws IllegalStateException { 
+		final float fadeDuration = 1.0f; 
+		final float lVolume = 1.0f; 
+		final float rVolume = 1.0f; 
+		this.setVolume(0, 0);
+		this.start(); 
+//		Log.d(TAG, "lVolume " + lVolume + " rVolume" + rVolume); 
+		if (lVolume > 0 && rVolume > 0) {  
+		    final Timer timer = new Timer(true);
+		    TimerTask timerTask = new TimerTask() 
+		    {
+				float lVolumeIncrement = lVolume > 0 ? lVolume / 10.0f : 0; 
+				float rVolumeIncrement = rVolume > 0 ? rVolume / 10.0f : 0; 
+				
+		        @Override
+		        public void run() 
+		        {
+//		        	Log.d(TAG, "setting volumne lVolume " + (mLeftVolume + lVolumeIncrement) + " rVolume" + (mRightVolume + rVolumeIncrement)); 
+		            setVolume(mLeftVolume + lVolumeIncrement, mRightVolume + rVolumeIncrement);
+		            if (mLeftVolume >= lVolume || mRightVolume >= rVolume)
+		            {
+		                timer.cancel();
+		                timer.purge();
+		            }
+		        }
+		    };
+		    timer.schedule(timerTask, 200, 200);
+		}
+
+	}
 
 	@Override
 	public void pause() throws IllegalStateException {
@@ -299,6 +338,8 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 	@Override
 	public void setVolume(float leftVolume, float rightVolume) {
 		super.setVolume(leftVolume, rightVolume);
+		this.mLeftVolume = leftVolume; 
+		this.mRightVolume = rightVolume; 
 		if (mCurrentPlayer != this && mCurrentPlayer != null) {
 			mCurrentPlayer.setVolume(leftVolume, rightVolume);
 		}
@@ -389,6 +430,10 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 		protected Uri[] doInBackground(Void... arg0) {
 			mFirstUri = mUri;
 			mPlaylist = PlaylistParser.parsePlaylist(mFirstUri);
+//			Log.d(TAG, "uri " + mFirstUri); 
+//			for (int i = 0; i < mPlaylist.length; i++) { 
+//				Log.d(TAG, "" + i + " " + mPlaylist[i]); 
+//			}
 			for (int depth = 0; depth < 10; depth++) {
 				if (mFirstUri.equals(mPlaylist[0]) && mPlaylist.length == 1) {
 					return mPlaylist;
@@ -410,6 +455,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 			if (result.length == 1) {
 				mPlayer.setSingleSong(mContext, result[0]);
 			} else {
+//				Log.d(TAG, "Setting playlist "+ result); 
 				mPlayer.setPlaylist(mContext, result);
 			}
 		}
