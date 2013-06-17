@@ -50,6 +50,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 	public synchronized void setDataSource(Context context, Uri uri)
 			throws IllegalStateException, IOException,
 			IllegalArgumentException, SecurityException {
+		Log.d(TAG, "" + this + " set data source " + uri + "" + Thread.currentThread().getStackTrace().toString()); 
 		if (mLoadPlaylistTask != null) {
 			mLoadPlaylistTask.cancel(true);
 		}
@@ -68,6 +69,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 		}
 		mPlaylist = null;
 		mContext = null;
+		mQueuePosition = 0; 
 		if (uri.getScheme().equals(HTTP) || uri.getScheme().equals(HTTPS)) {
 			loadPlaylist(context, uri);
 		} else {
@@ -147,6 +149,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 			mDieOnCompletion = false;
 		} else if (mPlaylist != null) {
 			mQueuePosition += 1;
+			Log.d(TAG, "completed -- new queue position " + mQueuePosition);
 			if (mQueuePosition < mPlaylist.length) {
 				PlaylistSupportingPlayer tmp = mCurrentPlayer;
 				mCurrentPlayer = mNextPlayer;
@@ -252,7 +255,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 		        @Override
 		        public void run() 
 		        {
-//		        	Log.d(TAG, "setting volumne lVolume " + (mLeftVolume + lVolumeIncrement) + " rVolume" + (mRightVolume + rVolumeIncrement)); 
+//		        	Log.d(TAG, "setting volume lVolume " + (mLeftVolume + lVolumeIncrement) + " rVolume" + (mRightVolume + rVolumeIncrement)); 
 		            setVolume(mLeftVolume + lVolumeIncrement, mRightVolume + rVolumeIncrement);
 		            if (mLeftVolume >= lVolume || mRightVolume >= rVolume)
 		            {
@@ -430,10 +433,11 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 		protected Uri[] doInBackground(Void... arg0) {
 			mFirstUri = mUri;
 			mPlaylist = PlaylistParser.parsePlaylist(mFirstUri);
-//			Log.d(TAG, "uri " + mFirstUri); 
-//			for (int i = 0; i < mPlaylist.length; i++) { 
-//				Log.d(TAG, "" + i + " " + mPlaylist[i]); 
-//			}
+			Log.d(TAG, "" + mPlayer + " uri " + mFirstUri); 
+			for (int i = 0; i < mPlaylist.length; i++) { 
+				Log.d(TAG, "" + i + " " + mPlaylist[i]); 
+			}
+//			return mPlaylist; 
 			for (int depth = 0; depth < 10; depth++) {
 				if (mFirstUri.equals(mPlaylist[0]) && mPlaylist.length == 1) {
 					return mPlaylist;
@@ -455,7 +459,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 			if (result.length == 1) {
 				mPlayer.setSingleSong(mContext, result[0]);
 			} else {
-//				Log.d(TAG, "Setting playlist "+ result); 
+				Log.d(TAG, "" + mPlayer + " Setting playlist "+ result); 
 				mPlayer.setPlaylist(mContext, result);
 			}
 		}
