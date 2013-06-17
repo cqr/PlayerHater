@@ -64,6 +64,9 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 			case ADD:
 				sInstances
 						.add((WeakReference<PlayerHaterListenerPlugin>) msg.obj);
+				if (sInstances.size() == 1) {
+					sendEmptyMessageDelayed(TCK, 500);
+				}
 				break;
 			case REM:
 				sInstances.remove(msg.obj);
@@ -76,22 +79,8 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 						obtainMessage(REM, ref).sendToTarget();
 					}
 				}
-			}
-		}
-
-	};
-
-	private static final Thread sClockThread = new Thread() {
-
-		@Override
-		public void run() {
-			while (true) {
-				sHandler.removeMessages(TCK);
-				sHandler.sendEmptyMessage(TCK);
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					return;
+				if (sInstances.size() >= 1) {
+					sendEmptyMessageDelayed(TCK, 500);
 				}
 			}
 		}
@@ -130,9 +119,6 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 		mListener = listener;
 		mEcho = echo;
 		addInstance(this);
-		if (!sClockThread.isAlive()) {
-			sClockThread.start();
-		}
 	}
 
 	@Override
@@ -179,6 +165,8 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 		if (getPlayerHater().getState() == PlayerHater.STATE_PLAYING) {
 			mListener.onPlaying(getPlayerHater().nowPlaying(), getPlayerHater()
 					.getCurrentPosition());
+		} else if (getPlayerHater().getState() == PlayerHater.STATE_STREAMING) {
+			mListener.onStreaming(getPlayerHater().nowPlaying());
 		}
 	}
 }
