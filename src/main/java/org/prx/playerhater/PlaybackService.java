@@ -24,10 +24,12 @@ import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.util.Log;
 
 public class PlaybackService extends PlayerHaterService implements
 		OnQueuedSongsChangedListener, OnErrorListener, OnCompletionListener {
 
+	private static final String TAG = "PlaybackService";
 	private MediaPlayerPool<PlaylistSupportingPlayer> mMediaPlayerPool;
 
 	@Override
@@ -52,7 +54,7 @@ public class PlaybackService extends PlayerHaterService implements
 	}
 
 	@Override
-	public boolean seekTo(int startTime) {
+	public boolean seekTo(int startTime) { 
 		getMediaPlayer().seekTo(startTime);
 		return true;
 	}

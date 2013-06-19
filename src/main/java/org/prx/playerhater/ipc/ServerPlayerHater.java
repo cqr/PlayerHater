@@ -86,7 +86,7 @@ public class ServerPlayerHater extends PlayerHater {
 	@Override
 	public boolean play(Song song, int startTime) {
 		try {
-			return mServer.play(SongHost.getTag(song), 0);
+			return mServer.play(SongHost.getTag(song), startTime);
 		} catch (RemoteException e) {
 			Log.e(SERVER_ERROR, e);
 			throw new IllegalStateException(SERVER_ERROR, e);

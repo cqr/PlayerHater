@@ -20,10 +20,12 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
+import android.util.Log;
 
 public class SynchronousPlayer extends StatelyPlayer implements
 		OnPreparedListener, OnSeekCompleteListener {
 
+	private static final String TAG = "SynchronousPlayer";
 	private boolean mShouldPlayWhenPrepared;
 	private int mShouldSkipWhenPrepared;
 	private Uri mShouldSetDataSourceUri;
@@ -35,19 +37,19 @@ public class SynchronousPlayer extends StatelyPlayer implements
 
 	@Override
 	public synchronized void onPrepared(MediaPlayer mp) {
-		super.onPrepared(mp);
+		super.onPrepared(mp); 
 		startIfNecessary();
 	}
 
 	@Override
 	public synchronized void onSeekComplete(MediaPlayer mp) {
-		super.onSeekComplete(mp);
+		super.onSeekComplete(mp); 
 		startIfNecessary();
 	}
 
 	@Override
 	public synchronized boolean prepare(Context context, Uri uri) {
-		mShouldPlayWhenPrepared = false;
+		mShouldPlayWhenPrepared = false; 
 		mShouldSkipWhenPrepared = 0;
 		mShouldSetDataSourceUri = null;
 		mShouldSetPrepareContext = null;
@@ -178,11 +180,11 @@ public class SynchronousPlayer extends StatelyPlayer implements
 	}
 
 	private void startIfNecessary() {
-		if (mShouldSetDataSourceUri != null) {
-			if (mShouldPlayWhenPrepared) {
+		if (mShouldSetDataSourceUri != null) { 
+			if (mShouldPlayWhenPrepared) { 
 				prepareAndPlay(mShouldSetPrepareContext,
 						mShouldSetDataSourceUri, mShouldSkipWhenPrepared);
-			} else {
+			} else { 
 				prepare(mShouldSetPrepareContext, mShouldSetDataSourceUri);
 			}
 		} else if (mShouldSkipWhenPrepared != 0) {
