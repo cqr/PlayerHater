@@ -216,4 +216,9 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 	public void setPendingIntent(PendingIntent intent) throws RemoteException {
 		mService.setPendingIntent(intent);
 	}
+
+	@Override
+	public void slurp(int songTag, Bundle songData) throws RemoteException {
+		SongHost.slurp(songTag, songData);
+	}
 }

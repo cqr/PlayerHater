@@ -21,7 +21,9 @@ import org.prx.playerhater.songs.SongHost;
 import org.prx.playerhater.util.Log;
 
 import android.app.PendingIntent;
+import android.os.Bundle;
 import android.os.RemoteException;
+import android.util.SparseArray;
 
 public class ServerPlayerHater extends PlayerHater {
 
@@ -267,6 +269,19 @@ public class ServerPlayerHater extends PlayerHater {
 	public void setPendingIntent(PendingIntent intent) {
 		try {
 			mServer.setPendingIntent(intent);
+		} catch (RemoteException e) {
+			Log.e(SERVER_ERROR, e);
+			throw new IllegalStateException(SERVER_ERROR, e);
+		}
+	}
+
+	public void slurp(SparseArray<Bundle> songs) {
+		try {
+			int tag = 0;
+			for (int i = 0; i < songs.size(); i++) {
+				tag = songs.keyAt(i);
+				mServer.slurp(tag, songs.get(tag));
+			}
 		} catch (RemoteException e) {
 			Log.e(SERVER_ERROR, e);
 			throw new IllegalStateException(SERVER_ERROR, e);

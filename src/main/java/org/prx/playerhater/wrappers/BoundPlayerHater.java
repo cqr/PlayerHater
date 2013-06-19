@@ -57,24 +57,28 @@ public class BoundPlayerHater extends PlayerHater {
 	private static PendingIntent sPendingPendingIntent;
 	private static int sPendingTransportControlFlags = -1;
 	private static int sStartSeekPosition = -1;
-	
+
 	private static Handler getHandler() {
 		if (sHandler == null) {
 			sHandler = new Handler();
 		}
 		return sHandler;
 	}
-	
+
 	private static Runnable getDisconnectRunnable() {
 		if (sRunnable == null) {
 			sRunnable = new Runnable() {
 
 				@Override
 				public void run() {
-					sApplicationContext.unbindService(sServiceConnection);
-					sPlayerHater = null;
+					synchronized (BoundPlayerHater.class) {
+						((ServerPlayerHater) sPlayerHater).slurp(SongHost
+								.localSongs());
+						sApplicationContext.unbindService(sServiceConnection);
+						sPlayerHater = null;
+					}
 				}
-				
+
 			};
 		}
 		return sRunnable;
@@ -143,7 +147,8 @@ public class BoundPlayerHater extends PlayerHater {
 					.setQueuedSongsChangedListener(new OnQueuedSongsChangedListener() {
 
 						@Override
-						public void onNowPlayingChanged(Song nowPlaying, Song was) {
+						public void onNowPlayingChanged(Song nowPlaying,
+								Song was) {
 							getPlugin().onSongChanged(nowPlaying);
 						}
 
@@ -170,7 +175,7 @@ public class BoundPlayerHater extends PlayerHater {
 				if (!(service instanceof PlayerHaterServer)) {
 					SongHost.setRemote(server);
 				}
-				
+
 				try {
 					server.setClient(getPlayerHaterClient());
 				} catch (RemoteException e) {
@@ -393,7 +398,7 @@ public class BoundPlayerHater extends PlayerHater {
 			return getSongQueue().appendSong(song);
 		}
 	}
-	
+
 	@Override
 	public void enqueue(int position, Song song) {
 		if (getPlayerHater() != null) {

@@ -72,6 +72,10 @@ public class MediaPlayerPool<P extends SynchronousPlayer> {
 	}
 
 	public synchronized void prepare(Context context, Uri uri) {
+		if (uri == null) {
+			throw new IllegalArgumentException(
+					"can't prepare a player for a null uri!");
+		}
 		if (!mMediaPlayers.containsKey(uri)) {
 			P player = getPlayer();
 			Log.d("Preparing " + player + " for " + uri);

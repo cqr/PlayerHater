@@ -28,6 +28,7 @@ class RemoteSong implements Song {
 	}
 
 	private final int mTag;
+	private Song mSong = null;
 
 	RemoteSong(int tag) {
 		mTag = tag;
@@ -35,6 +36,9 @@ class RemoteSong implements Song {
 
 	@Override
 	public String getTitle() {
+		if (mSong != null) {
+			return mSong.getTitle();
+		}
 		try {
 			return getRemote().getSongTitle(mTag);
 		} catch (RemoteException e) {
@@ -45,6 +49,9 @@ class RemoteSong implements Song {
 
 	@Override
 	public String getArtist() {
+		if (mSong != null) {
+			return mSong.getArtist();
+		}
 		try {
 			return getRemote().getSongArtist(mTag);
 		} catch (RemoteException e) {
@@ -55,6 +62,9 @@ class RemoteSong implements Song {
 
 	@Override
 	public Uri getAlbumArt() {
+		if (mSong != null) {
+			return mSong.getAlbumArt();
+		}
 		try {
 			return getRemote().getSongAlbumArt(mTag);
 		} catch (RemoteException e) {
@@ -65,6 +75,9 @@ class RemoteSong implements Song {
 
 	@Override
 	public Uri getUri() {
+		if (mSong != null) {
+			return mSong.getUri();
+		}
 		try {
 			return getRemote().getSongUri(mTag);
 		} catch (RemoteException e) {
@@ -75,6 +88,9 @@ class RemoteSong implements Song {
 
 	@Override
 	public Bundle getExtra() {
+		if (mSong != null) {
+			return mSong.getExtra();
+		}
 		try {
 			return getRemote().getSongExtra(mTag);
 		} catch (RemoteException e) {
@@ -85,11 +101,18 @@ class RemoteSong implements Song {
 
 	@Override
 	public String getAlbumTitle() {
+		if (mSong != null) {
+			return mSong.getAlbumTitle();
+		}
 		try {
 			return getRemote().getSongAlbumTitle(mTag);
 		} catch (RemoteException e) {
 			throw new IllegalStateException(
 					"Remote Process has died or become disconnected", e);
 		}
+	}
+
+	void setSong(Song song) {
+		mSong = song;
 	}
 }

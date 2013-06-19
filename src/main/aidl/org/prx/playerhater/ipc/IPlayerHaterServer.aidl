@@ -68,4 +68,5 @@ interface IPlayerHaterServer {
     Uri getSongAlbumArt(int songTag);
     Uri getSongUri(int songTag);
     Bundle getSongExtra(int songTag);
+    void slurp(int songTag, in Bundle songData);
 }

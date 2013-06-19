@@ -27,13 +27,13 @@ import android.os.RemoteException;
 import android.util.SparseArray;
 
 public class SongHost {
-	
-	public static final int INVALID_TAG = -1; 
-	
+
+	public static final int INVALID_TAG = -1;
+
 	private static Remote sRemote;
 	private static SparseArray<Song> sSongs;
 	private static Map<Song, Integer> sTags;
-	
+
 	public static void setRemote(Remote remote) {
 		sRemote = remote;
 	}
@@ -45,20 +45,37 @@ public class SongHost {
 	public static void setRemote(IPlayerHaterServer server) {
 		sRemote = new ServerRemote(server);
 	}
-	
+
+	public static void slurp(int songTag, Bundle songData) {
+		Song song = getSong(songTag);
+		if (song instanceof RemoteSong) {
+			((RemoteSong) getSong(songTag)).setSong(Songs.fromBundle(songData));
+		}
+	}
+
+	public static SparseArray<Bundle> localSongs() {
+		SparseArray<Bundle> data = new SparseArray<Bundle>();
+		for (Song song : getTags().keySet()) {
+			if (!(song instanceof RemoteSong)) {
+				data.put(getTag(song), Songs.toBundle(song));
+			}
+		}
+		return data;
+	}
+
 	static Remote remote() {
 		return sRemote;
 	}
-	
+
 	public static void clear() {
 		sRemote = null;
-		sSongs  = null;
-		sTags   = null;
+		sSongs = null;
+		sTags = null;
 	}
-	
+
 	public static int getTag(Song song) {
-		if (song == null) { 
-			return INVALID_TAG; 
+		if (song == null) {
+			return INVALID_TAG;
 		}
 		if (getTags().containsKey(song)) {
 			return getTags().get(song);
@@ -69,9 +86,11 @@ public class SongHost {
 			return tag;
 		}
 	}
-	
+
 	public static Song getSong(int tag) {
-		if (tag == INVALID_TAG) { return null; }
+		if (tag == INVALID_TAG) {
+			return null;
+		}
 		Song song = getSongs().get(tag);
 		if (song != null) {
 			return song;
@@ -82,21 +101,21 @@ public class SongHost {
 			return song;
 		}
 	}
-	
+
 	private static SparseArray<Song> getSongs() {
 		if (sSongs == null) {
 			sSongs = new SparseArray<Song>();
 		}
 		return sSongs;
 	}
-	
+
 	private static Map<Song, Integer> getTags() {
 		if (sTags == null) {
 			sTags = new HashMap<Song, Integer>();
 		}
 		return sTags;
 	}
-	
+
 	static interface Remote {
 		Uri getSongAlbumArt(int tag) throws RemoteException;
 
@@ -110,7 +129,7 @@ public class SongHost {
 
 		Bundle getSongExtra(int tag) throws RemoteException;
 	}
-	
+
 	private static final class ClientRemote implements Remote {
 		private final IPlayerHaterClient mClient;
 
@@ -148,7 +167,7 @@ public class SongHost {
 			return mClient.getSongAlbumTitle(tag);
 		}
 	}
-	
+
 	private static class ServerRemote implements Remote {
 		private final IPlayerHaterServer mServer;
 

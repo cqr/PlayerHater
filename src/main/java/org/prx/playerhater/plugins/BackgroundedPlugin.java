@@ -20,6 +20,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Handler.Callback;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 
@@ -31,8 +32,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
-		Callback {
+public class BackgroundedPlugin extends HandlerThread implements
+		PlayerHaterPlugin, Callback {
 
 	private static final int SONG_CHANGED = 0;
 	private static final int DURATION_CHANGED = 1;
@@ -58,7 +59,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 	private static final Integer[] DEFAULT_FOREGROUND_ACTIONS = {
 			CHANGES_COMPLETE, SERVICE_BOUND, PLAYER_HATER_LOADED,
 			SERVICE_STOPPING };
-	private final Looper mLooper;
 	private final PlayerHaterPlugin mPlugin;
 	private final Set<Integer> mForegroundActions;
 	private TargetableHandler mHandler;
@@ -78,9 +78,8 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 		mPlugin = plugin;
 		mForegroundActions = new HashSet<Integer>(
 				Arrays.asList(foregroundActions));
-		mLooper = foregroundLooper;
-		mHandler = new TargetableHandler(Looper.getMainLooper(), this); // Temporary.
 		start();
+		mHandler = new HandlerPair(this, mForegroundActions, foregroundLooper);
 	}
 
 	@Override
@@ -91,13 +90,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 			mHandler.obtainTargettedMessage(PLAYER_HATER_LOADED,
 					new LoadedObject(context, playerHater)).sendToTarget();
 		}
-	}
-
-	@Override
-	public void run() {
-		Looper.prepare();
-		mHandler = new HandlerPair(this, mForegroundActions, mLooper);
-		Looper.loop();
 	}
 
 	@Override
@@ -379,10 +371,6 @@ public class BackgroundedPlugin extends Thread implements PlayerHaterPlugin,
 
 		public TargetableHandler() {
 			super();
-		}
-
-		public TargetableHandler(Looper looper, Callback callback) {
-			super(looper, callback);
 		}
 
 		@SuppressWarnings("unused")
