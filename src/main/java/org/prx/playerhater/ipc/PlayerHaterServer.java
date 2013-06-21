@@ -221,4 +221,9 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 	public void slurp(int songTag, Bundle songData) throws RemoteException {
 		SongHost.slurp(songTag, songData);
 	}
+
+	@Override
+	public int getTransportControlFlags() throws RemoteException {
+		return mService.getTransportControlFlags();
+	}
 }

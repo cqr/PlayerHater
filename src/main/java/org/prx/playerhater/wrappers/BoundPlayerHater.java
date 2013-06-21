@@ -488,4 +488,17 @@ public class BoundPlayerHater extends PlayerHater {
 			getPlayerHater().setPendingIntent(intent);
 		}
 	}
+
+	@Override
+	public int getTransportControlFlags() {
+		if (getPlayerHater() == null) {
+			if (sPendingTransportControlFlags != -1) {
+				return sPendingTransportControlFlags;
+			} else {
+				return PlayerHater.DEFAULT_TRANSPORT_CONTROL_FLAGS;
+			}
+		} else {
+			return getPlayerHater().getTransportControlFlags();
+		}
+	}
 }

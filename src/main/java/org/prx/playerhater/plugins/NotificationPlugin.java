@@ -38,6 +38,7 @@ public class NotificationPlugin extends AbstractPlugin {
 	protected String mNotificationText = "Version 0.1.0";
 	private boolean mIsVisible = false;
 	protected Notification mNotification;
+	private boolean mShouldBeVisible;
 
 	public NotificationPlugin() {
 	}
@@ -64,13 +65,13 @@ public class NotificationPlugin extends AbstractPlugin {
 	}
 
 	@Override
+	public void onAudioLoading() {
+		mShouldBeVisible = true;
+	}
+
+	@Override
 	public void onAudioStarted() {
-		try {
-			if (!mIsVisible) {
-				getBinder().startForeground(NOTIFICATION_NU, getNotification());
-				mIsVisible = true;
-			}
-		} catch (Exception e) {}
+		mShouldBeVisible = true;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -93,6 +94,7 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	@Override
 	public void onAudioStopped() {
+		mShouldBeVisible = false;
 		mIsVisible = false;
 		mNotificationManager.cancel(NOTIFICATION_NU);
 		mNotification = null;
@@ -118,13 +120,18 @@ public class NotificationPlugin extends AbstractPlugin {
 
 	@Override
 	public void onChangesComplete() {
-		updateNotification();
+		if (mShouldBeVisible && !mIsVisible) {
+			getBinder().startForeground(NOTIFICATION_NU, getNotification());
+			mIsVisible = true;
+		} else if (mIsVisible && !mShouldBeVisible) {
+			getBinder().stopForeground(true);
+		} else if (mIsVisible && mShouldBeVisible) {
+			updateNotification();
+		}
 	}
 
 	protected void updateNotification() {
-		if (mIsVisible) {
-			mNotificationManager.notify(NOTIFICATION_NU, getNotification());
-		}
+		mNotificationManager.notify(NOTIFICATION_NU, getNotification());
 	}
 
 	protected ServicePlayerHater getBinder() {

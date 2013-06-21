@@ -60,12 +60,7 @@ public abstract class PlayerHaterService extends Service implements
 
 	private ClientPlugin mClient;
 
-	private int mTransportControlFlags = RemoteControlClient.FLAG_KEY_MEDIA_NEXT
-			| RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
-			| RemoteControlClient.FLAG_KEY_MEDIA_PAUSE
-			| RemoteControlClient.FLAG_KEY_MEDIA_PLAY
-			| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
-			| RemoteControlClient.FLAG_KEY_MEDIA_STOP;
+	private int mTransportControlFlags = PlayerHater.DEFAULT_TRANSPORT_CONTROL_FLAGS;
 
 	public void setClient(IPlayerHaterClient client) {
 		if (mClient != null) {
@@ -93,6 +88,13 @@ public abstract class PlayerHaterService extends Service implements
 			case PlayerHater.STATE_PAUSED:
 				mClient.onAudioPaused();
 				break;
+			case PlayerHater.STATE_IDLE:
+				mClient.onAudioStopped();
+				break;
+			}
+
+			if (mTransportControlFlags != PlayerHater.DEFAULT_TRANSPORT_CONTROL_FLAGS) {
+				mClient.onTransportControlFlagsChanged(mTransportControlFlags);
 			}
 
 			getPluginCollection().add(mClient);
@@ -204,12 +206,13 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public int getDuration() {
-		return getMediaPlayer().getDuration();
+		return peekMediaPlayer() != null ? getMediaPlayer().getDuration() : 0;
 	}
 
 	@Override
 	public int getCurrentPosition() {
-		return getMediaPlayer().getCurrentPosition();
+		return peekMediaPlayer() != null ? getMediaPlayer()
+				.getCurrentPosition() : 0;
 	}
 
 	/* END Player State Methods */
@@ -232,7 +235,7 @@ public abstract class PlayerHaterService extends Service implements
 	@Override
 	public boolean play() {
 		if (playAllowed()) {
-			return getMediaPlayer().conditionalPlay();
+			return peekMediaPlayer() != null && getMediaPlayer().conditionalPlay();
 		}
 		return false;
 	}
@@ -464,7 +467,8 @@ public abstract class PlayerHaterService extends Service implements
 		return mMediaPlayer;
 	}
 
-	synchronized protected void setMediaPlayer(PlaylistSupportingPlayer mediaPlayer) {
+	synchronized protected void setMediaPlayer(
+			PlaylistSupportingPlayer mediaPlayer) {
 		boolean myTransaction = startTransaction();
 		mPlayerStateWatcher.setMediaPlayer(mediaPlayer);
 		mMediaPlayer = mediaPlayer;
@@ -473,12 +477,13 @@ public abstract class PlayerHaterService extends Service implements
 		}
 	}
 
-	protected PlaylistSupportingPlayer swapMediaPlayer(PlaylistSupportingPlayer mediaPlayer) {
+	protected PlaylistSupportingPlayer swapMediaPlayer(
+			PlaylistSupportingPlayer mediaPlayer) {
 		return swapMediaPlayer(mediaPlayer, false);
 	}
 
-	protected PlaylistSupportingPlayer swapMediaPlayer(PlaylistSupportingPlayer mediaPlayer,
-			boolean play) {
+	protected PlaylistSupportingPlayer swapMediaPlayer(
+			PlaylistSupportingPlayer mediaPlayer, boolean play) {
 		boolean myTransaction = startTransaction();
 		PlaylistSupportingPlayer oldPlayer = peekMediaPlayer();
 		if (oldPlayer != null) {
@@ -544,5 +549,10 @@ public abstract class PlayerHaterService extends Service implements
 
 	private boolean isSelfStartCommand(Intent intent) {
 		return intent.getBooleanExtra(SELF_STARTER, false);
+	}
+
+	@Override
+	public int getTransportControlFlags() {
+		return mTransportControlFlags;
 	}
 }

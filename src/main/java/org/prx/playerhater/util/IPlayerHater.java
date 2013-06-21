@@ -241,6 +241,8 @@ public interface IPlayerHater {
 	 */
 	abstract public void setTransportControlFlags(int transportControlFlags);
 
+	abstract public int getTransportControlFlags();
+
 	/**
 	 * Sets the intent to be used by the plugins.
 	 */

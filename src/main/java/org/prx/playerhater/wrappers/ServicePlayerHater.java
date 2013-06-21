@@ -163,4 +163,9 @@ public class ServicePlayerHater extends PlayerHater {
 	public void unduck() {
 		mService.unduck();
 	}
+
+	@Override
+	public int getTransportControlFlags() {
+		return mService.getTransportControlFlags();
+	}
 }

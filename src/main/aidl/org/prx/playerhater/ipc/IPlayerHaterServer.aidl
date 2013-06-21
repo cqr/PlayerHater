@@ -54,6 +54,7 @@ interface IPlayerHaterServer {
     boolean isLoading();
     int getState();
     void setTransportControlFlags(int transportControlFlags);
+    int getTransportControlFlags();
     void setPendingIntent(in PendingIntent intent);
     int getQueueLength();
     int getQueuePosition();

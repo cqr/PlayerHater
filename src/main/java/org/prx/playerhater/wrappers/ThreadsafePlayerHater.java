@@ -406,4 +406,16 @@ public class ThreadsafePlayerHater extends PlayerHater {
 
 		}
 	}
+
+	@Override
+	public int getTransportControlFlags() {
+		return new PlayerHaterTask<Integer>(mHandler) {
+
+			@Override
+			protected Integer run() {
+				return mPlayerHater.getTransportControlFlags();
+			}
+
+		}.get();
+	}
 }

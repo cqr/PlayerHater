@@ -19,11 +19,21 @@ import org.prx.playerhater.wrappers.BoundPlayerHater;
 import org.prx.playerhater.util.Config;
 import org.prx.playerhater.util.IPlayerHater;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.media.RemoteControlClient;
 import android.util.Log;
 
 public abstract class PlayerHater implements IPlayerHater {
+
+	@SuppressLint("InlinedApi")
+	public static final int DEFAULT_TRANSPORT_CONTROL_FLAGS = RemoteControlClient.FLAG_KEY_MEDIA_NEXT
+			| RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
+			| RemoteControlClient.FLAG_KEY_MEDIA_PAUSE
+			| RemoteControlClient.FLAG_KEY_MEDIA_PLAY
+			| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
+			| RemoteControlClient.FLAG_KEY_MEDIA_STOP;
 
 	/**
 	 * Releases the {@linkplain ServiceConnection} which this instance is using
@@ -36,7 +46,7 @@ public abstract class PlayerHater implements IPlayerHater {
 	public boolean release() {
 		return false;
 	}
-	
+
 	public boolean setLocalPlugin(PlayerHaterPlugin plugin) {
 		return false;
 	}

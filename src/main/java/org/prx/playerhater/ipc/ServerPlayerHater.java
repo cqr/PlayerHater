@@ -287,4 +287,14 @@ public class ServerPlayerHater extends PlayerHater {
 			throw new IllegalStateException(SERVER_ERROR, e);
 		}
 	}
+
+	@Override
+	public int getTransportControlFlags() {
+		try {
+			return mServer.getTransportControlFlags();
+		} catch (RemoteException e) {
+			Log.e(SERVER_ERROR, e);
+			throw new IllegalStateException(SERVER_ERROR, e);
+		}
+	}
 }

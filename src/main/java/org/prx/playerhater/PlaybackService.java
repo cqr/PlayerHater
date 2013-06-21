@@ -24,18 +24,17 @@ import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
-import android.util.Log;
 
 public class PlaybackService extends PlayerHaterService implements
 		OnQueuedSongsChangedListener, OnErrorListener, OnCompletionListener {
 
-	private static final String TAG = "PlaybackService";
 	private MediaPlayerPool<PlaylistSupportingPlayer> mMediaPlayerPool;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		mMediaPlayerPool = MediaPlayerPool.getInstance(PlaylistSupportingPlayer.class);
+		mMediaPlayerPool = MediaPlayerPool
+				.getInstance(PlaylistSupportingPlayer.class);
 	}
 
 	@Override
@@ -54,7 +53,7 @@ public class PlaybackService extends PlayerHaterService implements
 	}
 
 	@Override
-	public boolean seekTo(int startTime) { 
+	public boolean seekTo(int startTime) {
 		getMediaPlayer().seekTo(startTime);
 		return true;
 	}
@@ -131,7 +130,7 @@ public class PlaybackService extends PlayerHaterService implements
 
 	@Override
 	public int getQueuePosition() {
-		return getQueue().getPosition() - (getCurrentPosition() > 0 ? 0 : 1);
+		return getQueue().getPosition() - (peekMediaPlayer() != null && getCurrentPosition() > 0 ? 0 : 1);
 	}
 
 	@Override
@@ -150,6 +149,8 @@ public class PlaybackService extends PlayerHaterService implements
 					nowPlaying.getUri()));
 			if (isPlaying()) {
 				getMediaPlayer().start();
+			} else {
+
 			}
 		}
 		commitTransaction();
@@ -195,7 +196,8 @@ public class PlaybackService extends PlayerHaterService implements
 	}
 
 	@Override
-	protected synchronized void setMediaPlayer(PlaylistSupportingPlayer mediaPlayer) {
+	protected synchronized void setMediaPlayer(
+			PlaylistSupportingPlayer mediaPlayer) {
 		PlaylistSupportingPlayer oldPlayer = peekMediaPlayer();
 		if (oldPlayer != null) {
 			oldPlayer.setOnErrorListener(null);
@@ -206,5 +208,13 @@ public class PlaybackService extends PlayerHaterService implements
 			mediaPlayer.setOnErrorListener(this);
 			mediaPlayer.setOnCompletionListener(this);
 		}
+	}
+
+	@Override
+	synchronized protected PlaylistSupportingPlayer getMediaPlayer() {
+		if (peekMediaPlayer() == null) {
+			return null;
+		}
+		return peekMediaPlayer();
 	}
 }
