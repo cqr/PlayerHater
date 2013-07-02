@@ -24,7 +24,7 @@
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:background="#3333B5E5"
-        android:contentDescription="@string/album_art"
+        android:contentDescription="@string/zzz_ph_album_art"
         android:scaleType="fitCenter" />
 
     <LinearLayout
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
-                android:contentDescription="@string/back"
+                android:contentDescription="@string/zzz_ph_back"
                 android:gravity="center"
                 android:padding="6dp"
                 android:scaleType="center"
@@ -94,7 +94,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
-                android:contentDescription="@string/play_pause"
+                android:contentDescription="@string/zzz_ph_toggle_play"
                 android:gravity="center"
                 android:padding="6dp"
                 android:scaleType="center"
@@ -106,7 +106,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
-                android:contentDescription="@string/skip"
+                android:contentDescription="@string/zzz_ph_skip"
                 android:gravity="center"
                 android:padding="6dp"
                 android:scaleType="center"
@@ -122,7 +122,7 @@
         android:layout_alignParentTop="true"
         android:alpha="0.4"
         android:background="?android:attr/selectableItemBackground"
-        android:contentDescription="@string/stop"
+        android:contentDescription="@string/zzz_ph_stop"
         android:padding="10dp"
         android:scaleType="center"
         android:src="@drawable/zzz_ph_bt_stop" />

@@ -24,7 +24,7 @@
         android:layout_height="64dp"
         android:layout_alignParentLeft="true"
         android:background="#3333B5E5"
-        android:contentDescription="@string/album_art"
+        android:contentDescription="@string/zzz_ph_album_art"
         android:scaleType="fitCenter" />
 
     <ImageView
@@ -35,7 +35,7 @@
         android:layout_centerVertical="true"
         android:alpha="0.4"
         android:background="?android:attr/selectableItemBackground"
-        android:contentDescription="@string/stop"
+        android:contentDescription="@string/zzz_ph_stop"
         android:padding="10dp"
         android:scaleType="center"
         android:src="@drawable/zzz_ph_bt_stop" />
@@ -47,7 +47,7 @@
         android:layout_centerVertical="true"
         android:layout_toLeftOf="@id/zzz_ph_stop_button"
         android:background="?android:attr/selectableItemBackground"
-        android:contentDescription="@string/skip"
+        android:contentDescription="@string/zzz_ph_skip"
         android:padding="8dp"
         android:scaleType="center"
         android:src="@drawable/zzz_ph_bt_skip" />
@@ -59,7 +59,7 @@
         android:layout_centerVertical="true"
         android:layout_toLeftOf="@id/zzz_ph_skip_button"
         android:background="?android:attr/selectableItemBackground"
-        android:contentDescription="@string/play_pause"
+        android:contentDescription="@string/zzz_ph_toggle_play"
         android:padding="8dp"
         android:src="@drawable/zzz_ph_bt_pause" />
 

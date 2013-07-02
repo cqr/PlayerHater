@@ -22,10 +22,10 @@
     <bool name="zzz_ph_touch_notification">false</bool>
     <bool name="zzz_ph_exp_notification">false</bool>
 
-    <string name="stop">Stop</string>
-    <string name="back">Previous</string>
-    <string name="album_art">Album Art</string>
-    <string name="skip">Skip</string>
-    <string name="play_pause">Toggle Playback</string>
+    <string name="zzz_ph_stop">Stop</string>
+    <string name="zzz_ph_back">Previous</string>
+    <string name="zzz_ph_album_art">Album Art</string>
+    <string name="zzz_ph_skip">Skip</string>
+    <string name="zzz_ph_toggle_play">Toggle Playback</string>
 
 </resources>
