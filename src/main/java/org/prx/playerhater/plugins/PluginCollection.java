@@ -332,7 +332,17 @@ public class PluginCollection implements PlayerHaterPlugin {
 		}
 	}
 
-	@Override
+    @Override public void onPlayerHaterShutdown() {
+        mLock.writeLock().lock();
+        try {
+            for (PlayerHaterPlugin plugin : mPlugins)
+                plugin.onPlayerHaterShutdown();
+        } finally {
+            mLock.writeLock().unlock();
+        }
+    }
+
+    @Override
 	public synchronized String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("PluginCollection@").append(hashCode()).append("[ ");

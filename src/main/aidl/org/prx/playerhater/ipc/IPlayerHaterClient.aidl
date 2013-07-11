@@ -38,6 +38,7 @@ interface IPlayerHaterClient {
     void onTransportControlFlagsChanged(int transportControlFlags);
     void onNextSongAvailable(int songTag);
     void onNextSongUnavailable();
+    void onPlayerHaterShutdown();
     void onChangesComplete();
     void onIntentActivityChanged(in PendingIntent intent);
     

@@ -33,7 +33,6 @@ import android.widget.RemoteViews;
 public class TouchableNotificationPlugin extends NotificationPlugin {
 
 	protected Uri mNotificationImageUrl;
-	protected boolean mNotificationCanSkip = true;
 	protected int mTransportControlFlags = -1;
 	private RemoteViews mNotificationView;
 

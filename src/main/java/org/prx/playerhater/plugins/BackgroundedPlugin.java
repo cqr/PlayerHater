@@ -194,7 +194,16 @@ public class BackgroundedPlugin extends HandlerThread implements
 		mHandler.sendTargettedEmptyMessage(CHANGES_COMPLETE_INTERNAL);
 	}
 
-	@Override
+    @Override public void onPlayerHaterShutdown() {
+        mHandler.removeTargettedMessages(SERVICE_STOPPING);
+        if (shouldHandleMessage(SERVICE_STOPPING)) {
+            mPlugin.onPlayerHaterShutdown();
+        } else {
+            mHandler.sendTargettedEmptyMessage(SERVICE_STOPPING);
+        }
+    }
+
+    @Override
 	public void onArtistChanged(String artist) {
 		mHandler.removeTargettedMessages(CHANGES_COMPLETE_INTERNAL);
 		if (shouldHandleMessage(ARTIST_CHANGED)) {
@@ -351,6 +360,9 @@ public class BackgroundedPlugin extends HandlerThread implements
 		case CHANGES_COMPLETE:
 			mPlugin.onChangesComplete();
 			break;
+        case SERVICE_STOPPING:
+            mPlugin.onPlayerHaterShutdown();
+            break;
 		default:
 			return false;
 		}

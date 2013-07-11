@@ -48,7 +48,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	 * {@link #getContext()} and {@link #getPlayerHater()} can succeed.
 	 */
 	@Override
-	public void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
+	public synchronized void onPlayerHaterLoaded(Context context, PlayerHater playerHater) {
 		mContext = context;
 		mPlayerHater = playerHater;
 	}
@@ -91,7 +91,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * The default implementation will call {@link #onAlbumArtChangedToUri(Uri)}
+	 * The default implementation will call {@link #onAlbumArtChanged(Uri)}
 	 * , {@link #onTitleChanged(String)}, and {@link #onArtistChanged(String)}
 	 */
 	@Override
@@ -140,13 +140,21 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	public void onTransportControlFlagsChanged(int transportControlFlags) {
 	}
 
+    @Override
+    public void onPlayerHaterShutdown() {
+        mPlayerHater = null;
+        mContext = null;
+    }
+
 	/**
 	 * Grants the plugin easy access to the instance of {@link PlayerHater} that
 	 * it is permitted to use.
 	 * 
 	 * @return An instance of PlayerHater
 	 */
-	protected final PlayerHater getPlayerHater() {
+	protected synchronized final PlayerHater getPlayerHater() {
+        if (mPlayerHater == null)
+            throw new IllegalStateException("PlayerHater is not loaded yet or has been shut down.");
 		return mPlayerHater;
 	}
 
@@ -156,7 +164,9 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 	 * 
 	 * @return The {@link Context} in which the plugin is running.
 	 */
-	protected final Context getContext() {
+	protected synchronized final Context getContext() {
+        if (mContext == null)
+            throw new IllegalStateException("PlayerHater is not loaded yet or has been shut down.");
 		return mContext;
 	}
 }

@@ -209,4 +209,13 @@ public class ClientPlugin implements PlayerHaterPlugin {
 			throw new IllegalStateException(CLIENT_ERROR, e);
 		}
 	}
+
+    @Override public void onPlayerHaterShutdown() {
+        try {
+            mClient.onPlayerHaterShutdown();
+        } catch (RemoteException e) {
+            Log.e(CLIENT_ERROR, e);
+            throw new IllegalStateException(CLIENT_ERROR, e);
+        }
+    }
 }

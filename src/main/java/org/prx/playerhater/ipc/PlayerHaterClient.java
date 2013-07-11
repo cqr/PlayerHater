@@ -148,4 +148,9 @@ public class PlayerHaterClient extends IPlayerHaterClient.Stub {
 		return SongHost.getSong(songTag).getExtra();
 	}
 
+    @Override
+    public void onPlayerHaterShutdown() throws RemoteException {
+        mPlugin.onPlayerHaterShutdown();
+    }
+
 }
