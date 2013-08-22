@@ -162,11 +162,15 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
 	}
 
 	private void onTick() {
-		if (getPlayerHater().getState() == PlayerHater.STATE_PLAYING) {
-			mListener.onPlaying(getPlayerHater().nowPlaying(), getPlayerHater()
-					.getCurrentPosition());
-		} else if (getPlayerHater().getState() == PlayerHater.STATE_STREAMING) {
-			mListener.onStreaming(getPlayerHater().nowPlaying());
+		try { 
+			if (getPlayerHater().getState() == PlayerHater.STATE_PLAYING) {
+				mListener.onPlaying(getPlayerHater().nowPlaying(), getPlayerHater()
+						.getCurrentPosition());
+			} else if (getPlayerHater().getState() == PlayerHater.STATE_STREAMING) {
+				mListener.onStreaming(getPlayerHater().nowPlaying());
+			}
+		} catch (java.lang.IllegalStateException e) { 
+			// do nothing
 		}
 	}
 }

@@ -64,6 +64,9 @@ public class SongHost {
 	}
 
 	static Remote remote() {
+		if (sRemote == null) { 
+			return new NullRemote(); 
+		}
 		return sRemote;
 	}
 
@@ -204,5 +207,45 @@ public class SongHost {
 		public String getSongAlbumTitle(int tag) throws RemoteException {
 			return mServer.getSongAlbumTitle(tag);
 		}
+	}
+	
+	private static class NullRemote implements Remote {
+
+		@Override
+		public Uri getSongAlbumArt(int tag) throws RemoteException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Uri getSongUri(int tag) throws RemoteException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getSongAlbumTitle(int tag) throws RemoteException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getSongTitle(int tag) throws RemoteException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getSongArtist(int tag) throws RemoteException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Bundle getSongExtra(int tag) throws RemoteException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
 	}
 }

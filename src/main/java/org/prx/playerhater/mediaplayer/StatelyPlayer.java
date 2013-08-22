@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import org.prx.playerhater.util.Log;
 
+import android.content.ContentProviderClient;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -380,15 +381,16 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 			IllegalArgumentException, SecurityException {
 		if (uri.getScheme().equals("content")) {
 			setState(LOADING_CONTENT);
+			final ContentProviderClient contentProviderClient = context.getContentResolver().acquireContentProviderClient(uri);
 			(new Thread() {
 				@Override
 				public void run() {
 					synchronized (StatelyPlayer.this) {
 						try {
-							ParcelFileDescriptor fd = context
-									.getContentResolver().openFileDescriptor(
+							ParcelFileDescriptor fd = contentProviderClient.openFile(
 											uri, "r");
-							mMediaPlayer.setDataSource(fd.getFileDescriptor());
+//							ParcelFileDescriptor fd = context.getContentResolver().openFileDescriptor(uri, "r"); 
+//							mMediaPlayer.setDataSource(fd.getFileDescriptor());
 							int state = getInternalState();
 							setState(INITIALIZED);
 							if ((state & PREPARING_CONTENT) != 0) {
@@ -410,10 +412,14 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 					}
 				}
 			}).start();
-		} else {
-			mMediaPlayer.setDataSource(uri.toString());
-			setState(INITIALIZED);
-		}
+			contentProviderClient.release(); 
+		} else if (uri.getScheme().equals("http") || uri.getScheme().equals("https")) {
+				mMediaPlayer.setDataSource(uri.toString());
+				setState(INITIALIZED);
+		} else { 
+			mMediaPlayer.setDataSource(context, uri); 
+			setState(INITIALIZED); 
+		} 
 	}
 
 	@Override

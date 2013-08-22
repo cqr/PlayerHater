@@ -68,6 +68,14 @@ public abstract class PlayerHaterService extends Service implements
 		}
 		if (client != null) {
 			mClient = new ClientPlugin(client);
+			
+			// If we're running remotely, set up the remote song host.
+			// If this condition returns false, that indicates that
+			// the two sides of the transaction are happening on the
+			// same process.
+			if (!(client instanceof PlayerHaterClient)) {
+				SongHost.setRemote(client);
+			}
 
 			if (nowPlaying() != null) {
 				mClient.onSongChanged(nowPlaying());
@@ -99,13 +107,6 @@ public abstract class PlayerHaterService extends Service implements
 
 			getPluginCollection().add(mClient);
 
-			// If we're running remotely, set up the remote song host.
-			// If this condition returns false, that indicates that
-			// the two sides of the transaction are happening on the
-			// same process.
-			if (!(client instanceof PlayerHaterClient)) {
-				SongHost.setRemote(client);
-			}
 		} else {
 			mClient = null;
 			SongHost.clear();
