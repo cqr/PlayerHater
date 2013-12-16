@@ -390,7 +390,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 							ParcelFileDescriptor fd = contentProviderClient.openFile(
 											uri, "r");
 //							ParcelFileDescriptor fd = context.getContentResolver().openFileDescriptor(uri, "r"); 
-//							mMediaPlayer.setDataSource(fd.getFileDescriptor());
+							mMediaPlayer.setDataSource(fd.getFileDescriptor());
 							int state = getInternalState();
 							setState(INITIALIZED);
 							if ((state & PREPARING_CONTENT) != 0) {
