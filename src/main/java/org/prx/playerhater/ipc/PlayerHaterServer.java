@@ -72,7 +72,7 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 
 	@Override
 	public boolean pause() throws RemoteException {
-		return mService.pause();
+		return mService.pause(true);
 	}
 
 	@Override

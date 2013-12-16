@@ -7,7 +7,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.5.+'
+        classpath 'com.android.tools.build:gradle:0.6.+'
     }
 }
 
@@ -16,8 +16,8 @@ signing {
 }
 
 android {
-    buildToolsVersion "17"
-    compileSdkVersion 16
+    buildToolsVersion "19"
+    compileSdkVersion 18
 
     defaultConfig {
       proguardFile 'proguard-player-hater.txt'

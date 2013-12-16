@@ -27,7 +27,7 @@ public class ThreadsafePlayerHater extends PlayerHater {
 	private static HandlerThread sThread;
 	private static Handler sHandler;
 	private final PlayerHater mPlayerHater;
-	private final Handler mHandler;
+	protected final Handler mHandler;
 
 	public ThreadsafePlayerHater(PlayerHater playerHater) {
 		this(playerHater, null);
@@ -347,7 +347,7 @@ public class ThreadsafePlayerHater extends PlayerHater {
 		}.get();
 	}
 
-	private static abstract class PlayerHaterTask<V> {
+	protected static abstract class PlayerHaterTask<V> {
 
 		private final Handler mHandler;
 		private final Runnable mRunnable;

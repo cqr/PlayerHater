@@ -34,6 +34,15 @@ public class ThreadsafeServicePlayerHater extends ThreadsafePlayerHater {
 		mService.quit();
 	}
 
+    public boolean pause(final boolean fromApp) {
+        return new PlayerHaterTask<Boolean>(mHandler) {
+            @Override
+            protected Boolean run() {
+                return mService.pause(fromApp);
+            }
+        }.get();
+    }
+
 	public void duck() {
 		mService.duck();
 	}

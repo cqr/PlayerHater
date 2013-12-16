@@ -39,6 +39,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.RemoteControlClient;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.view.KeyEvent;
 
 @SuppressLint("InlinedApi")
@@ -48,6 +49,9 @@ public abstract class PlayerHaterService extends Service implements
 	private static final String SELF_STARTER = "org.prx.playerhater.service.PlayerHaterService.SELF_STARTER";
 
 	private int mStarted = -1;
+
+    private boolean mIsCurrentlyBound = false;
+    private boolean mPausedInApp = false;
 
 	private PlayerHaterPlugin mPlugin;
 	private Config mConfig;
@@ -160,7 +164,11 @@ public abstract class PlayerHaterService extends Service implements
 	// bind request comes in.
 	@Override
 	public boolean onUnbind(Intent intent) {
+        if (mPausedInApp && getState() == PlayerHater.STATE_PAUSED) {
+            stop();
+        }
 		setClient(null);
+        mPausedInApp = false;
 		return true;
 	}
 
@@ -223,8 +231,14 @@ public abstract class PlayerHaterService extends Service implements
 
 	/* Generic Player Controls */
 
-	@Override
-	public boolean pause() {
+    @Override
+    public boolean pause() {
+        return pause(false);
+    }
+
+
+	public boolean pause(boolean fromApplication) {
+        mPausedInApp = fromApplication;
 		if (pauseAllowed()) {
 			return getMediaPlayer().conditionalPause();
 		}
@@ -238,6 +252,7 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public boolean play() {
+        mPausedInApp = false;
 		if (playAllowed()) {
 			return peekMediaPlayer() != null && getMediaPlayer().conditionalPlay();
 		}
@@ -246,6 +261,7 @@ public abstract class PlayerHaterService extends Service implements
 
 	@Override
 	public boolean play(int startTime) {
+        mPausedInApp = false;
 		getMediaPlayer().conditionalPause();
 		getMediaPlayer().seekTo(startTime);
 		getMediaPlayer().conditionalPlay();

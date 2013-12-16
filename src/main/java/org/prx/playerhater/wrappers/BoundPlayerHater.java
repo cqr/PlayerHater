@@ -111,7 +111,7 @@ public class BoundPlayerHater extends PlayerHater {
 		getInstances().remove(instance);
 		if (getInstances().size() < 1) {
 			getHandler().removeCallbacks(getDisconnectRunnable());
-			getHandler().postDelayed(getDisconnectRunnable(), 2000);
+			getHandler().postDelayed(getDisconnectRunnable(), 0);
 		}
 	}
 
