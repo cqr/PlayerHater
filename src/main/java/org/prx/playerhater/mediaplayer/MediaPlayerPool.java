@@ -18,6 +18,7 @@ package org.prx.playerhater.mediaplayer;
 import android.content.Context;
 import android.net.Uri;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,26 +35,30 @@ public class MediaPlayerPool<P extends SynchronousPlayer> {
 	private final List<Uri> mRequests = new ArrayList<Uri>();
 	private final Class<? extends P> mClass;
 
-	public static <SynchronousPlayerClass extends SynchronousPlayer> MediaPlayerPool<SynchronousPlayerClass> getInstance(
+	public static <SynchronousPlayerClass extends SynchronousPlayer> MediaPlayerPool<SynchronousPlayerClass> getInstance(Context context,
 			Class<SynchronousPlayerClass> klass) {
-		return new MediaPlayerPool<SynchronousPlayerClass>(klass);
+		return new MediaPlayerPool<SynchronousPlayerClass>(context, klass);
 	}
 
-	public MediaPlayerPool(Class<P> mediaPlayerClass) {
-		this(mediaPlayerClass, 3);
+	public MediaPlayerPool(Context context, Class<P> mediaPlayerClass) {
+		this(context, mediaPlayerClass, 3);
 	}
 
-	public MediaPlayerPool(Class<P> mediaPlayerClass, int size) {
+	public MediaPlayerPool(Context context, Class<P> mediaPlayerClass, int size) {
 		mClass = mediaPlayerClass;
 		for (int i = 0; i < size; i++) {
 			try {
-				mIdlePlayers.add(mClass.newInstance());
+				mIdlePlayers.add(mClass.getConstructor(Context.class).newInstance(context));
 			} catch (InstantiationException e) {
 				throw new IllegalArgumentException(e);
 			} catch (IllegalAccessException e) {
 				throw new IllegalArgumentException(e);
-			}
-		}
+			} catch (NoSuchMethodException e) {
+                throw new IllegalArgumentException(e);
+            } catch (InvocationTargetException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
 	}
 
 	public synchronized void release() {

@@ -34,7 +34,7 @@ public class PlaybackService extends PlayerHaterService implements
 	public void onCreate() {
 		super.onCreate();
 		mMediaPlayerPool = MediaPlayerPool
-				.getInstance(PlaylistSupportingPlayer.class);
+				.getInstance(getApplicationContext(), PlaylistSupportingPlayer.class);
 	}
 
 	@Override

@@ -29,8 +29,8 @@ public class SynchronousPlayer extends StatelyPlayer implements
 	private Uri mShouldSetDataSourceUri;
 	private Context mShouldSetPrepareContext;
 
-	public SynchronousPlayer() {
-		super();
+	public SynchronousPlayer(Context context) {
+		super(context);
 	}
 
 	@Override

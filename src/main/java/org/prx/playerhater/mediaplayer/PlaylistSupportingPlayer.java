@@ -33,6 +33,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 	private static final String HTTPS = "https";
 	private Uri[] mPlaylist;
 	private Context mContext = null;
+    private final Context mPlayerContext;
 	private int mQueuePosition = 0;
 	private int streamType = -1;
 	private PlaylistSupportingPlayer mCurrentPlayer = this;
@@ -44,7 +45,12 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 	private float mLeftVolume;
 	private float mRightVolume;
 
-	@Override
+    public PlaylistSupportingPlayer(Context context) {
+        super(context);
+        mPlayerContext = context;
+    }
+
+    @Override
 	public synchronized void setDataSource(Context context, Uri uri)
 			throws IllegalStateException, IOException,
 			IllegalArgumentException, SecurityException {
@@ -388,7 +394,7 @@ public class PlaylistSupportingPlayer extends SynchronousPlayer implements
 	}
 
 	private PlaylistSupportingPlayer newPlayer() {
-		PlaylistSupportingPlayer player = new PlaylistSupportingPlayer();
+		PlaylistSupportingPlayer player = new PlaylistSupportingPlayer(mPlayerContext);
 		player.setOnErrorListener(this);
 		player.setOnCompletionListener(this);
 		player.setStateChangeListener(this);

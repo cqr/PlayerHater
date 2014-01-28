@@ -520,7 +520,7 @@ public abstract class PlayerHaterService extends Service implements
 	}
 
 	protected PlaylistSupportingPlayer buildMediaPlayer() {
-		return new PlaylistSupportingPlayer();
+		return new PlaylistSupportingPlayer(getApplicationContext());
 	}
 
 	/**
