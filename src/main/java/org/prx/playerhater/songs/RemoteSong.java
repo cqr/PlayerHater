@@ -29,6 +29,7 @@ class RemoteSong implements Song {
 
 	private final int mTag;
 	private Song mSong = null;
+	private static final String remoteSongExceptionMessage = "Remote Process has died or become disconnected and song data has not been copied";
 
 	RemoteSong(int tag) {
 		mTag = tag;
@@ -36,83 +37,81 @@ class RemoteSong implements Song {
 
 	@Override
 	public String getTitle() {
-		if (mSong != null) {
-			return mSong.getTitle();
-		}
 		try {
 			return getRemote().getSongTitle(mTag);
 		} catch (RemoteException e) {
-			throw new IllegalStateException(
-					"Remote Process has died or become disconnected", e);
+			if (mSong != null) {
+				return mSong.getTitle();
+			}
+			throw new IllegalStateException(remoteSongExceptionMessage, e);
 		}
 	}
 
 	@Override
 	public String getArtist() {
-		if (mSong != null) {
-			return mSong.getArtist();
-		}
 		try {
 			return getRemote().getSongArtist(mTag);
 		} catch (RemoteException e) {
-			throw new IllegalStateException(
-					"Remote Process has died or become disconnected", e);
+			if (mSong != null) {
+				return mSong.getArtist();
+			}
+			throw new IllegalStateException(remoteSongExceptionMessage, e);
 		}
 	}
 
 	@Override
 	public Uri getAlbumArt() {
-		if (mSong != null) {
-			return mSong.getAlbumArt();
-		}
 		try {
 			return getRemote().getSongAlbumArt(mTag);
 		} catch (RemoteException e) {
-			throw new IllegalStateException(
-					"Remote Process has died or become disconnected", e);
+			if (mSong != null) {
+				return mSong.getAlbumArt();
+			}
+			throw new IllegalStateException(remoteSongExceptionMessage, e);
 		}
 	}
 
 	@Override
 	public Uri getUri() {
-		if (mSong != null) {
-			return mSong.getUri();
-		}
 		try {
 			return getRemote().getSongUri(mTag);
 		} catch (RemoteException e) {
-			throw new IllegalStateException(
-					"Remote Process has died or become disconnected", e);
+			if (mSong != null) {
+				return mSong.getUri();
+			}
+			throw new IllegalStateException(remoteSongExceptionMessage, e);
 		}
 	}
 
 	@Override
 	public Bundle getExtra() {
-		if (mSong != null) {
-			return mSong.getExtra();
-		}
 		try {
 			return getRemote().getSongExtra(mTag);
 		} catch (RemoteException e) {
-			throw new IllegalStateException(
-					"Remote Process has died or become disconnected", e);
+			if (mSong != null) {
+				return mSong.getExtra();
+			}
+			throw new IllegalStateException(remoteSongExceptionMessage, e);
 		}
 	}
 
 	@Override
 	public String getAlbumTitle() {
-		if (mSong != null) {
-			return mSong.getAlbumTitle();
-		}
 		try {
 			return getRemote().getSongAlbumTitle(mTag);
 		} catch (RemoteException e) {
-			throw new IllegalStateException(
-					"Remote Process has died or become disconnected", e);
+			if (mSong != null) {
+				return mSong.getAlbumTitle();
+			}
+			throw new IllegalStateException(remoteSongExceptionMessage, e);
 		}
 	}
 
 	void setSong(Song song) {
 		mSong = song;
+	}
+	
+	Song getSong() { 
+		return mSong; 
 	}
 }
