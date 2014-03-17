@@ -116,7 +116,10 @@ public class SongHost {
 	public static Song getLocalSong(int tag) { 
 		Song song = getSongs().get(tag); 
 		if (song instanceof RemoteSong) { 
-			return ((RemoteSong) song).getSong(); 
+			song = ((RemoteSong) song).getSong(); 
+		}
+		if (song == null) { 
+			throw new IllegalStateException("No locally stored song data available."); 
 		}
 		return song; 
 	}
