@@ -120,32 +120,32 @@ public class PlayerHaterClient extends IPlayerHaterClient.Stub {
 
 	@Override
 	public String getSongTitle(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getTitle();
+		return SongHost.getLocalSong(songTag).getTitle();
 	}
 
 	@Override
 	public String getSongArtist(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getArtist();
+		return SongHost.getLocalSong(songTag).getArtist();
 	}
 
 	@Override
 	public String getSongAlbumTitle(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getAlbumTitle();
+		return SongHost.getLocalSong(songTag).getAlbumTitle();
 	}
 
 	@Override
 	public Uri getSongAlbumArt(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getAlbumArt();
+		return SongHost.getLocalSong(songTag).getAlbumArt();
 	}
 
 	@Override
 	public Uri getSongUri(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getUri();
+		return SongHost.getLocalSong(songTag).getUri();
 	}
 
 	@Override
 	public Bundle getSongExtra(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getExtra();
+		return SongHost.getLocalSong(songTag).getExtra();
 	}
 
     @Override

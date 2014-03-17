@@ -91,8 +91,8 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 	}
 
 	@Override
-	public boolean play(int songTag, int startTime) throws RemoteException {
-		return mService.play(SongHost.getSong(songTag), startTime);
+	public boolean play(int songTag, Bundle songData, int startTime) throws RemoteException {
+		return mService.play(SongHost.getSong(songTag, songData), startTime);
 	}
 
 	@Override
@@ -101,14 +101,14 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 	}
 
 	@Override
-	public int enqueue(int songTag) throws RemoteException {
-		return mService.enqueue(SongHost.getSong(songTag));
+	public int enqueue(int songTag, Bundle songData) throws RemoteException {
+		return mService.enqueue(SongHost.getSong(songTag, songData));
 	}
 
 	@Override
-	public void enqueueAtPosition(int position, int songTag)
+	public void enqueueAtPosition(int position, int songTag, Bundle songData)
 			throws RemoteException {
-		mService.enqueue(position, SongHost.getSong(songTag));
+		mService.enqueue(position, SongHost.getSong(songTag, songData));
 	}
 
 	@Override
@@ -184,32 +184,32 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 
 	@Override
 	public String getSongTitle(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getTitle();
+		return SongHost.getLocalSong(songTag).getTitle();
 	}
 
 	@Override
 	public String getSongArtist(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getArtist();
+		return SongHost.getLocalSong(songTag).getArtist();
 	}
 
 	@Override
 	public String getSongAlbumTitle(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getAlbumTitle();
+		return SongHost.getLocalSong(songTag).getAlbumTitle();
 	}
 
 	@Override
 	public Uri getSongAlbumArt(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getAlbumArt();
+		return SongHost.getLocalSong(songTag).getAlbumArt();
 	}
 
 	@Override
 	public Uri getSongUri(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getUri();
+		return SongHost.getLocalSong(songTag).getUri();
 	}
 
 	@Override
 	public Bundle getSongExtra(int songTag) throws RemoteException {
-		return SongHost.getSong(songTag).getExtra();
+		return SongHost.getLocalSong(songTag).getExtra();
 	}
 
 	@Override

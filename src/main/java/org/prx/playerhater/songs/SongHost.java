@@ -47,7 +47,10 @@ public class SongHost {
 	}
 
 	public static void slurp(int songTag, Bundle songData) {
-		((RemoteSong) getSong(songTag)).setSong(Songs.fromBundle(songData));
+		Song song = getSong(songTag);
+		if (song instanceof RemoteSong) {
+			((RemoteSong) getSong(songTag)).setSong(Songs.fromBundle(songData));
+		}
 	}
 
 	public static SparseArray<Bundle> localSongs() {
@@ -77,17 +80,21 @@ public class SongHost {
 		if (song == null) {
 			return INVALID_TAG;
 		}
-		int tag = song.hashCode(); 
-		RemoteSong remote = getRemoteSong(tag); 
-		remote.setSong(Songs.fromBundle(Songs.toBundle(song))); 
-		return tag; 
+		if (getTags().containsKey(song)) {
+			return getTags().get(song);
+		} else {
+			int tag = song.hashCode();
+			getTags().put(song, tag);
+			getSongs().put(tag, song);
+			return tag;
+		}
 	}
-	
-	private static RemoteSong getRemoteSong(int tag) { 
+
+	public static Song getSong(int tag) {
 		if (tag == INVALID_TAG) {
 			return null;
 		}
-		RemoteSong song = (RemoteSong) getSongs().get(tag);
+		Song song = getSongs().get(tag);
 		if (song != null) {
 			return song;
 		} else {
@@ -97,13 +104,21 @@ public class SongHost {
 			return song;
 		}
 	}
-
-	public static Song getSong(int tag) {
-		RemoteSong remote = getRemoteSong(tag); 
-		if (remote != null && remote.getSong() != null) { 
-			return remote.getSong(); 
+	
+	public static Song getSong(int tag, Bundle songData) { 
+		Song song = getSong(tag); 
+		if (song instanceof RemoteSong) { 
+			((RemoteSong) song).setSong(Songs.fromBundle(songData));
 		}
-		return remote; 
+		return song; 
+	}
+	
+	public static Song getLocalSong(int tag) { 
+		Song song = getSongs().get(tag); 
+		if (song instanceof RemoteSong) { 
+			return ((RemoteSong) song).getSong(); 
+		}
+		return song; 
 	}
 
 	private static SparseArray<Song> getSongs() {

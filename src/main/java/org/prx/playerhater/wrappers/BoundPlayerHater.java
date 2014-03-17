@@ -179,8 +179,7 @@ public class BoundPlayerHater extends PlayerHater {
 				try {
 					server.setClient(getPlayerHaterClient());
 				} catch (RemoteException e) {
-					throw new IllegalStateException("Server has gone away...",
-							e);
+					throw new IllegalStateException("Server has gone away...", e);
 				}
 
 				sPlayerHater = new ServerPlayerHater(server);
