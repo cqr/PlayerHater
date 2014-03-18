@@ -104,6 +104,25 @@ public class SongHost {
 			return song;
 		}
 	}
+	
+	public static Song getSong(int tag, Bundle songData) { 
+		Song song = getSong(tag); 
+		if (song instanceof RemoteSong) { 
+			((RemoteSong) song).setSong(Songs.fromBundle(songData));
+		}
+		return song; 
+	}
+	
+	public static Song getLocalSong(int tag) { 
+		Song song = getSongs().get(tag); 
+		if (song instanceof RemoteSong) { 
+			song = ((RemoteSong) song).getSong(); 
+		}
+		if (song == null) { 
+			throw new IllegalStateException("No locally stored song data available."); 
+		}
+		return song; 
+	}
 
 	private static SparseArray<Song> getSongs() {
 		if (sSongs == null) {

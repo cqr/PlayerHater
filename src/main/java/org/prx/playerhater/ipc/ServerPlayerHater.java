@@ -18,6 +18,7 @@ package org.prx.playerhater.ipc;
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.Song;
 import org.prx.playerhater.songs.SongHost;
+import org.prx.playerhater.songs.Songs;
 import org.prx.playerhater.util.Log;
 
 import android.app.PendingIntent;
@@ -78,7 +79,7 @@ public class ServerPlayerHater extends PlayerHater {
 	@Override
 	public boolean play(Song song) {
 		try {
-			return mServer.play(SongHost.getTag(song), 0);
+			return mServer.play(SongHost.getTag(song), Songs.toBundle(song), 0);
 		} catch (RemoteException e) {
 			Log.e(SERVER_ERROR, e);
 			throw new IllegalStateException(SERVER_ERROR, e);
@@ -88,7 +89,7 @@ public class ServerPlayerHater extends PlayerHater {
 	@Override
 	public boolean play(Song song, int startTime) {
 		try {
-			return mServer.play(SongHost.getTag(song), startTime);
+			return mServer.play(SongHost.getTag(song), Songs.toBundle(song), startTime);
 		} catch (RemoteException e) {
 			Log.e(SERVER_ERROR, e);
 			throw new IllegalStateException(SERVER_ERROR, e);
@@ -108,7 +109,7 @@ public class ServerPlayerHater extends PlayerHater {
 	@Override
 	public int enqueue(Song song) {
 		try {
-			return mServer.enqueue(SongHost.getTag(song));
+			return mServer.enqueue(SongHost.getTag(song), Songs.toBundle(song));
 		} catch (RemoteException e) {
 			Log.e(SERVER_ERROR, e);
 			throw new IllegalStateException(SERVER_ERROR, e);
@@ -118,7 +119,7 @@ public class ServerPlayerHater extends PlayerHater {
 	@Override
 	public void enqueue(int position, Song song) {
 		try {
-			mServer.enqueueAtPosition(position, SongHost.getTag(song));
+			mServer.enqueueAtPosition(position, SongHost.getTag(song), Songs.toBundle(song));
 		} catch (RemoteException e) {
 			Log.e(SERVER_ERROR, e);
 			throw new IllegalStateException(SERVER_ERROR, e);
