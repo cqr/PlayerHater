@@ -36,15 +36,15 @@ uploadArchives {
       repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
         authentication(userName: sonatypeUserName, password: sonatypePassword)
       }
-        
+
       pom.project {
-        version '0.3.6-SNAPSHOT'
+        version '0.3.6'
         artifactId 'playerhater'
         groupId 'org.prx'
 
         name 'PlayerHater'
         description 'Android library for playing back longform audio such as music or podcasts with player controls.'
-        
+
         url 'http://github.com/PRX/PlayerHater'
 
         scm {
