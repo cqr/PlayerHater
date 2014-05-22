@@ -34,5 +34,7 @@
     <plugin
         name="org.prx.playerhater.plugins.LockScreenControlsPlugin"
         enabled="@bool/zzz_ph_lockscreen" />
-
+    <plugin
+        name="org.prx.playerhater.plugins.ScrubbableLockScreenControlsPlugin"
+        enabled="@bool/zzz_ph_scrubbable_lockscreen" />
 </config>

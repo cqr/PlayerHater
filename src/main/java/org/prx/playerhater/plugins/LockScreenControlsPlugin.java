@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+ * Copyright 2013, 2014 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,6 @@
  ******************************************************************************/
 package org.prx.playerhater.plugins;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -33,152 +27,176 @@ import android.os.Build;
 
 import org.prx.playerhater.Song;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class LockScreenControlsPlugin extends AudioFocusPlugin {
 
-	private RemoteControlClient mRemoteControlClient;
-	private Bitmap mAlbumArt;
-	private String mArtist;
-	private String mTitle;
+    private RemoteControlClient mRemoteControlClient;
+    private Bitmap mAlbumArt;
+    private String mArtist;
+    private String mTitle;
 
-	private int mTransportControlFlags = RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
-			| RemoteControlClient.FLAG_KEY_MEDIA_STOP
-			| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
-			| RemoteControlClient.FLAG_KEY_MEDIA_NEXT;
+    private int mTransportControlFlags = RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
+            | RemoteControlClient.FLAG_KEY_MEDIA_STOP
+            | RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
+            | RemoteControlClient.FLAG_KEY_MEDIA_NEXT;
 
-	@Override
-	public void onAudioStarted() {
-		super.onAudioStarted();
-		getRemoteControlClient().setPlaybackState(
-				RemoteControlClient.PLAYSTATE_PLAYING);
-		getAudioManager().registerRemoteControlClient(getRemoteControlClient());
-	}
+    @Override
+    public void onAudioLoading() {
+        super.onAudioLoading();
+        setPlaybackState(RemoteControlClient.PLAYSTATE_BUFFERING);
+    }
 
-	@Override
-	public void onAudioPaused() {
-		getRemoteControlClient().setPlaybackState(
-				RemoteControlClient.PLAYSTATE_PAUSED);
-	}
+    @Override
+    public void onAudioStarted() {
+        super.onAudioStarted();
+        setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
+    }
 
-	@Override
-	public void onDurationChanged(int duration) {
-		getRemoteControlClient()
-				.editMetadata(false)
-				.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, duration)
-				.apply();
-	}
+    @Override
+    public void onAudioPaused() {
+        super.onAudioPaused();
+        setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
+    }
 
-	@Override
-	public void onSongChanged(Song song) {
+    @Override
+    public void onDurationChanged(int duration) {
+        getRemoteControlClient()
+                .editMetadata(false)
+                .putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, duration)
+                .apply();
+    }
 
-		if (song == null) {
-			onAlbumArtChanged(null);
-			onTitleChanged(null);
-			onArtistChanged(null);
-			return;
-		}
-		if (song.getAlbumArt() != null) {
-			onAlbumArtChanged(song.getAlbumArt());
-		}
+    @Override
+    public void onSongChanged(Song song) {
+        if (song == null) {
+            onAlbumArtChanged(null);
+            onTitleChanged(null);
+            onArtistChanged(null);
+            return;
+        }
+        if (song.getAlbumArt() != null) {
+            onAlbumArtChanged(song.getAlbumArt());
+        }
 
-		onTitleChanged(song.getTitle());
-		onArtistChanged(song.getArtist());
-	}
+        onTitleChanged(song.getTitle());
+        onArtistChanged(song.getArtist());
+    }
 
-	@Override
-	public void onAudioStopped() {
-		getRemoteControlClient().setPlaybackState(
-				RemoteControlClient.PLAYSTATE_STOPPED);
-		super.onAudioStopped();
-	}
+    @Override
+    public void onAudioStopped() {
+        setPlaybackState(RemoteControlClient.PLAYSTATE_STOPPED);
+        super.onAudioStopped();
+    }
 
-	@Override
-	public void onTitleChanged(String title) {
-		mTitle = title;
-	}
+    @Override
+    public void onTitleChanged(String title) {
+        mTitle = title;
+    }
 
-	@Override
-	public void onArtistChanged(String artist) {
-		mArtist = artist;
-	}
+    @Override
+    public void onArtistChanged(String artist) {
+        mArtist = artist;
+    }
 
-	@Override
-	public void onAlbumArtChanged(Uri uri) {
-		if (uri != null) {
-			if (uri.getScheme().equals("android.resource") && uri.getLastPathSegment() != null) {
-				mAlbumArt = BitmapFactory.decodeResource(getContext()
-						.getResources(), Integer.valueOf(uri
-						.getLastPathSegment()));
-			} else if (uri.getScheme().equals("content")) {
-				InputStream stream = null;
-				try {
-					stream = getContext().getContentResolver().openInputStream(
-							uri);
-					mAlbumArt = BitmapFactory.decodeStream(stream);
-				} catch (FileNotFoundException e) {
-					mAlbumArt = null;
-				} finally {
-					if (stream != null) {
-						try {
-							stream.close();
-						} catch (IOException e) {}
-					}
-				}
+    @Override
+    public void onAlbumArtChanged(Uri uri) {
+        if (uri != null) {
+            if (uri.getScheme().equals("android.resource") && uri.getLastPathSegment() != null) {
+                mAlbumArt = BitmapFactory.decodeResource(getContext()
+                        .getResources(), Integer.valueOf(uri
+                        .getLastPathSegment()));
+            } else if (uri.getScheme().equals("content")) {
+                InputStream stream = null;
+                try {
+                    stream = getContext().getContentResolver().openInputStream(
+                            uri);
+                    mAlbumArt = BitmapFactory.decodeStream(stream);
+                } catch (FileNotFoundException e) {
+                    mAlbumArt = null;
+                } finally {
+                    if (stream != null) {
+                        try {
+                            stream.close();
+                        } catch (IOException e) {
+                        }
+                    }
+                }
 
-			} else {
-				InputStream stream = null;
-				try {
-					stream = new URL(uri.toString()).openStream();
-					mAlbumArt = BitmapFactory.decodeStream(stream);
-				} catch (MalformedURLException e) {
-					mAlbumArt = null;
-				} catch (IOException e) {
-					mAlbumArt = null;
-				} finally {
-					if (stream != null) {
-						try {
-							stream.close();
-						} catch (IOException e) {}
-					}
-				}
-			}
-		} else {
-			mAlbumArt = null;
-		}
-		getRemoteControlClient().editMetadata(false).putBitmap(
-				RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
-				mAlbumArt);
-	}
+            } else {
+                InputStream stream = null;
+                try {
+                    stream = new URL(uri.toString()).openStream();
+                    mAlbumArt = BitmapFactory.decodeStream(stream);
+                } catch (MalformedURLException e) {
+                    mAlbumArt = null;
+                } catch (IOException e) {
+                    mAlbumArt = null;
+                } finally {
+                    if (stream != null) {
+                        try {
+                            stream.close();
+                        } catch (IOException e) {
+                        }
+                    }
+                }
+            }
+        } else {
+            mAlbumArt = null;
+        }
+        getRemoteControlClient().editMetadata(false).putBitmap(
+                RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
+                mAlbumArt);
+    }
 
-	@Override
-	public void onTransportControlFlagsChanged(int transportControlFlags) {
-		mTransportControlFlags = transportControlFlags;
-		getRemoteControlClient()
-				.setTransportControlFlags(transportControlFlags);
-	}
+    @Override
+    public void onTransportControlFlagsChanged(int transportControlFlags) {
+        mTransportControlFlags = transportControlFlags;
+        getRemoteControlClient()
+                .setTransportControlFlags(transportControlFlags);
+    }
 
-	@Override
-	public void onChangesComplete() {
-		getRemoteControlClient().setTransportControlFlags(
-				mTransportControlFlags);
-		getRemoteControlClient()
-				.editMetadata(false)
-				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, mTitle)
-				.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, mArtist)
-				.putBitmap(
-						RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
-						mAlbumArt).apply();
-	}
+    @Override
+    public void onChangesComplete() {
+        getRemoteControlClient().setTransportControlFlags(
+                mTransportControlFlags);
+        getRemoteControlClient()
+                .editMetadata(false)
+                .putString(MediaMetadataRetriever.METADATA_KEY_TITLE, mTitle)
+                .putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, mArtist)
+                .putBitmap(
+                        RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
+                        mAlbumArt).apply();
+    }
 
-	private RemoteControlClient getRemoteControlClient() {
-		if (mRemoteControlClient == null) {
-			Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-			mediaButtonIntent.setComponent(getEventReceiver());
-			PendingIntent pendingIntent = PendingIntent.getBroadcast(
-					getContext(), 0, mediaButtonIntent,
-					PendingIntent.FLAG_CANCEL_CURRENT);
-			mRemoteControlClient = new RemoteControlClient(pendingIntent);
-		}
-		return mRemoteControlClient;
-	}
+    protected RemoteControlClient getRemoteControlClient() {
+        if (mRemoteControlClient == null) {
+            Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+            mediaButtonIntent.setComponent(getEventReceiver());
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                    getContext(), 0, mediaButtonIntent,
+                    PendingIntent.FLAG_CANCEL_CURRENT);
+            mRemoteControlClient = new RemoteControlClient(pendingIntent);
+        }
+        return mRemoteControlClient;
+    }
+
+    protected int getPlaybackState() {
+        if (getPlayerHater().isLoading()) {
+            return RemoteControlClient.PLAYSTATE_BUFFERING;
+        } else if (getPlayerHater().isPlaying()) {
+            return RemoteControlClient.PLAYSTATE_PLAYING;
+        }
+        return RemoteControlClient.PLAYSTATE_PAUSED;
+    }
+
+    protected void setPlaybackState(int playbackState) {
+        getRemoteControlClient().setPlaybackState(playbackState);
+        getAudioManager().registerRemoteControlClient(getRemoteControlClient());
+    }
 }
