@@ -76,7 +76,7 @@ public class BoundPlayerHater extends PlayerHater {
 							((ServerPlayerHater) sPlayerHater).slurp(SongHost
 									.localSongs());
 						}
-						if (sServiceConection != null && sApplicationContext != null)
+						if (sServiceConnection != null && sApplicationContext != null) {
 							sApplicationContext.unbindService(sServiceConnection);
 						}
 						sPlayerHater = null;
