@@ -1,13 +1,13 @@
 apply plugin: 'maven'
 apply plugin: 'signing'
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 
 buildscript {
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.9.+'
+        classpath 'com.android.tools.build:gradle:0.12.+'
     }
 }
 
@@ -16,13 +16,23 @@ signing {
 }
 
 android {
-    buildToolsVersion "19"
+    buildToolsVersion "19.1.0"
     compileSdkVersion 18
 
     defaultConfig {
       proguardFile 'proguard-player-hater.txt'
     }
 }
+
+
+//task packageSources(type: Jar) {
+//  from android.sourceSets.main.allJava
+//  classifier = 'sources'
+//}
+//
+//artifacts {
+//  archives packageSources
+//}
 
 uploadArchives {
   repositories {
