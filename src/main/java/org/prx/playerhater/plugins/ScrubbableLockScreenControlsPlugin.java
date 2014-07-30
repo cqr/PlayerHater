@@ -34,11 +34,11 @@ public class ScrubbableLockScreenControlsPlugin extends LockScreenControlsPlugin
 
     @Override
     public long onGetPlaybackPosition() {
-        if (getPlayerHater().isLoading()) {
+        if (getIsLoading()) {
             return -1;
         }
         setPlaybackState(getPlaybackState());
-        return getPlayerHater().getCurrentPosition();
+        return getCurrentPosition();
     }
 
     @Override
@@ -53,7 +53,25 @@ public class ScrubbableLockScreenControlsPlugin extends LockScreenControlsPlugin
 
     @Override
     protected void setPlaybackState(int state) {
-        getRemoteControlClient().setPlaybackState(state, getPlayerHater().getCurrentPosition(), 1f);
+        getRemoteControlClient().setPlaybackState(state, getCurrentPosition(), 1f);
         getAudioManager().registerRemoteControlClient(getRemoteControlClient());
     }
+
+    private int getCurrentPosition() {
+        try {
+            return getPlayerHater().getCurrentPosition();
+        } catch (IllegalStateException exception) {
+            return -1;
+        }
+    }
+
+    private boolean getIsLoading() {
+        try {
+            return getPlayerHater().isLoading();
+        } catch (IllegalStateException exception) {
+            return false;
+        }
+    }
+
+
 }
