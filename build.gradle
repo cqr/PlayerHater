@@ -24,7 +24,6 @@ android {
     }
 }
 
-
 //task packageSources(type: Jar) {
 //  from android.sourceSets.main.allJava
 //  classifier = 'sources'

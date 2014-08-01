@@ -63,7 +63,11 @@ public class PlayerStateWatcher implements StateChangeListener {
         boolean willPlay = StatelyPlayer.willPlay(state);
         boolean seekable = StatelyPlayer.seekable(state);
         state = StatelyPlayer.mediaPlayerState(state);
-        setCurrentDuration(mediaPlayer.getDuration());
+        if (mediaPlayer != null) {
+            setCurrentDuration(mediaPlayer.getDuration());
+        } else {
+            setCurrentDuration(0);
+        }
 
         switch (state) {
             case StatelyPlayer.END:

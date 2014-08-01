@@ -98,7 +98,10 @@ public class NotificationPlugin extends AbstractPlugin {
         mIsVisible = false;
         mNotificationManager.cancel(NOTIFICATION_NU);
         mNotification = null;
-        getBinder().stopForeground(true);
+        ServicePlayerHater binder = getBinder();
+        if (binder != null) {
+            binder.stopForeground(true);
+        }
     }
 
     @Override
@@ -120,11 +123,18 @@ public class NotificationPlugin extends AbstractPlugin {
 
     @Override
     public void onChangesComplete() {
+        ServicePlayerHater binder;
         if (mShouldBeVisible && !mIsVisible) {
-            getBinder().startForeground(NOTIFICATION_NU, getNotification());
+            binder = getBinder();
+            if (binder != null) {
+                binder.startForeground(NOTIFICATION_NU, getNotification());
+            }
             mIsVisible = true;
         } else if (mIsVisible && !mShouldBeVisible) {
-            getBinder().stopForeground(true);
+            binder = getBinder();
+            if (binder != null) {
+                binder.stopForeground(true);
+            }
         } else if (mIsVisible && mShouldBeVisible) {
             updateNotification();
         }
@@ -135,6 +145,10 @@ public class NotificationPlugin extends AbstractPlugin {
     }
 
     protected ServicePlayerHater getBinder() {
-        return (ServicePlayerHater) getPlayerHater();
+        try {
+            return (ServicePlayerHater) getPlayerHater();
+        } catch (IllegalStateException exception) {
+            return null;
+        }
     }
 }
