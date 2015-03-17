@@ -1,18 +1,20 @@
-/*******************************************************************************
- * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
+/*
+ * -/*******************************************************************************
+ * - * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+ * - *
+ * - * Licensed under the Apache License, Version 2.0 (the "License");
+ * - * you may not use this file except in compliance with the License.
+ * - * You may obtain a copy of the License at
+ * - *
+ * - *   http://www.apache.org/licenses/LICENSE-2.0
+ * - *
+ * - * Unless required by applicable law or agreed to in writing, software
+ * - * distributed under the License is distributed on an "AS IS" BASIS,
+ * - * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * - * See the License for the specific language governing permissions and
+ * - * limitations under the License.
+ * - *****************************************************************************
+ */
 package org.prx.playerhater.plugins;
 
 import android.app.PendingIntent;
@@ -24,13 +26,13 @@ import org.prx.playerhater.PlayerHaterPlugin;
 import org.prx.playerhater.Song;
 
 /**
- * A simple helper for writing {@linkplain PlayerHaterPlugin}s
+ * A simple helper for writing {@linkplain org.prx.playerhater.PlayerHaterPlugin}s
  * <p/>
  * Subclasses MUST implement a default no-argument constructor.
  *
  * @author Chris Rhoden
  * @version 2.1.0
- * @see {@link PlayerHaterPlugin}
+ * @see {@link org.prx.playerhater.PlayerHaterPlugin}
  * @since 2.0.0
  */
 public abstract class AbstractPlugin implements PlayerHaterPlugin {
@@ -92,7 +94,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
     /**
      * {@inheritDoc}
      * <p/>
-     * The default implementation will call {@link #onAlbumArtChanged(Uri)}
+     * The default implementation will call {@link #onAlbumArtChanged(android.net.Uri)}
      * , {@link #onTitleChanged(String)}, and {@link #onArtistChanged(String)}
      */
     @Override
@@ -148,7 +150,7 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
     }
 
     /**
-     * Grants the plugin easy access to the instance of {@link PlayerHater} that
+     * Grants the plugin easy access to the instance of {@link org.prx.playerhater.PlayerHater} that
      * it is permitted to use.
      *
      * @return An instance of PlayerHater
@@ -161,9 +163,9 @@ public abstract class AbstractPlugin implements PlayerHaterPlugin {
 
     /**
      * A method providing simple access to the plugin's context without having
-     * to override {@link #onPlayerHaterLoaded(Context, PlayerHater)}
+     * to override {@link #onPlayerHaterLoaded(android.content.Context, org.prx.playerhater.PlayerHater)}
      *
-     * @return The {@link Context} in which the plugin is running.
+     * @return The {@link android.content.Context} in which the plugin is running.
      */
     protected synchronized final Context getContext() {
         if (mContext == null)

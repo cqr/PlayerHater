@@ -1,18 +1,20 @@
-/*******************************************************************************
- * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
+/*
+ * -/*******************************************************************************
+ * - * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+ * - *
+ * - * Licensed under the Apache License, Version 2.0 (the "License");
+ * - * you may not use this file except in compliance with the License.
+ * - * You may obtain a copy of the License at
+ * - *
+ * - *   http://www.apache.org/licenses/LICENSE-2.0
+ * - *
+ * - * Unless required by applicable law or agreed to in writing, software
+ * - * distributed under the License is distributed on an "AS IS" BASIS,
+ * - * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * - * See the License for the specific language governing permissions and
+ * - * limitations under the License.
+ * - *****************************************************************************
+ */
 package org.prx.playerhater;
 
 import org.prx.playerhater.wrappers.BoundPlayerHater;
@@ -52,12 +54,12 @@ public abstract class PlayerHater implements IPlayerHater {
 	}
 
 	/**
-	 * Constructs an {@linkplain Intent} which will start the appropriate
+	 * Constructs an {@linkplain android.content.Intent} which will start the appropriate
 	 * {@linkplain PlayerHaterService} as configured in the project's
 	 * AndroidManifest.xml file.
 	 * 
 	 * @param context
-	 * @return An {@link Intent} which will start the correct service.
+	 * @return An {@link android.content.Intent} which will start the correct service.
 	 * @throws IllegalArgumentException
 	 *             if there is no appropriate service configured in
 	 *             AndroidManifest.xml
@@ -85,11 +87,11 @@ public abstract class PlayerHater implements IPlayerHater {
 	}
 
 	/**
-	 * Gets an instance of a {@linkplain BoundPlayerHater} which can be used to
+	 * Gets an instance of a {@linkplain org.prx.playerhater.wrappers.BoundPlayerHater} which can be used to
 	 * interact with the playback service.
 	 * 
 	 * Calling this method will also invoke
-	 * {@linkplain PlayerHater#configure(Context)} if it has not yet been
+	 * {@linkplain org.prx.playerhater.PlayerHater#configure(android.content.Context)} if it has not yet been
 	 * called.
 	 * 
 	 * @since 2.1.0

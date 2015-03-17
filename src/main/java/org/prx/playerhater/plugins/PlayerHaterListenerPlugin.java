@@ -1,18 +1,20 @@
-/*******************************************************************************
- * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
+/*
+ * -/*******************************************************************************
+ * - * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+ * - *
+ * - * Licensed under the Apache License, Version 2.0 (the "License");
+ * - * you may not use this file except in compliance with the License.
+ * - * You may obtain a copy of the License at
+ * - *
+ * - *   http://www.apache.org/licenses/LICENSE-2.0
+ * - *
+ * - * Unless required by applicable law or agreed to in writing, software
+ * - * distributed under the License is distributed on an "AS IS" BASIS,
+ * - * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * - * See the License for the specific language governing permissions and
+ * - * limitations under the License.
+ * - *****************************************************************************
+ */
 package org.prx.playerhater.plugins;
 
 import android.content.Context;
@@ -28,12 +30,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A wrapper around the {@link PlayerHaterListener} interface allowing
- * {@linkplain PlayerHaterListener}s to be treated as plugins.
+ * A wrapper around the {@link org.prx.playerhater.PlayerHaterListener} interface allowing
+ * {@linkplain org.prx.playerhater.PlayerHaterListener}s to be treated as plugins.
  * <p/>
- * All callbacks made to the underlying {@link PlayerHaterListener} will happen
+ * All callbacks made to the underlying {@link org.prx.playerhater.PlayerHaterListener} will happen
  * in the same thread as this plugin's
- * {@link PlayerHaterPlugin#onPlayerHaterLoaded(Context, PlayerHater)} or
+ * {@link PlayerHaterPlugin#onPlayerHaterLoaded(android.content.Context, org.prx.playerhater.PlayerHater)} or
  * {@link PlayerHaterPlugin#onChangesComplete()}. In the default arrangement,
  * both of these callbacks are made on the UI thread.
  *
@@ -95,9 +97,9 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
     /**
      * Instantiates a PlayerHaterListenerPlugin with echo enabled.
      *
-     * @param listener The {@link PlayerHaterListener} that this plugin wraps.
+     * @param listener The {@link org.prx.playerhater.PlayerHaterListener} that this plugin wraps.
      * @see {link PlayerHaterListenerPlugin}
-     * @see {@link PlayerHaterListenerPlugin#PlayerHaterListenerPlugin(PlayerHaterListener, boolean)}
+     * @see {@link org.prx.playerhater.plugins.PlayerHaterListenerPlugin#PlayerHaterListenerPlugin(org.prx.playerhater.PlayerHaterListener, boolean)}
      */
     public PlayerHaterListenerPlugin(PlayerHaterListener listener) {
         this(listener, true);
@@ -106,12 +108,12 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
     /**
      * Instantiates a PlayerHaterListenerPlugin with optional echo.
      *
-     * @param listener {@link PlayerHaterListener} That this plugin wraps.
+     * @param listener {@link org.prx.playerhater.PlayerHaterListener} That this plugin wraps.
      * @param echo     A flag to determine whether the most recent callback that
      *                 would have been called should be called as soon as this plugin
      *                 is attached.
-     * @see {@link PlayerHaterListenerPlugin}
-     * @see {@link PlayerHaterListenerPlugin#PlayerHaterListenerPlugin(PlayerHaterListener)}
+     * @see {@link org.prx.playerhater.plugins.PlayerHaterListenerPlugin}
+     * @see {@link org.prx.playerhater.plugins.PlayerHaterListenerPlugin#PlayerHaterListenerPlugin(org.prx.playerhater.PlayerHaterListener)}
      */
     public PlayerHaterListenerPlugin(PlayerHaterListener listener, boolean echo) {
         mListener = listener;
@@ -167,7 +169,7 @@ public class PlayerHaterListenerPlugin extends AbstractPlugin {
             } else if (getPlayerHater().getState() == PlayerHater.STATE_STREAMING) {
                 mListener.onStreaming(getPlayerHater().nowPlaying());
             }
-        } catch (java.lang.IllegalStateException e) {
+        } catch (IllegalStateException e) {
             // do nothing
         }
     }

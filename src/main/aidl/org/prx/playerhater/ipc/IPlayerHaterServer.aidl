@@ -50,6 +50,7 @@ interface IPlayerHaterServer {
     int getCurrentPosition();
     int getDuration();
     int nowPlaying();
+    int getQueueSong(int position);
     boolean isPlaying();
     boolean isLoading();
     int getState();
@@ -64,6 +65,7 @@ interface IPlayerHaterServer {
      * SongHost Methods
      */
     String getSongTitle(int songTag);
+    String getSongJson(int songTag);
     String getSongArtist(int songTag);
     String getSongAlbumTitle(int songTag);
     Uri getSongAlbumArt(int songTag);

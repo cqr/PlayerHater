@@ -1,18 +1,20 @@
-/*******************************************************************************
- * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
+/*
+ * -/*******************************************************************************
+ * - * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+ * - *
+ * - * Licensed under the Apache License, Version 2.0 (the "License");
+ * - * you may not use this file except in compliance with the License.
+ * - * You may obtain a copy of the License at
+ * - *
+ * - *   http://www.apache.org/licenses/LICENSE-2.0
+ * - *
+ * - * Unless required by applicable law or agreed to in writing, software
+ * - * distributed under the License is distributed on an "AS IS" BASIS,
+ * - * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * - * See the License for the specific language governing permissions and
+ * - * limitations under the License.
+ * - *****************************************************************************
+ */
 package org.prx.playerhater.util;
 
 import org.prx.playerhater.PlayerHater;
@@ -63,19 +65,19 @@ public interface IPlayerHater {
 	abstract public boolean stop();
 
 	/**
-	 * Begins playback of the currently loaded {@linkplain Song}.
+	 * Begins playback of the currently loaded {@linkplain org.prx.playerhater.Song}.
 	 * 
 	 * @return {@code true} if successful, {@code false} if there is no
-	 *         {@linkplain Song} loaded.
+	 *         {@linkplain org.prx.playerhater.Song} loaded.
 	 */
 	abstract public boolean play();
 
 	/**
-	 * Begins playback of the currently loaded {@linkplain Song} at
+	 * Begins playback of the currently loaded {@linkplain org.prx.playerhater.Song} at
 	 * {@code startTime} in the track.
 	 * 
-	 * @see {@link IPlayerHater#seekTo(int) seekTo(int)}
-	 * @see {@link IPlayerHater#play() play()}
+	 * @see {@link org.prx.playerhater.util.IPlayerHater#seekTo(int) seekTo(int)}
+	 * @see {@link org.prx.playerhater.util.IPlayerHater#play() play()}
 	 * @param startTime
 	 *            The time in milliseconds at which to begin playback
 	 * @return {@code true} if successful, {@code false} if there is no track
@@ -87,7 +89,7 @@ public interface IPlayerHater {
 	 * Begins playback of a song at the beginning.
 	 * 
 	 * @param song
-	 *            A {@linkplain Song} to play back.
+	 *            A {@linkplain org.prx.playerhater.Song} to play back.
 	 * @return {@code true} if successful, {@code false} if there is a problem.
 	 */
 	abstract public boolean play(Song song);
@@ -95,7 +97,7 @@ public interface IPlayerHater {
 	/**
 	 * Begins playback of {@code song} at {@code startTime}
 	 * 
-	 * @see {@link PlayerHater#play(int)}, {@link PlayerHater#play(Song)}
+	 * @see {@link org.prx.playerhater.PlayerHater#play(int)}, {@link org.prx.playerhater.PlayerHater#play(org.prx.playerhater.Song)}
 	 * @return {@code true} if successful, {@code false} if there is a problem.
 	 */
 	abstract public boolean play(Song song, int startTime);
@@ -105,7 +107,7 @@ public interface IPlayerHater {
 	 * 
 	 * @param startTime
 	 *            The time (in milliseconds) to move the playhead to.
-	 * @see {@link PlayerHater#play(int)}
+	 * @see {@link org.prx.playerhater.PlayerHater#play(int)}
 	 * @return {@code true} if successful, {@code false} if there is no song
 	 *         loaded in the player.
 	 */
@@ -115,7 +117,7 @@ public interface IPlayerHater {
 	 * Puts a song on the end of the play queue.
 	 * 
 	 * @param song
-	 *            The {@linkplain Song} to add to the end of the queue.
+	 *            The {@linkplain org.prx.playerhater.Song} to add to the end of the queue.
 	 * @return the queue position of the song, in relation to the playhead. If
 	 *         this song has been loaded into the now playing position, this
 	 *         will return 0. If the song will be played next, it will return 1,
@@ -129,7 +131,7 @@ public interface IPlayerHater {
 	 * @param position
 	 *            The position in which to add the track
 	 * @param song
-	 *            The {@linkplain Song} to add to the queue.
+	 *            The {@linkplain org.prx.playerhater.Song} to add to the queue.
 	 */
 	abstract public void enqueue(int position, Song song);
 
@@ -198,13 +200,15 @@ public interface IPlayerHater {
 	abstract public int getDuration();
 
 	/**
-	 * Gets the {@linkplain Song} representation of the track that is currently
+	 * Gets the {@linkplain org.prx.playerhater.Song} representation of the track that is currently
 	 * loaded in the player.
 	 * 
-	 * @return the {@linkplain Song} of the track that is currently loaded in
+	 * @return the {@linkplain org.prx.playerhater.Song} of the track that is currently loaded in
 	 *         the player.
 	 */
 	abstract public Song nowPlaying();
+
+    abstract public Song getQueueSong(int position);
 
 	/**
 	 * Checks to see if the player is currently playing back audio.
@@ -225,10 +229,10 @@ public interface IPlayerHater {
 	/**
 	 * Gets the state of the PlayerHater, represented as an int.
 	 * 
-	 * @return One of: {@link PlayerHater.STATE_IDLE},
-	 *         {@link PlayerHater.STATE_LOADING},
-	 *         {@link PlayerHater.STATE_PLAYING}, or
-	 *         {@link PlayerHater.STATE_PAUSED}
+	 * @return One of: {@link org.prx.playerhater.PlayerHater.STATE_IDLE},
+	 *         {@link org.prx.playerhater.PlayerHater.STATE_LOADING},
+	 *         {@link org.prx.playerhater.PlayerHater.STATE_PLAYING}, or
+	 *         {@link org.prx.playerhater.PlayerHater.STATE_PAUSED}
 	 */
 	abstract public int getState();
 
