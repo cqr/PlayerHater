@@ -87,6 +87,8 @@ When you've bound to a `PlayerHater`, you're ready to start playing stuff - musi
 		abstract boolean	isPlaying()
 		Checks to see if the player is currently playing back audio.
 		abstract Song	nowPlaying()
+		Gets Song Object from current queue for given potions
+		abstract Song	getQueueSong(int position)
 		Gets the Song representation of the track that is currently loaded in the player.
 		abstract boolean	pause()
 		Pauses the player.

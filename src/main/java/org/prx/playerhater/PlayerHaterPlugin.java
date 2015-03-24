@@ -1,18 +1,20 @@
-/*******************************************************************************
- * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
+/*
+ * -/*******************************************************************************
+ * - * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+ * - *
+ * - * Licensed under the Apache License, Version 2.0 (the "License");
+ * - * you may not use this file except in compliance with the License.
+ * - * You may obtain a copy of the License at
+ * - *
+ * - *   http://www.apache.org/licenses/LICENSE-2.0
+ * - *
+ * - * Unless required by applicable law or agreed to in writing, software
+ * - * distributed under the License is distributed on an "AS IS" BASIS,
+ * - * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * - * See the License for the specific language governing permissions and
+ * - * limitations under the License.
+ * - *****************************************************************************
+ */
 package org.prx.playerhater;
 
 import org.prx.playerhater.PlayerHater;
@@ -41,14 +43,14 @@ public interface PlayerHaterPlugin {
 	 * Called when the plugin can start doing work against PlayerHater.
 	 * 
 	 * @param context
-	 *            A {@link Context} that the plugin can use to interact with the
+	 *            A {@link android.content.Context} that the plugin can use to interact with the
 	 *            application. This will either be the
 	 *            {@link ApplicationContext} associated with the
 	 *            {@link Application} running the plugin, or it will be the
 	 *            context that is bound when this plugin was attached using
-	 *            {@link BoundPlayerHater#setBoundPlugin(PlayerHaterPlugin)}
+	 *            {@link BoundPlayerHater#setBoundPlugin(org.prx.playerhater.PlayerHaterPlugin)}
 	 * @param playerHater
-	 *            A instance of one of the subclasses of {@link PlayerHater}.
+	 *            A instance of one of the subclasses of {@link org.prx.playerhater.PlayerHater}.
 	 *            This is the plugin's handle to PlayerHater, and it should not
 	 *            attempt to access it in any other way.
 	 *            <p>
@@ -92,14 +94,14 @@ public interface PlayerHaterPlugin {
 	 *            The Song that has finished playing.
 	 * @param reason
 	 *            The reason that the song reached the end. One of
-	 *            {@link PlayerHater#SKIP_BUTTON } or
-	 *            {@link PlayerHater#TRACK_END }
+	 *            {@link org.prx.playerhater.PlayerHater#SKIP_BUTTON } or
+	 *            {@link org.prx.playerhater.PlayerHater#TRACK_END }
 	 */
 	void onSongFinished(Song song, int reason);
 
 	/**
 	 * Called when the duration of the currently loaded track has changed.
-	 * Typically called whenever {@link PlayerHaterPlugin#onSongChanged(Song)}
+	 * Typically called whenever {@link org.prx.playerhater.PlayerHaterPlugin#onSongChanged(org.prx.playerhater.Song)}
 	 * has been called, but provided as a convenience for plugins that do not
 	 * care about other metdata.
 	 * <p>

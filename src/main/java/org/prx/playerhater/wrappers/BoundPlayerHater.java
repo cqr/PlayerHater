@@ -1,23 +1,30 @@
-/*******************************************************************************
- * Copyright 2013-2014 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
+/*
+ * -/*******************************************************************************
+ * - * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+ * - *
+ * - * Licensed under the Apache License, Version 2.0 (the "License");
+ * - * you may not use this file except in compliance with the License.
+ * - * You may obtain a copy of the License at
+ * - *
+ * - *   http://www.apache.org/licenses/LICENSE-2.0
+ * - *
+ * - * Unless required by applicable law or agreed to in writing, software
+ * - * distributed under the License is distributed on an "AS IS" BASIS,
+ * - * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * - * See the License for the specific language governing permissions and
+ * - * limitations under the License.
+ * - *****************************************************************************
+ */
 package org.prx.playerhater.wrappers;
 
-import java.lang.ref.WeakReference;
-import java.util.HashSet;
-import java.util.Set;
+import android.annotation.SuppressLint;
+import android.app.PendingIntent;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.ServiceConnection;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.RemoteException;
 
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.PlayerHaterPlugin;
@@ -33,14 +40,9 @@ import org.prx.playerhater.songs.SongQueue;
 import org.prx.playerhater.songs.SongQueue.OnQueuedSongsChangedListener;
 import org.prx.playerhater.util.Config;
 
-import android.annotation.SuppressLint;
-import android.app.PendingIntent;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.ServiceConnection;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.RemoteException;
+import java.lang.ref.WeakReference;
+import java.util.HashSet;
+import java.util.Set;
 
 public class BoundPlayerHater extends PlayerHater {
 
@@ -232,7 +234,7 @@ public class BoundPlayerHater extends PlayerHater {
 	private final WeakReference<Context> mContext;
 
 	/**
-	 * @see {@link PlayerHater#bind(Context)}
+	 * @see {@link org.prx.playerhater.PlayerHater#bind(android.content.Context)}
 	 */
 	public BoundPlayerHater(Context context) {
 		if (sApplicationContext == null) {
@@ -365,6 +367,15 @@ public class BoundPlayerHater extends PlayerHater {
 			return getSongQueue().getNowPlaying();
 		}
 	}
+
+    @Override
+    public Song getQueueSong(int position) {
+        if (getPlayerHater() != null) {
+            return getPlayerHater().getQueueSong(position);
+        } else {
+            return getSongQueue().getQueueSong(position);
+        }
+    }
 
 	@Override
 	public boolean isPlaying() {

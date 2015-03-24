@@ -1,18 +1,20 @@
-/*******************************************************************************
- * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
+/*
+ * -/*******************************************************************************
+ * - * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+ * - *
+ * - * Licensed under the Apache License, Version 2.0 (the "License");
+ * - * you may not use this file except in compliance with the License.
+ * - * You may obtain a copy of the License at
+ * - *
+ * - *   http://www.apache.org/licenses/LICENSE-2.0
+ * - *
+ * - * Unless required by applicable law or agreed to in writing, software
+ * - * distributed under the License is distributed on an "AS IS" BASIS,
+ * - * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * - * See the License for the specific language governing permissions and
+ * - * limitations under the License.
+ * - *****************************************************************************
+ */
 package org.prx.playerhater.mediaplayer;
 
 import java.io.IOException;
@@ -42,62 +44,62 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
     private static final int WAKE_LOCK = PowerManager.PARTIAL_WAKE_LOCK;
 
 	/**
-	 * An invalid state for a {@linkplain MediaPlayer} to be in.
+	 * An invalid state for a {@linkplain android.media.MediaPlayer} to be in.
 	 */
 	public static final int INVALID_STATE = -1;
 
 	/**
-	 * The state a {@linkplain MediaPlayer} is in when initialized. Nothing is
+	 * The state a {@linkplain android.media.MediaPlayer} is in when initialized. Nothing is
 	 * loaded into the player.
 	 */
 	public static final int IDLE = 0;
 
 	/**
-	 * The state a {@linkplain MediaPlayer} enters after
-	 * {@linkplain MediaPlayer#release()} is called on it. This
-	 * {@linkplain MediaPlayer} will be unusable until {@linkplain #reset()} is
+	 * The state a {@linkplain android.media.MediaPlayer} enters after
+	 * {@linkplain android.media.MediaPlayer#release()} is called on it. This
+	 * {@linkplain android.media.MediaPlayer} will be unusable until {@linkplain #reset()} is
 	 * called on it.
 	 */
 	public static final int END = 1;
 
 	/**
-	 * The state a {@linkplain MediaPlayer} is in when
-	 * {@linkplain #setDataSource(Context, Uri)} is called on it.
+	 * The state a {@linkplain android.media.MediaPlayer} is in when
+	 * {@linkplain #setDataSource(android.content.Context, android.net.Uri)} is called on it.
 	 */
 	public static final int INITIALIZED = 2;
 
 	/**
-	 * The state a {@linkplain MediaPlayer} is in when
+	 * The state a {@linkplain android.media.MediaPlayer} is in when
 	 * {@linkplain #prepareAsync()} is called on it.
 	 */
 	public static final int PREPARING = 4;
 
 	/**
-	 * The state a {@linkplain MediaPlayer} is in when
+	 * The state a {@linkplain android.media.MediaPlayer} is in when
 	 * {@linkplain #prepareAsync()} is complete or when {prepare()} is
 	 * called.
 	 */
 	public static final int PREPARED = 8;
 
 	/**
-	 * The state a {@linkplain MediaPlayer} is in when playing.
+	 * The state a {@linkplain android.media.MediaPlayer} is in when playing.
 	 */
 	public static final int STARTED = 16;
 
 	/**
-	 * The state a {@linkplain MediaPlayer} is in when {{@link #stop()} is
+	 * The state a {@linkplain android.media.MediaPlayer} is in when {{@link #stop()} is
 	 * called.
 	 */
 	public static final int STOPPED = 32;
 
 	/**
-	 * The state a {@linkplain MediaPlayer} is in when {{@link #pause()} is
+	 * The state a {@linkplain android.media.MediaPlayer} is in when {{@link #pause()} is
 	 * called.
 	 */
 	public static final int PAUSED = 64;
 
 	/**
-	 * The state a {@linkplain MediaPlayer} is in when it has reached the end of
+	 * The state a {@linkplain android.media.MediaPlayer} is in when it has reached the end of
 	 * the data loaded into it.
 	 */
 	public static final int PLAYBACK_COMPLETED = 128;
@@ -113,7 +115,7 @@ public class StatelyPlayer extends Player implements OnBufferingUpdateListener,
 	public static final int PREPARING_CONTENT = -512;
 
 	/**
-	 * The state a {@linkplain MediaPlayer} is in when an error has occurred.
+	 * The state a {@linkplain android.media.MediaPlayer} is in when an error has occurred.
 	 */
 	public static final int ERROR = 1024;
 

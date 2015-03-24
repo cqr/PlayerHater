@@ -46,6 +46,7 @@ interface IPlayerHaterClient {
      * SongHost Methods
      */
     String getSongTitle(int songTag);
+    String getSongJson(int songTag);
     String getSongArtist(int songTag);
     String getSongAlbumTitle(int songTag);
     Uri getSongAlbumArt(int songTag);

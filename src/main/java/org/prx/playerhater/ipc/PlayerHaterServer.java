@@ -1,30 +1,32 @@
-/*******************************************************************************
- * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
+/*
+ * -/*******************************************************************************
+ * - * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+ * - *
+ * - * Licensed under the Apache License, Version 2.0 (the "License");
+ * - * you may not use this file except in compliance with the License.
+ * - * You may obtain a copy of the License at
+ * - *
+ * - *   http://www.apache.org/licenses/LICENSE-2.0
+ * - *
+ * - * Unless required by applicable law or agreed to in writing, software
+ * - * distributed under the License is distributed on an "AS IS" BASIS,
+ * - * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * - * See the License for the specific language governing permissions and
+ * - * limitations under the License.
+ * - *****************************************************************************
+ */
 
 package org.prx.playerhater.ipc;
-
-import org.prx.playerhater.service.PlayerHaterService;
-import org.prx.playerhater.songs.SongHost;
-import org.prx.playerhater.wrappers.ThreadsafeServicePlayerHater;
 
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
+
+import org.prx.playerhater.service.PlayerHaterService;
+import org.prx.playerhater.songs.SongHost;
+import org.prx.playerhater.wrappers.ThreadsafeServicePlayerHater;
 
 public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 
@@ -146,6 +148,11 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 		return SongHost.getTag(mService.nowPlaying());
 	}
 
+    @Override
+    public int getQueueSong(int position) throws RemoteException {
+        return SongHost.getTag(mService.getQueueSong(position));
+    }
+
 	@Override
 	public boolean isPlaying() throws RemoteException {
 		return mService.isPlaying();
@@ -186,6 +193,11 @@ public class PlayerHaterServer extends IPlayerHaterServer.Stub {
 	public String getSongTitle(int songTag) throws RemoteException {
 		return SongHost.getLocalSong(songTag).getTitle();
 	}
+
+    @Override
+    public String getSongJson(int songTag) throws RemoteException {
+        return SongHost.getLocalSong(songTag).getSongJson();
+    }
 
 	@Override
 	public String getSongArtist(int songTag) throws RemoteException {

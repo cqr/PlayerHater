@@ -1,12 +1,30 @@
+/*
+ * -/*******************************************************************************
+ * - * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+ * - *
+ * - * Licensed under the Apache License, Version 2.0 (the "License");
+ * - * you may not use this file except in compliance with the License.
+ * - * You may obtain a copy of the License at
+ * - *
+ * - *   http://www.apache.org/licenses/LICENSE-2.0
+ * - *
+ * - * Unless required by applicable law or agreed to in writing, software
+ * - * distributed under the License is distributed on an "AS IS" BASIS,
+ * - * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * - * See the License for the specific language governing permissions and
+ * - * limitations under the License.
+ * - *****************************************************************************
+ */
+
 package org.prx.playerhater.wrappers;
+
+import android.app.Notification;
+import android.app.PendingIntent;
 
 import org.prx.playerhater.PlayerHater;
 import org.prx.playerhater.Song;
 import org.prx.playerhater.ipc.IPlayerHaterClient;
 import org.prx.playerhater.service.PlayerHaterService;
-
-import android.app.Notification;
-import android.app.PendingIntent;
 
 public class ServicePlayerHater extends PlayerHater {
 	private final PlayerHaterService mService;
@@ -94,6 +112,11 @@ public class ServicePlayerHater extends PlayerHater {
 	public Song nowPlaying() {
 		return mService.nowPlaying();
 	}
+
+    @Override
+    public Song getQueueSong(int position) {
+        return mService.getQueueSong(position);
+    }
 
 	@Override
 	public boolean isPlaying() {

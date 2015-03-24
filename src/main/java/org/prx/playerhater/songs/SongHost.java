@@ -1,30 +1,33 @@
-/*******************************************************************************
- * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
+/*
+ * -/*******************************************************************************
+ * - * Copyright 2013 Chris Rhoden, Rebecca Nesson, Public Radio Exchange
+ * - *
+ * - * Licensed under the Apache License, Version 2.0 (the "License");
+ * - * you may not use this file except in compliance with the License.
+ * - * You may obtain a copy of the License at
+ * - *
+ * - *   http://www.apache.org/licenses/LICENSE-2.0
+ * - *
+ * - * Unless required by applicable law or agreed to in writing, software
+ * - * distributed under the License is distributed on an "AS IS" BASIS,
+ * - * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * - * See the License for the specific language governing permissions and
+ * - * limitations under the License.
+ * - *****************************************************************************
+ */
 package org.prx.playerhater.songs;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.prx.playerhater.Song;
-import org.prx.playerhater.ipc.IPlayerHaterClient;
-import org.prx.playerhater.ipc.IPlayerHaterServer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.SparseArray;
+
+import org.prx.playerhater.Song;
+import org.prx.playerhater.ipc.IPlayerHaterClient;
+import org.prx.playerhater.ipc.IPlayerHaterServer;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SongHost {
 
@@ -147,6 +150,8 @@ public class SongHost {
 
 		String getSongTitle(int tag) throws RemoteException;
 
+        String getSongJson(int tag) throws RemoteException;
+
 		String getSongArtist(int tag) throws RemoteException;
 
 		Bundle getSongExtra(int tag) throws RemoteException;
@@ -173,6 +178,11 @@ public class SongHost {
 		public String getSongTitle(int tag) throws RemoteException {
 			return mClient.getSongTitle(tag);
 		}
+
+        @Override
+        public String getSongJson(int tag) throws RemoteException {
+            return mClient.getSongJson(tag);
+        }
 
 		@Override
 		public String getSongArtist(int tag) throws RemoteException {
@@ -211,6 +221,11 @@ public class SongHost {
 		public String getSongTitle(int tag) throws RemoteException {
 			return mServer.getSongTitle(tag);
 		}
+
+        @Override
+        public String getSongJson(int tag) throws RemoteException {
+            return mServer.getSongJson(tag);
+        }
 
 		@Override
 		public String getSongArtist(int tag) throws RemoteException {
@@ -253,6 +268,12 @@ public class SongHost {
 			// TODO Auto-generated method stub
 			return null;
 		}
+
+        @Override
+        public String getSongJson(int tag) throws RemoteException {
+            // TODO Auto-generated method stub
+            return null;
+        }
 
 		@Override
 		public String getSongArtist(int tag) throws RemoteException {
