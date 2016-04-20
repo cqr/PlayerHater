@@ -18,9 +18,11 @@
 
     <bool name="zzz_ph_notification">true</bool>
     <bool name="zzz_ph_lockscreen">false</bool>
-    <bool name="zzz_ph_audiofocus">false</bool>
+    <bool name="zzz_ph_audiofocus">true</bool>
     <bool name="zzz_ph_touch_notification">false</bool>
     <bool name="zzz_ph_exp_notification">false</bool>
+    <bool name="zzz_ph_ms_notification">true</bool>
+    <bool name="zzz_ph_media_session">true</bool>
 
     <string name="zzz_ph_stop">Stop</string>
     <string name="zzz_ph_back">Previous</string>

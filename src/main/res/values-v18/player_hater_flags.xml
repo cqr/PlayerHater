@@ -16,5 +16,5 @@
 -->
 <resources>
     <bool name="zzz_ph_lockscreen">false</bool>
-    <bool name="zzz_ph_scrubbable_lockscreen">true</bool>
+    <bool name="zzz_ph_scrubbable_lockscreen">false</bool>
 </resources>

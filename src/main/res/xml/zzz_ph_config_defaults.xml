@@ -17,24 +17,12 @@
 <config>
 
     <plugin
-        name="org.prx.playerhater.plugins.PebblePlugin"
+        name="com.chrisrhoden.glisten.plugins.PebblePlugin"
         enabled="true" />
     <plugin
-        name="org.prx.playerhater.plugins.NotificationPlugin"
-        enabled="@bool/zzz_ph_notification" />
+        name="com.chrisrhoden.glisten.plugins.MediaSessionPlugin"
+        enabled="@bool/zzz_ph_media_session" />
     <plugin
-        name="org.prx.playerhater.plugins.TouchableNotificationPlugin"
-        enabled="@bool/zzz_ph_touch_notification" />
-    <plugin
-        name="org.prx.playerhater.plugins.ExpandableNotificationPlugin"
-        enabled="@bool/zzz_ph_exp_notification" />
-    <plugin
-        name="org.prx.playerhater.plugins.AudioFocusPlugin"
-        enabled="@bool/zzz_ph_audiofocus" />
-    <plugin
-        name="org.prx.playerhater.plugins.LockScreenControlsPlugin"
-        enabled="@bool/zzz_ph_lockscreen" />
-    <plugin
-        name="org.prx.playerhater.plugins.ScrubbableLockScreenControlsPlugin"
-        enabled="@bool/zzz_ph_scrubbable_lockscreen" />
+        name="com.chrisrhoden.glisten.plugins.MediaStyleNotificationPlugin"
+        enabled="@bool/zzz_ph_ms_notification" />
 </config>

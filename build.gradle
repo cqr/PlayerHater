@@ -1,114 +1,120 @@
+apply plugin: 'com.android.library'
 apply plugin: 'maven'
 apply plugin: 'signing'
-apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+    useLibrary  'org.apache.http.legacy'
+
+    defaultConfig {
+        minSdkVersion 7
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:23.3.0'
+    compile 'com.android.support:mediarouter-v7:23.3.0'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'org.jetbrains:annotations-java5:15.0'
+}
 
 buildscript {
     repositories {
         mavenCentral()
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.12.+'
-    }
 }
 
 signing {
-  sign configurations.archives
+    sign configurations.archives
 }
-
-android {
-    buildToolsVersion "19.1.0"
-    compileSdkVersion 18
-
-    defaultConfig {
-      proguardFile 'proguard-player-hater.txt'
-    }
-}
-
-//task packageSources(type: Jar) {
-//  from android.sourceSets.main.allJava
-//  classifier = 'sources'
-//}
-//
-//artifacts {
-//  archives packageSources
-//}
 
 uploadArchives {
-  repositories {
-    mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
-        authentication(userName: sonatypeUserName, password: sonatypePassword)
-      }
-
-      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-        authentication(userName: sonatypeUserName, password: sonatypePassword)
-      }
-
-      pom.project {
-        version '0.3.7-SNAPSHOT'
-        artifactId 'playerhater'
-        groupId 'org.prx'
-
-        name 'PlayerHater'
-        description 'Android library for playing back longform audio such as music or podcasts with player controls.'
-
-        url 'http://github.com/PRX/PlayerHater'
-
-        scm {
-          url 'https://github.com/PRX/PlayerHater/'
-          connection 'scm:git:git://github.com/PRX/PlayerHater.git'
-          developerConnection 'scm:git:git@github.com:PRX/PlayerHater.git'
-          tag 'HEAD'
-        }
-
-        developers {
-          developer {
-            name 'Chris Rhoden'
-            email 'carhoden@gmail.com'
-            id 'chrisrhoden'
-            url 'http://chrisrhoden.com'
-            timezone '-5'
-            roles {
-              role 'developer'
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+                authentication(userName: sonatypeUserName, password: sonatypePassword)
             }
-          }
-          developer {
-            name 'Rebecca Nesson'
-            id 'rebeccanesson'
-            email 'rebeccanesson@gmail.com'
-            timezone '-5'
-            roles {
-              role 'developer'
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: sonatypeUserName, password: sonatypePassword)
             }
-          }
-        }
 
-        organization {
-          name 'PRX'
-          url 'http://prx.org'
-        }
+            pom.project {
+                version '0.3.7-SNAPSHOT'
+                artifactId 'glisten'
+                groupId 'com.chrisrhoden'
 
-        issueManagement {
-          system 'GitHub Issues'
-          url 'https://github.com/PRX/PlayerHater/issues'
-        }
+                name 'Glisten'
+                description 'Android library for playing back longform audio such as music or podcasts with player controls.'
 
-        licenses {
-          license {
-            name 'The Apache Software License, Version 2.0'
-            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-            distribution 'repo'
-          }
-        }
+                url 'http://github.com/chrisrhoden/PlayerHater'
 
-        parent {
-          groupId 'org.sonatype.oss'
-          artifactId 'oss-parent'
-          version 7
+                scm {
+                    url 'https://github.com/chrisrhoden/PlayerHater/'
+                    connection 'scm:git:git://github.com/chrisrhoden/PlayerHater.git'
+                    developerConnection 'scm:git:git@github.com:chrisrhoden/PlayerHater.git'
+                    tag 'HEAD'
+                }
+
+                developers {
+                    developer {
+                        name 'Chris Rhoden'
+                        email 'carhoden@gmail.com'
+                        id 'chrisrhoden'
+                        url 'http://chrisrhoden.com'
+                        timezone '-5'
+                        roles {
+                            role 'developer'
+                        }
+                    }
+                    developer {
+                        name 'Rebecca Nesson'
+                        id 'rebeccanesson'
+                        email 'rebeccanesson@gmail.com'
+                        timezone '-5'
+                        roles {
+                            role 'developer'
+                        }
+                    }
+                }
+
+                organization {
+                    name 'PRX'
+                    url 'http://prx.org'
+                }
+
+                issueManagement {
+                    system 'GitHub Issues'
+                    url 'https://github.com/chrisrhoden/PlayerHater/issues'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+
+                parent {
+                    groupId 'org.sonatype.oss'
+                    artifactId 'oss-parent'
+                    version 7
+                }
+            }
         }
-      }
     }
-  }
 }
